@@ -5,22 +5,22 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    color-scheme: dark;
+    color-scheme: light;
   }
   body {
-    background-color: #111318;
-    color: #F5F7FA;
+    background-color: #F8F9FA;
+    color: #0F172A;
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    selection-background-color: #75CFFF;
-    selection-color: #111318;
+    selection-background-color: #0A142F;
+    selection-color: #FFFFFF;
   }
   ::selection {
-    background-color: rgba(117, 207, 255, 0.3);
-    color: #F5F7FA;
+    background-color: rgba(10, 20, 47, 0.15);
+    color: #0A142F;
   }
   :focus-visible {
-    outline: 2px solid #75CFFF;
+    outline: 2px solid #0A142F;
     outline-offset: 2px;
   }
 }
@@ -33,21 +33,21 @@
     @apply py-16 sm:py-24;
   }
   
-  /* Futuristic Buttons */
+  /* Premium Editorial Buttons */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold tracking-wider uppercase transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold tracking-wider uppercase transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.98];
   }
   .btn-primary {
-    @apply btn bg-[#75CFFF] text-[#111318] shadow-lg shadow-[#75CFFF]/20 hover:bg-[#95DBFF] hover:shadow-[#75CFFF]/35 hover:-translate-y-0.5;
+    @apply btn bg-[#0A142F] text-white shadow-sm hover:bg-[#1E293B] hover:-translate-y-0.5;
   }
   .btn-dark {
-    @apply btn bg-[#1B2028] text-[#F5F7FA] border border-[rgba(198,205,213,0.18)] hover:bg-[#252C37] hover:border-[#75CFFF]/40 hover:-translate-y-0.5;
+    @apply btn bg-[#0A142F] text-white hover:bg-[#1E293B] hover:-translate-y-0.5;
   }
   .btn-outline {
-    @apply btn border border-[rgba(198,205,213,0.22)] bg-[#161A22]/80 backdrop-blur text-[#C6CDD5] hover:border-[#75CFFF] hover:text-[#F5F7FA] hover:bg-[#75CFFF]/10 hover:-translate-y-0.5;
+    @apply btn border border-slate-200 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50 hover:-translate-y-0.5 shadow-sm;
   }
   .btn-electric {
-    @apply btn bg-gradient-to-r from-[#75CFFF] to-[#3CA5DE] text-[#111318] font-extrabold shadow-lg shadow-[#75CFFF]/25 hover:shadow-[#75CFFF]/45 hover:-translate-y-0.5;
+    @apply btn bg-[#1E3A8A] text-white font-extrabold hover:bg-[#172554] hover:-translate-y-0.5;
   }
   .btn-gold {
     @apply btn-primary;
@@ -56,23 +56,23 @@
     @apply btn-outline;
   }
 
-  /* Futuristic Form Fields */
+  /* Form Fields */
   .field {
-    @apply w-full rounded-xl border border-[rgba(198,205,213,0.18)] bg-[#161A22] px-4 py-3 text-sm text-[#F5F7FA] placeholder-[#C6CDD5]/40 outline-none transition-all duration-200 focus:border-[#75CFFF] focus:ring-2 focus:ring-[#75CFFF]/20;
+    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-[#0F172A] placeholder-slate-400 outline-none transition-all duration-200 focus:border-[#0A142F] focus:ring-1 focus:ring-[#0A142F]/10;
   }
   .field-error {
-    @apply mt-1 text-xs font-medium text-red-400;
+    @apply mt-1 text-xs font-medium text-rose-600;
   }
   .heading {
-    @apply font-display text-3xl font-extrabold tracking-tight sm:text-5xl text-[#F5F7FA];
+    @apply font-display text-3xl font-black tracking-tight sm:text-5xl text-[#0A142F];
   }
 
-  /* Futuristic Card System */
+  /* Editorial Card Surfaces */
   .futuristic-card {
-    @apply relative overflow-hidden rounded-2xl border border-[rgba(198,205,213,0.12)] bg-[#161A22]/90 backdrop-blur-md transition-all duration-300 hover:border-[#75CFFF]/40 hover:shadow-card-hover hover:-translate-y-1;
+    @apply relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:border-slate-300 hover:shadow-lg hover:-translate-y-1;
   }
   .futuristic-panel {
-    @apply rounded-2xl border border-[rgba(198,205,213,0.14)] bg-[#1B2028]/80 backdrop-blur-xl;
+    @apply rounded-2xl border border-slate-200/80 bg-white shadow-sm;
   }
   .glass-card {
     @apply futuristic-card;
@@ -83,26 +83,24 @@
 
   /* Badges & Tags */
   .badge-electric {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-[#75CFFF]/30 bg-[#75CFFF]/10 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#75CFFF];
+    @apply inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-blue-900;
   }
   .badge-titanium {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-[rgba(198,205,213,0.2)] bg-[#1B2028] px-3 py-0.5 text-[11px] font-semibold text-[#C6CDD5];
+    @apply inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-3 py-0.5 text-[11px] font-semibold text-slate-700;
   }
   .gold-badge {
     @apply badge-electric;
   }
   .gold-gradient-text {
-    background: linear-gradient(135deg, #F5F7FA 0%, #C6CDD5 50%, #75CFFF 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    @apply text-[#0A142F];
   }
 }
 
-/* 2027 Keyframe Entrance & Glow Animations */
+/* Animations */
 @keyframes fadeInSlideUp {
   0% {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(16px);
   }
   100% {
     opacity: 1;
@@ -110,34 +108,21 @@
   }
 }
 
-@keyframes electricPulse {
-  0%, 100% {
-    box-shadow: 0 0 15px -3px rgba(117, 207, 255, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 30px 2px rgba(117, 207, 255, 0.45);
-  }
-}
-
 .animate-entrance-1 {
-  animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeInSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-entrance-2 {
-  animation: fadeInSlideUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
+  animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
   opacity: 0;
 }
 
 .animate-entrance-3 {
-  animation: fadeInSlideUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
+  animation: fadeInSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
   opacity: 0;
 }
 
-.animate-electric-glow {
-  animation: electricPulse 4s ease-in-out infinite;
-}
-
-/* Reduced Motion Support */
+/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -147,27 +132,27 @@
   }
 }
 
-/* Custom Scrollbar for 2027 Dark UI */
+/* Clean Editorial Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #111318;
+  background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #252C37;
+  background: #CBD5E1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #75CFFF;
+  background: #94A3B8;
 }
 
-/* Leaflet Map & Custom Pin Customization in Dark Mode */
+/* Leaflet Map & Custom Pin Customization */
 .leaflet-container {
   font-family: inherit;
   z-index: 1;
-  background-color: #111318 !important;
+  background-color: #F8F9FA !important;
 }
 
 .leaflet-pane {
@@ -185,11 +170,11 @@
 }
 
 .leaflet-popup-content-wrapper {
-  background: #1B2028 !important;
-  color: #F5F7FA !important;
+  background: #FFFFFF !important;
+  color: #0F172A !important;
   border-radius: 1rem !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
-  border: 1px solid rgba(117, 207, 255, 0.3) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15) !important;
+  border: 1px solid #E2E8F0 !important;
   padding: 4px !important;
 }
 
@@ -198,5 +183,5 @@
 }
 
 .leaflet-popup-tip {
-  background: #1B2028 !important;
+  background: #FFFFFF !important;
 }

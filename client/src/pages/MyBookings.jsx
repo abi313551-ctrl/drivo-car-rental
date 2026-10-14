@@ -21,7 +21,6 @@ export default function MyBookings() {
   const userBookings = useMemo(() => {
     let list = [...bookings];
     if (user && !isAdmin) {
-      // Show bookings matching logged-in user's ID or email, plus browser-created bookings without a different userId
       list = list.filter(
         (b) =>
           b.userId === user.id ||
@@ -47,117 +46,130 @@ export default function MyBookings() {
   };
 
   return (
-    <div className="container-x py-10">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-6">
-        <div>
-          <h1 className="font-heading text-2xl sm:text-3xl font-black text-[#F5F7FA]">Reservation History</h1>
-          <p className="mt-1 text-sm text-[#C6CDD5]">
-            Telemetry records, dispatch itineraries, and tax invoices for your Drivo reservations.
-          </p>
+    <div className="bg-[#F8F9FA] min-h-screen text-[#0F172A] py-10 sm:py-14">
+      <div className="container-x">
+        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200/80 pb-6">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 block mb-1">
+              RESERVATIONS
+            </span>
+            <h1 className="font-display text-2xl sm:text-4xl font-black text-[#0A142F]">
+              Reservation History
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-slate-500">
+              Telemetry records, dispatch itineraries, and tax invoices for your Drivo reservations.
+            </p>
+          </div>
+          <Link to="/cars" className="rounded-xl bg-[#0A142F] hover:bg-[#1E293B] text-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition shadow-sm">
+            Reserve Another Vehicle
+          </Link>
         </div>
-        <Link to="/cars" className="btn-primary text-xs">Reserve Another Vehicle</Link>
-      </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
-        {['All', 'Confirmed', 'Cancelled'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setFilter(tab)}
-            className={`rounded-full px-4 py-2 font-mono text-xs font-semibold transition ${
-              filter === tab
-                ? 'bg-[#75CFFF] text-[#111318] shadow-md shadow-[#75CFFF]/15'
-                : 'bg-[#1B2028] text-[#C6CDD5] hover:bg-white/10 border border-white/5'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {filtered.length === 0 ? (
-        <div className="mt-8 grid place-items-center rounded-3xl border border-dashed border-white/15 bg-[#161A22] py-20 text-center p-8">
-          <Car size={36} className="text-neutral-500" />
-          <h2 className="mt-3 text-lg font-bold text-[#F5F7FA]">No reservations found</h2>
-          <p className="mt-1 text-sm text-[#C6CDD5]">
-            {filter === 'All' ? 'You have not reserved any vehicles yet.' : `No ${filter.toLowerCase()} reservations recorded.`}
-          </p>
-          <Link to="/cars" className="btn-primary mt-5">Explore Available Fleet</Link>
+        {/* Status Filter Tabs */}
+        <div className="mt-6 flex flex-wrap gap-2">
+          {['All', 'Confirmed', 'Cancelled'].map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setFilter(tab)}
+              className={`rounded-full px-4 py-2 text-xs font-bold transition cursor-pointer ${
+                filter === tab
+                  ? 'bg-[#0A142F] text-white shadow-xs'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
-      ) : (
-        <div className="mt-6 space-y-4">
-          {filtered.map((b) => {
-            const canCancel = isCancellable(b);
-            return (
-              <article key={b.ref} className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-6 shadow-xl transition hover:border-[#75CFFF]/40">
-                <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-                  <div className="flex gap-4">
-                    <CarImage
-                      src={b.car?.image}
-                      alt={`${b.car?.brand} ${b.car?.model}`}
-                      className="h-24 w-36 shrink-0 rounded-2xl object-cover bg-neutral-900 border border-white/5"
-                    />
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-xs font-bold bg-white/5 border border-white/10 px-2.5 py-1 rounded-md text-[#75CFFF]">{b.ref}</span>
-                        <StatusBadge status={b.status} />
-                        <StatusBadge status={b.paymentStatus} />
+
+        {filtered.length === 0 ? (
+          <div className="mt-8 grid place-items-center rounded-3xl border border-dashed border-slate-200 bg-white py-20 text-center p-8">
+            <Car size={36} className="text-slate-400" />
+            <h2 className="mt-3 font-display text-lg font-bold text-[#0A142F]">No reservations found</h2>
+            <p className="mt-1 text-xs sm:text-sm text-slate-500">
+              {filter === 'All' ? 'You have not reserved any vehicles yet.' : `No ${filter.toLowerCase()} reservations recorded.`}
+            </p>
+            <Link to="/cars" className="btn-primary mt-5 text-xs">Explore Available Fleet</Link>
+          </div>
+        ) : (
+          <div className="mt-6 space-y-4">
+            {filtered.map((b) => {
+              const canCancel = isCancellable(b);
+              return (
+                <article key={b.ref} className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm transition hover:shadow-md">
+                  <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                    <div className="flex gap-4 items-start">
+                      <CarImage
+                        src={b.car?.image}
+                        alt={`${b.car?.brand} ${b.car?.model}`}
+                        className="h-24 w-36 shrink-0 rounded-2xl object-cover bg-slate-100 border border-slate-200"
+                      />
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs font-bold bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md text-[#0A142F]">
+                            {b.ref}
+                          </span>
+                          <StatusBadge status={b.status} />
+                          <StatusBadge status={b.paymentStatus} />
+                        </div>
+                        <h2 className="mt-1.5 font-display text-lg font-black text-[#0A142F]">
+                          {b.car?.brand} {b.car?.model} <span className="text-xs text-slate-400 font-normal">({b.car?.year})</span>
+                        </h2>
+                        <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                          <span className="flex items-center gap-1.5"><MapPin size={13} className="text-[#0A142F]" /> {b.pickup} → {b.dropoff}</span>
+                          <span className="flex items-center gap-1.5 font-semibold text-slate-700"><Calendar size={13} className="text-[#0A142F]" /> {fmt(b.start)} to {fmt(b.end)}</span>
+                        </p>
+                        <p className="mt-2 text-xs text-slate-500">
+                          Lead Driver: <strong className="text-[#0A142F]">{b.customer?.fullName}</strong> ({b.customer?.email})
+                        </p>
                       </div>
-                      <h2 className="mt-1.5 text-lg font-black text-[#F5F7FA]">
-                        {b.car?.brand} {b.car?.model} <span className="font-mono text-xs text-[#C6CDD5] font-normal">({b.car?.year})</span>
-                      </h2>
-                      <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#C6CDD5]">
-                        <span className="flex items-center gap-1.5"><MapPin size={13} className="text-[#75CFFF]" /> {b.pickup} → {b.dropoff}</span>
-                        <span className="flex items-center gap-1.5 font-mono"><Calendar size={13} className="text-[#75CFFF]" /> {fmt(b.start)} to {fmt(b.end)}</span>
-                      </p>
-                      <p className="mt-2 text-xs text-[#C6CDD5]/80">
-                        Lead Driver: <strong className="text-[#F5F7FA]">{b.customer?.fullName}</strong> ({b.customer?.email})
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-start justify-between gap-3 border-t border-white/5 pt-3 md:items-end md:border-t-0 md:pt-0">
-                    <div className="md:text-right">
-                      <p className="font-mono text-xs text-[#C6CDD5]">{b.pricing?.days || 1} day duration total</p>
-                      <p className="font-mono text-2xl font-black text-[#75CFFF]">{formatINR(b.pricing?.total)}</p>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      <Link to={`/booking/confirmation/${b.ref}`} className="btn-outline px-3.5 py-2 text-xs text-[#C6CDD5]">
-                        <Eye size={14} /> Details
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedReceiptRef(b.ref)}
-                        className="btn-outline px-3.5 py-2 text-xs flex items-center gap-1 text-[#C6CDD5]"
-                      >
-                        <FileText size={14} /> Tax Invoice
-                      </button>
-                      {b.status === 'Confirmed' && b.paymentStatus !== 'Paid' && (
-                        <Link to={`/payment?ref=${b.ref}`} className="btn-primary px-3.5 py-2 text-xs">
-                          <CreditCard size={14} /> Pay Now
+                    <div className="flex flex-col items-start justify-between gap-3 border-t border-slate-100 pt-3 md:items-end md:border-t-0 md:pt-0">
+                      <div className="md:text-right">
+                        <p className="text-xs text-slate-400 font-medium">{b.pricing?.days || 1} day duration total</p>
+                        <p className="font-display text-2xl font-black text-[#0A142F]">{formatINR(b.pricing?.total)}</p>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Link to={`/booking/confirmation/${b.ref}`} className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 shadow-2xs flex items-center gap-1">
+                          <Eye size={14} /> Details
                         </Link>
-                      )}
-                      {canCancel && (
                         <button
                           type="button"
-                          onClick={() => handleCancel(b.ref)}
-                          className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition flex items-center gap-1"
+                          onClick={() => setSelectedReceiptRef(b.ref)}
+                          className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 shadow-2xs flex items-center gap-1 cursor-pointer"
                         >
-                          <XCircle size={14} /> Cancel
+                          <FileText size={14} /> Tax Invoice
                         </button>
-                      )}
+                        {b.status === 'Confirmed' && b.paymentStatus !== 'Paid' && (
+                          <Link to={`/payment?ref=${b.ref}`} className="rounded-xl bg-[#0A142F] hover:bg-[#1E293B] text-white px-3.5 py-2 text-xs font-bold flex items-center gap-1 shadow-xs">
+                            <CreditCard size={14} /> Pay Now
+                          </Link>
+                        )}
+                        {canCancel && (
+                          <button
+                            type="button"
+                            onClick={() => handleCancel(b.ref)}
+                            className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition flex items-center gap-1 cursor-pointer"
+                          >
+                            <XCircle size={14} /> Cancel
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
+                </article>
+              );
+            })}
+          </div>
+        )}
 
-      {selectedReceiptRef && (
-        <BookingReceiptModal bookingRef={selectedReceiptRef} onClose={() => setSelectedReceiptRef(null)} />
-      )}
+        {selectedReceiptRef && (
+          <BookingReceiptModal bookingRef={selectedReceiptRef} onClose={() => setSelectedReceiptRef(null)} />
+        )}
+      </div>
     </div>
   );
 }

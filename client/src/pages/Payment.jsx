@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, Smartphone, Building2, ShieldAlert, CheckCircle2, Lock, Zap } from 'lucide-react';
+import { CreditCard, Smartphone, Building2, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useBookings } from '../context/BookingContext.jsx';
 import BookingSummary from '../components/BookingSummary.jsx';
@@ -29,10 +29,10 @@ export default function Payment() {
 
   if (!booking) {
     return (
-      <section className="container-x grid min-h-[60vh] place-items-center py-20 text-center text-[#F5F7FA]">
+      <section className="container-x grid min-h-[60vh] place-items-center py-20 text-center text-[#0F172A]">
         <div>
-          <h1 className="heading">Booking Reference Unresolved</h1>
-          <p className="mt-3 text-xs sm:text-sm text-[#C6CDD5]/70">
+          <h1 className="font-display text-2xl sm:text-3xl font-black text-[#0A142F]">Booking Reference Unresolved</h1>
+          <p className="mt-2 text-xs sm:text-sm text-slate-500">
             Please select an active reservation from your dashboard to complete dispatch payment.
           </p>
           <div className="mt-6 flex justify-center gap-3">
@@ -95,213 +95,222 @@ export default function Payment() {
   };
 
   return (
-    <div className="container-x py-10 text-[#F5F7FA]">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-950/40 px-3 py-1 text-[11px] font-mono font-bold text-amber-300">
-            <ShieldAlert size={13} /> SECURE SANDBOX GATEWAY — NO ACTUAL CHARGES INCURRED
-          </span>
-          <h1 className="heading mt-2.5">Finalize Reservation Tariff</h1>
-          <p className="mt-1 text-xs font-mono text-[#C6CDD5]/70 flex items-center gap-2">
-            <span>Reference: <strong className="text-[#F5F7FA]">{booking.ref}</strong></span>
-            <span>·</span>
-            <span>Status: <StatusBadge status={booking.paymentStatus} /></span>
-          </p>
-        </div>
-        <Link to={`/booking/confirmation/${booking.ref}`} className="btn-outline text-xs">
-          Return to Summary
-        </Link>
-      </div>
-
-      {booking.paymentStatus === 'Paid' ? (
-        <div className="rounded-2xl border border-[#75CFFF]/30 bg-[#161A22] p-8 text-center shadow-2xl">
-          <CheckCircle2 size={44} className="mx-auto text-[#75CFFF]" />
-          <h2 className="mt-3 font-display text-2xl font-bold text-[#F5F7FA]">Reservation Paid & Confirmed</h2>
-          <p className="mt-1 text-xs text-[#C6CDD5]/80 font-mono">
-            Settled {formatINR(booking.pricing?.total)} via {booking.paymentMethod || 'Mock Gateway'}.
-          </p>
-          <div className="mt-6 flex justify-center gap-3">
-            <Link to="/my-bookings" className="btn-primary text-xs">View My Bookings</Link>
-            <Link to={`/booking/confirmation/${booking.ref}`} className="btn-outline text-xs">Confirmation Details</Link>
+    <div className="bg-[#F8F9FA] min-h-screen text-[#0F172A] py-10 sm:py-14">
+      <div className="container-x">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1 text-[11px] font-bold text-amber-900">
+              <ShieldAlert size={13} className="text-amber-700" /> SECURE SANDBOX GATEWAY — NO ACTUAL CHARGES INCURRED
+            </span>
+            <h1 className="font-display text-3xl sm:text-4xl font-black text-[#0A142F] tracking-tight mt-3">
+              Finalize Reservation Tariff
+            </h1>
+            <p className="mt-1 text-xs text-slate-500 flex items-center gap-2 font-medium">
+              <span>Reference: <strong className="text-[#0A142F]">{booking.ref}</strong></span>
+              <span>·</span>
+              <span>Status: <StatusBadge status={booking.paymentStatus} /></span>
+            </p>
           </div>
+          <Link to={`/booking/confirmation/${booking.ref}`} className="rounded-xl border border-slate-300 bg-white hover:bg-slate-50 px-5 py-2.5 text-xs font-bold text-slate-700 shadow-2xs">
+            Return to Summary
+          </Link>
         </div>
-      ) : (
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
-            <div className="rounded-2xl border border-[rgba(198,205,213,0.14)] bg-[#1B2028] p-6 shadow-2xl">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[rgba(198,205,213,0.08)] pb-3">
-                <h2 className="font-display text-xs font-bold uppercase tracking-wider text-[#F5F7FA]">
-                  Select Payment Rail
-                </h2>
-                <button
-                  type="button"
-                  onClick={fillTestCard}
-                  className="text-xs font-mono font-bold text-[#75CFFF] hover:underline"
-                >
-                  ⚡ Auto-fill Test Card
-                </button>
-              </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                {METHODS.map(({ id, label, icon: Icon, desc }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => { setMethod(id); setErrors({}); }}
-                    className={`flex flex-col items-start rounded-xl border p-4 text-left transition-all ${
-                      method === id
-                        ? 'border-[#75CFFF] bg-[#75CFFF]/10 shadow-sm'
-                        : 'border-[rgba(198,205,213,0.12)] bg-[#161A22] hover:border-[rgba(198,205,213,0.25)]'
-                    }`}
-                  >
-                    <Icon size={18} className={method === id ? 'text-[#75CFFF]' : 'text-[#C6CDD5]/60'} />
-                    <span className="mt-2 font-display font-bold text-xs text-[#F5F7FA]">{label}</span>
-                    <span className="text-[10px] text-[#C6CDD5]/50 mt-0.5">{desc}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-6 border-t border-[rgba(198,205,213,0.08)] pt-6">
-                {method === 'Card' && (
-                  <div className="space-y-4">
-                    <div>
-                      <label htmlFor="card-num" className="mb-1 block text-xs font-mono font-medium text-[#C6CDD5]">
-                        Sandbox Card Number (16 Digits)
-                      </label>
-                      <input
-                        id="card-num"
-                        className="field font-mono text-xs bg-[#161A22]"
-                        placeholder="4242 4242 4242 4242"
-                        maxLength={19}
-                        value={card.number}
-                        onChange={(e) => setCard((c) => ({ ...c, number: e.target.value }))}
-                      />
-                      {errors.number && <p className="field-error">{errors.number}</p>}
-                    </div>
-
-                    <div>
-                      <label htmlFor="card-name" className="mb-1 block text-xs font-mono font-medium text-[#C6CDD5]">
-                        Cardholder Name
-                      </label>
-                      <input
-                        id="card-name"
-                        className="field text-xs bg-[#161A22]"
-                        placeholder="Priya Raman"
-                        value={card.name}
-                        onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))}
-                      />
-                      {errors.name && <p className="field-error">{errors.name}</p>}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="card-exp" className="mb-1 block text-xs font-mono font-medium text-[#C6CDD5]">
-                          Expiry (MM/YY)
-                        </label>
-                        <input
-                          id="card-exp"
-                          className="field font-mono text-xs bg-[#161A22]"
-                          placeholder="08/28"
-                          maxLength={5}
-                          value={card.expiry}
-                          onChange={(e) => setCard((c) => ({ ...c, expiry: e.target.value }))}
-                        />
-                        {errors.expiry && <p className="field-error">{errors.expiry}</p>}
-                      </div>
-                      <div>
-                        <label htmlFor="card-cvv" className="mb-1 block text-xs font-mono font-medium text-[#C6CDD5]">
-                          Security CVV
-                        </label>
-                        <input
-                          id="card-cvv"
-                          type="password"
-                          className="field font-mono text-xs bg-[#161A22]"
-                          placeholder="424"
-                          maxLength={4}
-                          value={card.cvv}
-                          onChange={(e) => setCard((c) => ({ ...c, cvv: e.target.value }))}
-                        />
-                        {errors.cvv && <p className="field-error">{errors.cvv}</p>}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {method === 'UPI' && (
-                  <div>
-                    <label htmlFor="upi-id" className="mb-1 block text-xs font-mono font-medium text-[#C6CDD5]">
-                      Virtual Payment Address (UPI VPA)
-                    </label>
-                    <input
-                      id="upi-id"
-                      className="field text-xs bg-[#161A22]"
-                      placeholder="username@okaxis"
-                      value={upiId}
-                      onChange={(e) => setUpiId(e.target.value)}
-                    />
-                    {errors.upiId && <p className="field-error">{errors.upiId}</p>}
-                  </div>
-                )}
-
-                {method === 'NetBanking' && (
-                  <div>
-                    <label htmlFor="bank-select" className="mb-1 block text-xs font-mono font-medium text-[#C6CDD5]">
-                      Select Banking Gateway
-                    </label>
-                    <select
-                      id="bank-select"
-                      className="field text-xs bg-[#161A22]"
-                      value={bank}
-                      onChange={(e) => setBank(e.target.value)}
-                    >
-                      {['HDFC Bank', 'ICICI Bank', 'State Bank of India', 'Axis Bank', 'Kotak Mahindra Bank'].map((b) => (
-                        <option key={b} value={b} className="bg-[#161A22] text-[#F5F7FA]">{b}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-[rgba(198,205,213,0.08)] pt-6">
-                <button
-                  type="button"
-                  disabled={processing}
-                  onClick={() => handlePay(false)}
-                  className="btn-primary flex-1 py-3 text-xs font-mono font-bold tracking-wider"
-                >
-                  <Lock size={14} />
-                  {processing ? 'Processing Digital Authorization...' : `Pay ${formatINR(booking.pricing?.total)} (Simulated)`}
-                </button>
-                <button
-                  type="button"
-                  disabled={processing}
-                  onClick={() => handlePay(true)}
-                  className="btn-outline text-xs py-3"
-                >
-                  Simulate Gateway Reject
-                </button>
-              </div>
-
-              <p className="mt-4 text-[11px] font-mono text-[#C6CDD5]/50">
-                Notice: Sandbox testing environment. Real financial card details should never be entered.
-              </p>
+        {booking.paymentStatus === 'Paid' ? (
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 text-center shadow-sm max-w-xl mx-auto">
+            <CheckCircle2 size={48} className="mx-auto text-emerald-600" />
+            <h2 className="mt-4 font-display text-2xl font-bold text-[#0A142F]">Reservation Paid &amp; Confirmed</h2>
+            <p className="mt-1 text-xs sm:text-sm text-slate-600">
+              Settled {formatINR(booking.pricing?.total)} via {booking.paymentMethod || 'Mock Gateway'}.
+            </p>
+            <div className="mt-6 flex justify-center gap-3">
+              <Link to="/my-bookings" className="btn-primary text-xs">View My Bookings</Link>
+              <Link to={`/booking/confirmation/${booking.ref}`} className="btn-outline text-xs">Confirmation Details</Link>
             </div>
           </div>
+        ) : (
+          <div className="grid gap-8 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-2">
+              <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                  <h2 className="font-display text-xs font-bold uppercase tracking-wider text-[#0A142F]">
+                    Select Payment Rail
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={fillTestCard}
+                    className="text-xs font-bold text-blue-900 hover:underline cursor-pointer"
+                  >
+                    ⚡ Auto-fill Test Card
+                  </button>
+                </div>
 
-          <aside>
-            <BookingSummary
-              car={booking.car}
-              start={booking.start}
-              end={booking.end}
-              pickup={booking.pickup}
-              dropoff={booking.dropoff}
-              extras={booking.extras}
-              pricing={booking.pricing}
-              title="Reservation Summary"
-            />
-          </aside>
-        </div>
-      )}
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  {METHODS.map(({ id, label, icon: Icon, desc }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => { setMethod(id); setErrors({}); }}
+                      className={`flex flex-col items-start rounded-2xl border p-4 text-left transition-all cursor-pointer ${
+                        method === id
+                          ? 'border-[#0A142F] bg-blue-50/25 shadow-xs'
+                          : 'border-slate-200 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      <Icon size={18} className={method === id ? 'text-[#0A142F]' : 'text-slate-400'} />
+                      <span className="mt-2.5 font-display font-bold text-xs text-[#0A142F]">{label}</span>
+                      <span className="text-[10px] text-slate-500 mt-0.5">{desc}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-6 border-t border-slate-100 pt-6">
+                  {method === 'Card' && (
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="card-num" className="mb-1 block text-xs font-bold text-slate-700">
+                          Sandbox Card Number (16 Digits)
+                        </label>
+                        <input
+                          id="card-num"
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs font-mono font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none"
+                          placeholder="4242 4242 4242 4242"
+                          maxLength={19}
+                          value={card.number}
+                          onChange={(e) => setCard((c) => ({ ...c, number: e.target.value }))}
+                        />
+                        {errors.number && <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.number}</p>}
+                      </div>
+
+                      <div>
+                        <label htmlFor="card-name" className="mb-1 block text-xs font-bold text-slate-700">
+                          Cardholder Name
+                        </label>
+                        <input
+                          id="card-name"
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none"
+                          placeholder="Priya Raman"
+                          value={card.name}
+                          onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))}
+                        />
+                        {errors.name && <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.name}</p>}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="card-exp" className="mb-1 block text-xs font-bold text-slate-700">
+                            Expiry (MM/YY)
+                          </label>
+                          <input
+                            id="card-exp"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs font-mono font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none"
+                            placeholder="08/28"
+                            maxLength={5}
+                            value={card.expiry}
+                            onChange={(e) => setCard((c) => ({ ...c, expiry: e.target.value }))}
+                          />
+                          {errors.expiry && <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.expiry}</p>}
+                        </div>
+
+                        <div>
+                          <label htmlFor="card-cvv" className="mb-1 block text-xs font-bold text-slate-700">
+                            CVV
+                          </label>
+                          <input
+                            id="card-cvv"
+                            type="password"
+                            maxLength={4}
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs font-mono font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none"
+                            placeholder="424"
+                            value={card.cvv}
+                            onChange={(e) => setCard((c) => ({ ...c, cvv: e.target.value }))}
+                          />
+                          {errors.cvv && <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.cvv}</p>}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {method === 'UPI' && (
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="upi-id" className="mb-1 block text-xs font-bold text-slate-700">
+                          Virtual Payment Address (UPI ID)
+                        </label>
+                        <input
+                          id="upi-id"
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs font-mono font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none"
+                          placeholder="driver@okhdfcbank"
+                          value={upiId}
+                          onChange={(e) => setUpiId(e.target.value)}
+                        />
+                        {errors.upiId && <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.upiId}</p>}
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        A test mandate request will be simulated and approved instantly.
+                      </p>
+                    </div>
+                  )}
+
+                  {method === 'NetBanking' && (
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="nb-bank" className="mb-1 block text-xs font-bold text-slate-700">
+                          Select Banking Partner
+                        </label>
+                        <select
+                          id="nb-bank"
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none cursor-pointer"
+                          value={bank}
+                          onChange={(e) => setBank(e.target.value)}
+                        >
+                          <option value="HDFC Bank">HDFC Bank</option>
+                          <option value="ICICI Bank">ICICI Bank</option>
+                          <option value="State Bank of India">State Bank of India</option>
+                          <option value="Axis Bank">Axis Bank</option>
+                          <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-8 flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-100">
+                    <button
+                      type="button"
+                      disabled={processing}
+                      onClick={() => handlePay(false)}
+                      className="flex-1 rounded-xl bg-[#0A142F] hover:bg-[#1E293B] text-white py-3.5 text-xs font-bold tracking-wider uppercase transition shadow-sm cursor-pointer disabled:opacity-40"
+                    >
+                      {processing ? 'Processing Settlement...' : `Authorize ${formatINR(booking.pricing?.total)}`}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={processing}
+                      onClick={() => handlePay(true)}
+                      className="rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 px-5 py-3 text-xs font-bold transition cursor-pointer"
+                    >
+                      Simulate Failure
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:sticky lg:top-24 lg:self-start">
+              <BookingSummary
+                car={booking.car}
+                start={booking.start}
+                end={booking.end}
+                pickup={booking.pickup}
+                dropoff={booking.dropoff}
+                extras={booking.extras}
+                pricing={booking.pricing}
+                title="Tariff Breakdown"
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -204,18 +204,18 @@ export default function Dashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div className="container-x py-20 min-h-[70vh] flex items-center justify-center">
-        <div className="mx-auto max-w-xl rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-8 text-center shadow-2xl">
-          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[#75CFFF]/10 border border-[#75CFFF]/25 text-[#75CFFF]">
+      <div className="container-x py-20 min-h-[70vh] flex items-center justify-center text-[#0A142F]">
+        <div className="mx-auto max-w-xl rounded-3xl border border-slate-200/90 bg-white p-8 text-center shadow-sm">
+          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-blue-50 border border-blue-900/10 text-[#1E3A8A]">
             <User size={28} />
           </span>
-          <h1 className="mt-5 text-2xl font-black text-[#F5F7FA]">Authenticate to access dashboard</h1>
-          <p className="mt-2 text-sm text-[#C6CDD5]">
+          <h1 className="mt-5 text-2xl font-black text-[#0A142F]">Authenticate to access dashboard</h1>
+          <p className="mt-2 text-sm text-slate-600">
             Access your active itineraries, verified telemetry, official tax invoices, and driver identity details.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/login" className="btn-primary">Sign In</Link>
-            <Link to="/register" className="btn-outline text-[#C6CDD5]">Create Account</Link>
+            <Link to="/register" className="btn-outline text-slate-700">Create Account</Link>
           </div>
         </div>
       </div>
@@ -305,28 +305,28 @@ export default function Dashboard() {
     const canCancel = b.status === 'Confirmed' && (startTime.getTime() - now.getTime()) / (1000 * 60 * 60) >= 24;
 
     return (
-      <div key={b.ref} className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-6 shadow-xl transition hover:border-[#75CFFF]/40">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-white/5 pb-4">
+      <div key={b.ref} className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm transition hover:border-slate-300">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-slate-100 pb-4">
           <div className="flex gap-4 items-start">
             <CarImage
               src={b.car?.image}
               alt={`${b.car?.brand} ${b.car?.model}`}
-              className="h-20 w-28 sm:h-24 sm:w-36 shrink-0 rounded-2xl object-cover bg-neutral-900 border border-white/5"
+              className="h-20 w-28 sm:h-24 sm:w-36 shrink-0 rounded-2xl object-cover bg-slate-100 border border-slate-200/80"
             />
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-mono text-xs font-bold bg-white/5 border border-white/10 px-2.5 py-1 rounded-md text-[#75CFFF]">
+                <span className="font-mono text-xs font-bold bg-blue-50/80 border border-blue-900/15 px-2.5 py-1 rounded-md text-[#1E3A8A]">
                   {b.ref}
                 </span>
                 <StatusBadge status={b.status} />
-                <span className={`font-mono text-[11px] font-semibold ${b.paymentStatus === 'Paid' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                <span className={`font-mono text-[11px] font-semibold ${b.paymentStatus === 'Paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
                   Payment: {b.paymentStatus}
                 </span>
               </div>
-              <h3 className="mt-1.5 text-lg sm:text-xl font-black text-[#F5F7FA]">{b.car?.brand} {b.car?.model}</h3>
-              <p className="text-xs text-[#C6CDD5]">{b.car?.category} · Hub: {b.pickup}</p>
+              <h3 className="mt-1.5 text-lg sm:text-xl font-black text-[#0A142F]">{b.car?.brand} {b.car?.model}</h3>
+              <p className="text-xs text-slate-500">{b.car?.category} · Hub: {b.pickup}</p>
               {b.pricing?.discount > 0 && (
-                <p className="mt-1 text-xs font-bold text-emerald-400 flex items-center gap-1 font-mono">
+                <p className="mt-1 text-xs font-bold text-emerald-600 flex items-center gap-1 font-mono">
                   <Tag size={12} /> Saved {formatINR(b.pricing.discount)} with promo
                 </p>
               )}
@@ -334,8 +334,8 @@ export default function Dashboard() {
           </div>
 
           <div className="text-left sm:text-right shrink-0">
-            <p className="font-mono text-xl font-black text-[#75CFFF]">{formatINR(b.pricing?.total || 0)}</p>
-            <p className="text-xs text-[#C6CDD5] font-mono">{b.pricing?.days || 1} day(s) duration</p>
+            <p className="font-mono text-xl font-black text-[#0A142F]">{formatINR(b.pricing?.total || 0)}</p>
+            <p className="text-xs text-slate-500 font-mono">{b.pricing?.days || 1} day(s) duration</p>
           </div>
         </div>
 
@@ -344,64 +344,64 @@ export default function Dashboard() {
           const dLoc = getLocationByName(b.dropoff);
           return (
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="rounded-2xl bg-[#1B2028] border border-white/5 p-3.5">
+              <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-3.5">
                 <div className="flex items-center justify-between gap-1 mb-1">
-                  <span className="text-[#75CFFF] block font-mono font-bold uppercase tracking-wider text-[10px]">Pickup Station</span>
-                  {pLoc?.tag && <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">{pLoc.tag}</span>}
+                  <span className="text-[#1E3A8A] block font-mono font-bold uppercase tracking-wider text-[10px]">Pickup Station</span>
+                  {pLoc?.tag && <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">{pLoc.tag}</span>}
                 </div>
-                <p className="font-mono text-xs font-bold text-[#F5F7FA] mt-0.5 flex items-center gap-1.5">
-                  <Calendar size={13} className="text-[#75CFFF]" /> {startTime.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                <p className="font-mono text-xs font-bold text-[#0A142F] mt-0.5 flex items-center gap-1.5">
+                  <Calendar size={13} className="text-[#1E3A8A]" /> {startTime.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
                 </p>
-                <p className="text-[#C6CDD5] font-semibold mt-1 flex items-center gap-1.5">
-                  <MapPin size={12} className="text-[#75CFFF] shrink-0" /> {b.pickup}
+                <p className="text-slate-600 font-semibold mt-1 flex items-center gap-1.5">
+                  <MapPin size={12} className="text-[#1E3A8A] shrink-0" /> {b.pickup}
                 </p>
                 {pLoc?.address && (
-                  <p className="text-[#C6CDD5]/70 text-[11px] mt-0.5 truncate max-w-xs">{pLoc.address}</p>
+                  <p className="text-slate-500 text-[11px] mt-0.5 truncate max-w-xs">{pLoc.address}</p>
                 )}
               </div>
-              <div className="rounded-2xl bg-[#1B2028] border border-white/5 p-3.5">
+              <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-3.5">
                 <div className="flex items-center justify-between gap-1 mb-1">
-                  <span className="text-[#75CFFF] block font-mono font-bold uppercase tracking-wider text-[10px]">Return Station</span>
-                  {dLoc?.tag && <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">{dLoc.tag}</span>}
+                  <span className="text-[#1E3A8A] block font-mono font-bold uppercase tracking-wider text-[10px]">Return Station</span>
+                  {dLoc?.tag && <span className="text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">{dLoc.tag}</span>}
                 </div>
-                <p className="font-mono text-xs font-bold text-[#F5F7FA] mt-0.5 flex items-center gap-1.5">
-                  <Calendar size={13} className="text-[#75CFFF]" /> {endTime.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                <p className="font-mono text-xs font-bold text-[#0A142F] mt-0.5 flex items-center gap-1.5">
+                  <Calendar size={13} className="text-[#1E3A8A]" /> {endTime.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
                 </p>
-                <p className="text-[#C6CDD5] font-semibold mt-1 flex items-center gap-1.5">
-                  <MapPin size={12} className="text-[#75CFFF] shrink-0" /> {b.dropoff}
+                <p className="text-slate-600 font-semibold mt-1 flex items-center gap-1.5">
+                  <MapPin size={12} className="text-[#1E3A8A] shrink-0" /> {b.dropoff}
                 </p>
                 {dLoc?.address && (
-                  <p className="text-[#C6CDD5]/70 text-[11px] mt-0.5 truncate max-w-xs">{dLoc.address}</p>
+                  <p className="text-slate-500 text-[11px] mt-0.5 truncate max-w-xs">{dLoc.address}</p>
                 )}
               </div>
             </div>
           );
         })()}
 
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/5 pt-4">
-          <div className="text-xs text-[#C6CDD5]">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+          <div className="text-xs text-slate-500">
             {canCancel ? (
-              <span className="text-emerald-400 font-medium">Free cancellation eligible (&gt; 24h to pickup)</span>
+              <span className="text-emerald-600 font-medium">Free cancellation eligible (&gt; 24h to pickup)</span>
             ) : b.status === 'Confirmed' ? (
-              <span className="text-neutral-500">Cancellation closed (&lt; 24h to pickup)</span>
+              <span className="text-slate-400">Cancellation closed (&lt; 24h to pickup)</span>
             ) : b.status === 'Cancelled' ? (
-              <span className="text-rose-400 font-medium">Cancelled on {b.cancelledAt ? new Date(b.cancelledAt).toLocaleDateString('en-IN', { dateStyle: 'medium' }) : 'Prior to trip'}</span>
+              <span className="text-rose-600 font-medium">Cancelled on {b.cancelledAt ? new Date(b.cancelledAt).toLocaleDateString('en-IN', { dateStyle: 'medium' }) : 'Prior to trip'}</span>
             ) : (
-              <span className="text-blue-400 font-medium">Rental completed</span>
+              <span className="text-blue-600 font-medium">Rental completed</span>
             )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setSelectedDetailBooking(b)}
-              className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1 text-[#C6CDD5]"
+              className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1 text-slate-700"
             >
               <Eye size={14} /> Telemetry & Details
             </button>
 
             <button
               onClick={() => setSelectedReceiptRef(b.ref)}
-              className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1 text-[#C6CDD5]"
+              className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1 text-slate-700"
             >
               <FileText size={14} /> Tax Invoice
             </button>
@@ -409,13 +409,13 @@ export default function Dashboard() {
             <button
               onClick={() => handleDownloadPdf(b.ref)}
               disabled={downloadingPdfRef === b.ref}
-              className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-50"
+              className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1 border-emerald-600/30 text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
               title="Download official PDF invoice"
             >
               {downloadingPdfRef === b.ref ? (
-                <Loader2 size={14} className="animate-spin text-emerald-400" />
+                <Loader2 size={14} className="animate-spin text-emerald-600" />
               ) : (
-                <Download size={14} className="text-emerald-400" />
+                <Download size={14} className="text-emerald-600" />
               )}
               <span>{downloadingPdfRef === b.ref ? 'PDF...' : 'PDF Invoice'}</span>
             </button>
@@ -432,7 +432,7 @@ export default function Dashboard() {
             {canCancel && (
               <button
                 onClick={() => handleCancelBooking(b.ref, b.start)}
-                className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition"
+                className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-100 transition"
               >
                 Cancel Booking
               </button>
@@ -441,9 +441,9 @@ export default function Dashboard() {
             {b.status === 'Completed' && (
               <button
                 onClick={() => setReviewBooking(b)}
-                className="btn-dark text-xs px-3 py-1.5 flex items-center gap-1 border border-white/10"
+                className="btn-outline text-xs px-3 py-1.5 flex items-center gap-1 text-slate-700"
               >
-                <Star size={13} className="fill-amber-400 text-amber-400" /> Review Trip
+                <Star size={13} className="fill-amber-400 text-amber-500" /> Review Trip
               </button>
             )}
           </div>
@@ -453,20 +453,20 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="container-x py-10">
+    <div className="container-x py-10 text-[#0A142F]">
       {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="font-heading text-2xl sm:text-3xl font-black text-[#F5F7FA]">Pilot Command Center</h1>
+            <h1 className="font-heading text-2xl sm:text-3xl font-black text-[#0A142F]">Pilot Command Center</h1>
             {isAdmin && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#75CFFF]/10 border border-[#75CFFF]/30 px-3 py-1 font-mono text-xs font-bold text-[#75CFFF]">
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-900/15 px-3 py-1 font-mono text-xs font-bold text-[#1E3A8A]">
                 <Shield size={12} /> System Admin
               </span>
             )}
           </div>
-          <p className="mt-1 text-sm text-[#C6CDD5]">
-            Welcome, <span className="text-[#F5F7FA] font-bold">{user.fullName}</span> · {user.email}
+          <p className="mt-1 text-sm text-slate-600">
+            Welcome, <span className="text-[#0A142F] font-bold">{user.fullName}</span> · {user.email}
           </p>
         </div>
 
@@ -474,19 +474,19 @@ export default function Dashboard() {
           <button
             onClick={handleManualRefresh}
             disabled={isRefreshing}
-            className="btn-outline text-xs flex items-center gap-1.5 px-3 py-2 text-[#C6CDD5]"
+            className="btn-outline text-xs flex items-center gap-1.5 px-3 py-2 text-slate-700"
             title="Refresh bookings and notifications"
           >
-            <RefreshCw size={13} className={isRefreshing ? 'animate-spin text-[#75CFFF]' : ''} />
+            <RefreshCw size={13} className={isRefreshing ? 'animate-spin text-[#1E3A8A]' : ''} />
             Sync
           </button>
           {isAdmin && (
-            <Link to="/admin" className="btn-dark text-xs flex items-center gap-1.5 border border-white/10">
-              <Shield size={14} className="text-[#75CFFF]" /> Admin Portal
+            <Link to="/admin" className="btn-outline text-xs flex items-center gap-1.5 text-slate-700">
+              <Shield size={14} className="text-[#1E3A8A]" /> Admin Portal
             </Link>
           )}
           <Link to="/cars" className="btn-primary text-xs">Reserve Fleet</Link>
-          <button onClick={logout} className="btn-outline text-xs flex items-center gap-1.5 text-[#C6CDD5]">
+          <button onClick={logout} className="btn-outline text-xs flex items-center gap-1.5 text-slate-700">
             <LogOut size={14} /> Log out
           </button>
         </div>
@@ -494,49 +494,49 @@ export default function Dashboard() {
 
       {/* Stat Cards */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-lg">
-          <div className="flex items-center justify-between text-[#C6CDD5]">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#75CFFF]">Upcoming Trips</span>
-            <CalendarCheck size={18} className="text-[#75CFFF]" />
+        <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#1E3A8A]">Upcoming Trips</span>
+            <CalendarCheck size={18} className="text-[#1E3A8A]" />
           </div>
-          <p className="mt-3 font-mono text-3xl font-extrabold text-[#F5F7FA]">{stats.upcomingCount}</p>
-          <p className="mt-1 text-xs text-[#C6CDD5]">{stats.activeCount} currently on road</p>
+          <p className="mt-3 font-mono text-3xl font-extrabold text-[#0A142F]">{stats.upcomingCount}</p>
+          <p className="mt-1 text-xs text-slate-500">{stats.activeCount} currently on road</p>
         </div>
 
-        <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-lg">
-          <div className="flex items-center justify-between text-[#C6CDD5]">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-400">Total Reservations</span>
-            <Car size={18} className="text-emerald-400" />
+        <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-700">Total Reservations</span>
+            <Car size={18} className="text-emerald-700" />
           </div>
-          <p className="mt-3 font-mono text-3xl font-extrabold text-[#F5F7FA]">{stats.totalBookings}</p>
-          <p className="mt-1 text-xs text-[#C6CDD5]">{stats.completedCount} completed · {stats.cancelledCount} cancelled</p>
+          <p className="mt-3 font-mono text-3xl font-extrabold text-[#0A142F]">{stats.totalBookings}</p>
+          <p className="mt-1 text-xs text-slate-500">{stats.completedCount} completed · {stats.cancelledCount} cancelled</p>
         </div>
 
-        <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-lg">
-          <div className="flex items-center justify-between text-[#C6CDD5]">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-rose-400">Saved Wishlist</span>
-            <Heart size={18} className="text-rose-400" />
+        <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-rose-600">Saved Wishlist</span>
+            <Heart size={18} className="text-rose-600" />
           </div>
-          <p className="mt-3 font-mono text-3xl font-extrabold text-[#F5F7FA]">{stats.favoritesCount}</p>
-          <p className="mt-1 text-xs text-[#C6CDD5]">Favorite vehicles</p>
+          <p className="mt-3 font-mono text-3xl font-extrabold text-[#0A142F]">{stats.favoritesCount}</p>
+          <p className="mt-1 text-xs text-slate-500">Favorite vehicles</p>
         </div>
 
-        <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-lg">
-          <div className="flex items-center justify-between text-[#C6CDD5]">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#75CFFF]">Fleet Investment</span>
-            <IndianRupee size={18} className="text-[#75CFFF]" />
+        <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#1E3A8A]">Fleet Investment</span>
+            <IndianRupee size={18} className="text-[#1E3A8A]" />
           </div>
-          <p className="mt-3 font-mono text-3xl font-extrabold text-[#75CFFF]">{formatINR(stats.totalSpent)}</p>
+          <p className="mt-3 font-mono text-3xl font-extrabold text-[#0A142F]">{formatINR(stats.totalSpent)}</p>
           {stats.totalSavings > 0 ? (
-            <p className="mt-1 text-xs font-semibold text-emerald-400 font-mono">Saved {formatINR(stats.totalSavings)} with promo</p>
+            <p className="mt-1 text-xs font-semibold text-emerald-700 font-mono">Saved {formatINR(stats.totalSavings)} with promo</p>
           ) : (
-            <p className="mt-1 text-xs text-[#C6CDD5]">Verified transactions</p>
+            <p className="mt-1 text-xs text-slate-500">Verified transactions</p>
           )}
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="mt-8 flex flex-wrap gap-2 border-b border-white/10 pb-4">
+      <div className="mt-8 flex flex-wrap gap-2 border-b border-slate-200 pb-4">
         {[
           ['upcoming', `Upcoming Trips (${upcomingBookings.length})`],
           ['active', `Active Rentals (${activeRentals.length})`],
@@ -551,8 +551,8 @@ export default function Dashboard() {
             onClick={() => setTab(key)}
             className={`rounded-full px-4 py-2 font-mono text-xs font-semibold transition ${
               tab === key
-                ? 'bg-[#75CFFF] text-[#111318] shadow-md shadow-[#75CFFF]/15'
-                : 'bg-[#1B2028] text-[#C6CDD5] hover:bg-white/10 border border-white/5'
+                ? 'bg-[#0A142F] text-white shadow-sm font-bold'
+                : 'bg-white text-slate-600 hover:text-[#0A142F] border border-slate-200/80 hover:bg-slate-50'
             }`}
           >
             {label}
@@ -564,10 +564,10 @@ export default function Dashboard() {
       {tab === 'upcoming' && (
         <div className="mt-6 space-y-4">
           {upcomingBookings.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-white/15 py-16 text-center bg-[#161A22] p-8">
-              <CalendarCheck size={36} className="mx-auto text-neutral-500" />
-              <h2 className="mt-3 font-bold text-lg text-[#F5F7FA]">No upcoming trips scheduled</h2>
-              <p className="mt-1 text-sm text-[#C6CDD5]">Choose from next-generation verified vehicles and plan your highway escape.</p>
+            <div className="rounded-3xl border border-dashed border-slate-200 py-16 text-center bg-white p-8 shadow-sm">
+              <CalendarCheck size={36} className="mx-auto text-slate-400" />
+              <h2 className="mt-3 font-heading font-black text-lg text-[#0A142F]">No upcoming trips scheduled</h2>
+              <p className="mt-1 text-sm text-slate-500">Choose from next-generation verified vehicles and plan your highway escape.</p>
               <Link to="/cars" className="btn-primary mt-5 inline-flex items-center gap-1.5">
                 Explore Available Fleet <ArrowRight size={15} />
               </Link>
@@ -584,10 +584,10 @@ export default function Dashboard() {
       {tab === 'active' && (
         <div className="mt-6 space-y-4">
           {activeRentals.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-white/15 py-16 text-center bg-[#161A22] p-8">
-              <Car size={36} className="mx-auto text-neutral-500" />
-              <h2 className="mt-3 font-bold text-lg text-[#F5F7FA]">No active rentals on the road right now</h2>
-              <p className="mt-1 text-sm text-[#C6CDD5]">Vehicles currently picked up during their booked time period will show live telemetry here.</p>
+            <div className="rounded-3xl border border-dashed border-slate-200 py-16 text-center bg-white p-8 shadow-sm">
+              <Car size={36} className="mx-auto text-slate-400" />
+              <h2 className="mt-3 font-heading font-black text-lg text-[#0A142F]">No active rentals on the road right now</h2>
+              <p className="mt-1 text-sm text-slate-500">Vehicles currently picked up during their booked time period will show live telemetry here.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -601,10 +601,10 @@ export default function Dashboard() {
       {tab === 'completed' && (
         <div className="mt-6 space-y-4">
           {completedTrips.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-white/15 py-16 text-center bg-[#161A22] p-8">
-              <Clock size={36} className="mx-auto text-neutral-500" />
-              <h2 className="mt-3 font-bold text-lg text-[#F5F7FA]">No completed trips yet</h2>
-              <p className="mt-1 text-sm text-[#C6CDD5]">Your past completed journeys and rental histories will appear here.</p>
+            <div className="rounded-3xl border border-dashed border-slate-200 py-16 text-center bg-white p-8 shadow-sm">
+              <Clock size={36} className="mx-auto text-slate-400" />
+              <h2 className="mt-3 font-heading font-black text-lg text-[#0A142F]">No completed trips yet</h2>
+              <p className="mt-1 text-sm text-slate-500">Your past completed journeys and rental histories will appear here.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -618,10 +618,10 @@ export default function Dashboard() {
       {tab === 'cancelled' && (
         <div className="mt-6 space-y-4">
           {cancelledBookings.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-white/15 py-16 text-center bg-[#161A22] p-8">
-              <XCircle size={36} className="mx-auto text-neutral-500" />
-              <h2 className="mt-3 font-bold text-lg text-[#F5F7FA]">No cancelled reservations</h2>
-              <p className="mt-1 text-sm text-[#C6CDD5]">All scheduled bookings remain active or completed.</p>
+            <div className="rounded-3xl border border-dashed border-slate-200 py-16 text-center bg-white p-8 shadow-sm">
+              <XCircle size={36} className="mx-auto text-slate-400" />
+              <h2 className="mt-3 font-heading font-black text-lg text-[#0A142F]">No cancelled reservations</h2>
+              <p className="mt-1 text-sm text-slate-500">All scheduled bookings remain active or completed.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -635,10 +635,10 @@ export default function Dashboard() {
       {tab === 'favorites' && (
         <div className="mt-6">
           {favoriteCars.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-white/15 py-16 text-center bg-[#161A22] p-8">
-              <Heart size={36} className="mx-auto text-neutral-500" />
-              <h2 className="mt-3 font-bold text-lg text-[#F5F7FA]">No wishlist vehicles saved</h2>
-              <p className="mt-1 text-sm text-[#C6CDD5]">Click the heart icon on any car card to save it for immediate priority access.</p>
+            <div className="rounded-3xl border border-dashed border-slate-200 py-16 text-center bg-white p-8 shadow-sm">
+              <Heart size={36} className="mx-auto text-slate-400" />
+              <h2 className="mt-3 font-heading font-black text-lg text-[#0A142F]">No wishlist vehicles saved</h2>
+              <p className="mt-1 text-sm text-slate-500">Click the heart icon on any car card to save it for immediate priority access.</p>
               <Link to="/cars" className="btn-primary mt-5 inline-block">Explore Fleet</Link>
             </div>
           ) : (
@@ -653,10 +653,10 @@ export default function Dashboard() {
       {tab === 'notifications' && (
         <div className="mt-6 space-y-4">
           {notifications.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-white/15 py-16 text-center bg-[#161A22] p-8">
-              <Bell size={36} className="mx-auto text-neutral-500" />
-              <h2 className="mt-3 font-bold text-lg text-[#F5F7FA]">No alerts in inbox</h2>
-              <p className="mt-1 text-sm text-[#C6CDD5]">Trip updates, booking dispatch receipts, and policy notices will appear here.</p>
+            <div className="rounded-3xl border border-dashed border-slate-200 py-16 text-center bg-white p-8 shadow-sm">
+              <Bell size={36} className="mx-auto text-slate-400" />
+              <h2 className="mt-3 font-heading font-black text-lg text-[#0A142F]">No alerts in inbox</h2>
+              <p className="mt-1 text-sm text-slate-500">Trip updates, booking dispatch receipts, and policy notices will appear here.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -666,19 +666,19 @@ export default function Dashboard() {
                   onClick={() => !n.read && markNotifRead(n.id)}
                   className={`cursor-pointer rounded-2xl border p-4 transition ${
                     n.read
-                      ? 'border-white/5 bg-[#161A22]'
-                      : 'border-[#75CFFF]/40 bg-[#1B2028] shadow-md shadow-[#75CFFF]/5'
+                      ? 'border-slate-200/90 bg-white hover:border-slate-300'
+                      : 'border-blue-900/20 bg-blue-50/50 shadow-sm'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        {!n.read && <span className="h-2 w-2 rounded-full bg-[#75CFFF] animate-pulse" />}
-                        <h4 className="font-bold text-sm text-[#F5F7FA]">{n.title}</h4>
+                        {!n.read && <span className="h-2 w-2 rounded-full bg-[#1E3A8A] animate-pulse" />}
+                        <h4 className="font-bold text-sm text-[#0A142F]">{n.title}</h4>
                       </div>
-                      <p className="mt-1 text-xs text-[#C6CDD5]">{n.message}</p>
+                      <p className="mt-1 text-xs text-slate-600">{n.message}</p>
                     </div>
-                    <span className="font-mono text-[10px] text-neutral-400 whitespace-nowrap">
+                    <span className="font-mono text-[10px] text-slate-400 whitespace-nowrap">
                       {new Date(n.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
                     </span>
                   </div>
@@ -692,58 +692,58 @@ export default function Dashboard() {
       {/* TAB 7: PROFILE SETTINGS */}
       {tab === 'profile' && (
         <div className="mt-6">
-          <form onSubmit={handleProfileSave} className="max-w-xl rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-6 sm:p-8 shadow-xl space-y-5">
+          <form onSubmit={handleProfileSave} className="max-w-xl rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-sm space-y-5">
             <div>
-              <h2 className="text-xl font-black text-[#F5F7FA]">Driver Profile & Legal Identity</h2>
-              <p className="text-xs text-[#C6CDD5] mt-1">
+              <h2 className="text-xl font-heading font-black text-[#0A142F]">Driver Profile & Legal Identity</h2>
+              <p className="text-xs text-slate-500 mt-1">
                 Maintain accurate government licence details to enable immediate contactless car release.
               </p>
             </div>
 
             <div>
-              <label htmlFor="prof-name" className="mb-1 block font-mono text-xs font-semibold text-[#75CFFF]">Full Legal Name</label>
+              <label htmlFor="prof-name" className="mb-1 block font-mono text-xs font-semibold text-[#0A142F]">Full Legal Name</label>
               <input
                 id="prof-name"
-                className={`field ${profileErrors.fullName ? 'border-rose-500 bg-rose-500/10' : ''}`}
+                className={`field ${profileErrors.fullName ? 'border-rose-500 bg-rose-50' : ''}`}
                 value={profile.fullName}
                 onChange={(e) => setProfile((p) => ({ ...p, fullName: e.target.value }))}
               />
-              {profileErrors.fullName && <p className="text-xs text-rose-400 mt-1 font-medium">{profileErrors.fullName}</p>}
+              {profileErrors.fullName && <p className="text-xs text-rose-500 mt-1 font-medium">{profileErrors.fullName}</p>}
             </div>
 
             <div>
-              <label htmlFor="prof-email" className="mb-1 block font-mono text-xs font-semibold text-[#75CFFF]">Email Address (Immutable Security Key)</label>
-              <input id="prof-email" className="field opacity-60 cursor-not-allowed" value={user.email} disabled />
-              <p className="text-[11px] text-neutral-400 mt-1">Bound to your cryptographic session tokens.</p>
+              <label htmlFor="prof-email" className="mb-1 block font-mono text-xs font-semibold text-[#0A142F]">Email Address (Immutable Security Key)</label>
+              <input id="prof-email" className="field opacity-60 cursor-not-allowed bg-slate-50" value={user.email} disabled />
+              <p className="text-[11px] text-slate-400 mt-1">Bound to your cryptographic session tokens.</p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="prof-phone" className="mb-1 block font-mono text-xs font-semibold text-[#75CFFF]">Contact Mobile</label>
+                <label htmlFor="prof-phone" className="mb-1 block font-mono text-xs font-semibold text-[#0A142F]">Contact Mobile</label>
                 <input
                   id="prof-phone"
-                  className={`field ${profileErrors.phone ? 'border-rose-500 bg-rose-500/10' : ''}`}
+                  className={`field ${profileErrors.phone ? 'border-rose-500 bg-rose-50' : ''}`}
                   value={profile.phone}
                   onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))}
                   placeholder="+91 98765 43210"
                 />
-                {profileErrors.phone && <p className="text-xs text-rose-400 mt-1 font-medium">{profileErrors.phone}</p>}
+                {profileErrors.phone && <p className="text-xs text-rose-500 mt-1 font-medium">{profileErrors.phone}</p>}
               </div>
               <div>
-                <label htmlFor="prof-lic" className="mb-1 block font-mono text-xs font-semibold text-[#75CFFF]">Indian Driving Licence</label>
+                <label htmlFor="prof-lic" className="mb-1 block font-mono text-xs font-semibold text-[#0A142F]">Indian Driving Licence</label>
                 <input
                   id="prof-lic"
-                  className={`field uppercase font-mono ${profileErrors.license ? 'border-rose-500 bg-rose-500/10' : ''}`}
+                  className={`field uppercase font-mono ${profileErrors.license ? 'border-rose-500 bg-rose-50' : ''}`}
                   value={profile.license}
                   onChange={(e) => setProfile((p) => ({ ...p, license: e.target.value }))}
                   placeholder="TN37 20190012345"
                 />
-                {profileErrors.license && <p className="text-xs text-rose-400 mt-1 font-medium">{profileErrors.license}</p>}
+                {profileErrors.license && <p className="text-xs text-rose-500 mt-1 font-medium">{profileErrors.license}</p>}
               </div>
             </div>
 
-            <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-              <span className="font-mono text-[11px] text-neutral-400">Synced to secure MySQL storage</span>
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span className="font-mono text-[11px] text-slate-400">Synced to secure MySQL storage</span>
               <button type="submit" disabled={savingProfile} className="btn-primary text-xs px-5 py-2.5">
                 {savingProfile ? 'Saving...' : 'Save Profile Changes'}
               </button>
@@ -765,16 +765,16 @@ export default function Dashboard() {
 
       {/* REVIEW SUBMISSION MODAL */}
       {reviewBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-lg rounded-3xl bg-[#161A22] border border-[rgba(198,205,213,0.15)] text-[#F5F7FA] p-6 sm:p-8 shadow-2xl">
-            <h3 className="text-lg font-black text-[#F5F7FA]">Rate & Review Vehicle Performance</h3>
-            <p className="text-xs text-[#C6CDD5] mt-1">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-lg rounded-3xl bg-white border border-slate-200/90 text-[#0A142F] p-6 sm:p-8 shadow-2xl">
+            <h3 className="text-lg font-heading font-black text-[#0A142F]">Rate & Review Vehicle Performance</h3>
+            <p className="text-xs text-slate-500 mt-1">
               Vehicle: {reviewBooking.car?.brand} {reviewBooking.car?.model} (Ref: {reviewBooking.ref})
             </p>
 
             <form onSubmit={handleSubmitReview} className="mt-5 space-y-4">
               <div>
-                <label className="block font-mono text-xs font-bold text-[#75CFFF] mb-1">Rating</label>
+                <label className="block font-mono text-xs font-bold text-[#0A142F] mb-1">Rating</label>
                 <div className="flex gap-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -783,15 +783,15 @@ export default function Dashboard() {
                       onClick={() => setRatingVal(star)}
                       className="p-1 text-amber-400 hover:scale-110 transition"
                     >
-                      <Star size={24} className={star <= ratingVal ? 'fill-amber-400' : 'text-neutral-600'} />
+                      <Star size={24} className={star <= ratingVal ? 'fill-amber-400' : 'text-slate-300'} />
                     </button>
                   ))}
-                  <span className="ml-2 self-center font-mono text-sm font-bold text-[#F5F7FA]">{ratingVal} / 5 Stars</span>
+                  <span className="ml-2 self-center font-mono text-sm font-bold text-[#0A142F]">{ratingVal} / 5 Stars</span>
                 </div>
               </div>
 
               <div>
-                <label className="block font-mono text-xs font-bold text-[#75CFFF] mb-1">Review Headline (optional)</label>
+                <label className="block font-mono text-xs font-bold text-[#0A142F] mb-1">Review Headline (optional)</label>
                 <input
                   type="text"
                   placeholder="e.g. Exceptional highway balance and spotless cabin"
@@ -802,7 +802,7 @@ export default function Dashboard() {
               </div>
 
               <div>
-                <label className="block font-mono text-xs font-bold text-[#75CFFF] mb-1">Detailed Driver Log</label>
+                <label className="block font-mono text-xs font-bold text-[#0A142F] mb-1">Detailed Driver Log</label>
                 <textarea
                   required
                   rows={4}
@@ -813,11 +813,11 @@ export default function Dashboard() {
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-white/10">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setReviewBooking(null)}
-                  className="btn-outline text-xs text-[#C6CDD5]"
+                  className="btn-outline text-xs text-slate-700"
                 >
                   Cancel
                 </button>

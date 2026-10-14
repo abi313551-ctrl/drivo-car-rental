@@ -245,17 +245,17 @@ export default function Compare() {
   // ==========================================
   if (compareCars.length === 0) {
     return (
-      <div className="container-x py-16 text-[#F5F7FA]">
+      <div className="container-x py-16 text-[#0A142F]">
         <div className="mx-auto max-w-2xl text-center">
-          <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-2xl bg-[#1B2028] text-[#75CFFF] border border-[rgba(198,205,213,0.18)] shadow-2xl">
+          <div className="mx-auto mb-6 grid h-20 w-20 place-items-center rounded-2xl bg-white text-[#1E3A8A] border border-slate-200 shadow-sm">
             <ArrowLeftRight size={36} />
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#75CFFF]/30 bg-[#75CFFF]/10 px-3 py-1 text-[11px] font-mono font-bold tracking-wider text-[#75CFFF] uppercase mb-3">
-            <Sparkles size={11} className="fill-[#75CFFF]" /> Fleet Comparison Engine
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-900/15 bg-blue-50/80 px-3.5 py-1 text-[11px] font-mono font-bold tracking-wider text-[#1E3A8A] uppercase mb-3">
+            <Sparkles size={11} className="fill-[#1E3A8A]" /> Fleet Comparison Engine
           </span>
-          <h1 className="heading text-3xl sm:text-4xl">No Vehicles Selected for Comparison</h1>
-          <p className="mt-4 text-[#C6CDD5]/80 leading-relaxed text-xs sm:text-sm">
-            Select up to <strong className="text-[#F5F7FA]">3 vehicles</strong> from our luxury and performance fleet to compare rental tariffs,
+          <h1 className="font-heading text-3xl sm:text-4xl font-black text-[#0A142F]">No Vehicles Selected for Comparison</h1>
+          <p className="mt-4 text-slate-600 leading-relaxed text-xs sm:text-sm">
+            Select up to <strong className="text-[#0A142F]">3 vehicles</strong> from our luxury and performance fleet to compare rental tariffs,
             powertrains, transmission, seating capacity, amenities, and live dispatch availability side-by-side.
           </p>
 
@@ -266,38 +266,38 @@ export default function Compare() {
           </div>
 
           {/* Quick preset recommendations */}
-          <div className="mt-12 rounded-2xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-6 sm:p-8 shadow-2xl text-left">
+          <div className="mt-12 rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-sm text-left">
             <div className="flex items-center gap-2 mb-3">
-              <Sparkles size={16} className="text-[#75CFFF]" />
-              <h2 className="font-display text-sm font-bold uppercase tracking-wider text-[#F5F7FA]">Popular Comparison Presets (1-Click)</h2>
+              <Sparkles size={16} className="text-[#1E3A8A]" />
+              <h2 className="font-heading text-sm font-bold uppercase tracking-wider text-[#0A142F]">Popular Comparison Presets (1-Click)</h2>
             </div>
-            <p className="text-xs text-[#C6CDD5]/60 mb-5">
+            <p className="text-xs text-slate-500 mb-5">
               Instantly populate the comparison dashboard with verified models from our primary vehicle classes:
             </p>
             <div className="grid gap-3 sm:grid-cols-3">
               <button
                 type="button"
                 onClick={() => handlePresetCompare('SUV')}
-                className="flex flex-col items-start p-4 rounded-xl border border-[rgba(198,205,213,0.1)] bg-[#1B2028] hover:border-[#75CFFF]/50 hover:bg-[#252C37] transition text-left"
+                className="flex flex-col items-start p-4 rounded-2xl border border-slate-200 bg-slate-50 hover:border-blue-300 hover:bg-blue-50/30 transition text-left"
               >
-                <span className="font-display font-bold text-xs text-[#F5F7FA]">Luxury SUVs</span>
-                <span className="text-[11px] text-[#C6CDD5]/60 mt-1">Ground clearance & executive travel</span>
+                <span className="font-bold text-xs text-[#0A142F]">Luxury SUVs</span>
+                <span className="text-[11px] text-slate-500 mt-1">Ground clearance & executive travel</span>
               </button>
               <button
                 type="button"
                 onClick={() => handlePresetCompare('Sedan')}
-                className="flex flex-col items-start p-4 rounded-xl border border-[rgba(198,205,213,0.1)] bg-[#1B2028] hover:border-[#75CFFF]/50 hover:bg-[#252C37] transition text-left"
+                className="flex flex-col items-start p-4 rounded-2xl border border-slate-200 bg-slate-50 hover:border-blue-300 hover:bg-blue-50/30 transition text-left"
               >
-                <span className="font-display font-bold text-xs text-[#F5F7FA]">Premium Sedans</span>
-                <span className="text-[11px] text-[#C6CDD5]/60 mt-1">High-speed highway comfort</span>
+                <span className="font-bold text-xs text-[#0A142F]">Premium Sedans</span>
+                <span className="text-[11px] text-slate-500 mt-1">High-speed highway comfort</span>
               </button>
               <button
                 type="button"
                 onClick={() => handlePresetCompare('Electric Vehicles')}
-                className="flex flex-col items-start p-4 rounded-xl border border-[rgba(198,205,213,0.1)] bg-[#1B2028] hover:border-[#75CFFF]/50 hover:bg-[#252C37] transition text-left"
+                className="flex flex-col items-start p-4 rounded-2xl border border-slate-200 bg-slate-50 hover:border-blue-300 hover:bg-blue-50/30 transition text-left"
               >
-                <span className="font-display font-bold text-xs text-[#F5F7FA]">Electrified Fleet</span>
-                <span className="text-[11px] text-[#C6CDD5]/60 mt-1">Instant torque & intelligent tech</span>
+                <span className="font-bold text-xs text-[#0A142F]">Electrified Fleet</span>
+                <span className="text-[11px] text-slate-500 mt-1">Instant torque & intelligent tech</span>
               </button>
             </div>
           </div>
@@ -310,16 +310,16 @@ export default function Compare() {
   // ACTIVE COMPARISON MATRIX
   // ==========================================
   return (
-    <div className="container-x py-10 text-[#F5F7FA]">
+    <div className="container-x py-10 text-[#0A142F]">
       {/* Top Header & Actions Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#75CFFF] mb-1.5">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#1E3A8A] mb-1.5">
             <ArrowLeftRight size={14} />
             <span>Side-by-Side Analysis</span>
           </div>
-          <h1 className="heading text-2xl sm:text-3xl">Vehicle Comparison ({compareCars.length}/3)</h1>
-          <p className="text-xs sm:text-sm text-[#C6CDD5]/70 mt-1">
+          <h1 className="font-heading text-2xl sm:text-3xl font-black text-[#0A142F]">Vehicle Comparison ({compareCars.length}/3)</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Analyze specifications, rental tariffs, and real-time database availability.
           </p>
         </div>
@@ -331,12 +331,12 @@ export default function Compare() {
             onClick={() => setHighlightDiffs((v) => !v)}
             className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-mono font-bold border transition ${
               highlightDiffs
-                ? 'bg-[#75CFFF]/15 text-[#75CFFF] border-[#75CFFF]/40 shadow-sm'
-                : 'bg-[#1B2028] text-[#C6CDD5]/70 border-[rgba(198,205,213,0.14)] hover:text-[#F5F7FA]'
+                ? 'bg-blue-50 text-[#1E3A8A] border-blue-900/20 shadow-sm'
+                : 'bg-white text-slate-600 border-slate-200 hover:text-[#0A142F]'
             }`}
           >
             <span
-              className={`h-2 w-2 rounded-full ${highlightDiffs ? 'bg-[#75CFFF] animate-ping' : 'bg-[#C6CDD5]/40'}`}
+              className={`h-2 w-2 rounded-full ${highlightDiffs ? 'bg-[#1E3A8A] animate-ping' : 'bg-slate-300'}`}
             />
             {highlightDiffs ? 'Highlight Differences: ON' : 'Highlight Differences: OFF'}
           </button>
@@ -346,7 +346,7 @@ export default function Compare() {
             <button
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="btn-outline text-xs py-2 px-3.5 flex items-center gap-1.5"
+              className="btn-outline text-xs py-2 px-3.5 flex items-center gap-1.5 text-slate-700"
             >
               <Plus size={14} /> Add Vehicle ({3 - compareCars.length} slot left)
             </button>
@@ -356,7 +356,7 @@ export default function Compare() {
           <button
             type="button"
             onClick={clearCompare}
-            className="btn-outline text-xs py-2 px-3 text-red-400 hover:bg-red-500/10 hover:border-red-500/30 flex items-center gap-1.5"
+            className="btn-outline text-xs py-2 px-3 text-rose-600 hover:bg-rose-50 hover:border-rose-200 flex items-center gap-1.5"
             title="Clear all compared cars"
           >
             <Trash2 size={14} /> Clear All
@@ -365,14 +365,14 @@ export default function Compare() {
       </div>
 
       {/* Date & Availability Filter Banner */}
-      <section className="mb-8 rounded-2xl border border-[rgba(198,205,213,0.12)] bg-[#1B2028] p-5 sm:p-6 shadow-2xl">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 border-b border-[rgba(198,205,213,0.08)] pb-3">
-          <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#F5F7FA]">
-            <Calendar size={15} className="text-[#75CFFF]" />
+      <section className="mb-8 rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#0A142F]">
+            <Calendar size={15} className="text-[#1E3A8A]" />
             <span>Rental Schedule & Availability Verification</span>
           </div>
           {checkingAvailability && (
-            <span className="text-xs font-mono font-medium text-[#75CFFF] animate-pulse flex items-center gap-1">
+            <span className="text-xs font-mono font-medium text-[#1E3A8A] animate-pulse flex items-center gap-1">
               Checking MySQL database availability...
             </span>
           )}
@@ -380,7 +380,7 @@ export default function Compare() {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <label htmlFor="cmp-start" className="mb-1 block text-xs font-semibold text-neutral-600">
+            <label htmlFor="cmp-start" className="mb-1 block text-xs font-bold text-[#0A142F]">
               Pickup Date & Time
             </label>
             <input
@@ -392,14 +392,14 @@ export default function Compare() {
               onChange={(e) => setRange((r) => ({ ...r, start: e.target.value }))}
             />
             {dateErrors.start && (
-              <p className="mt-1 text-xs text-red-600 font-medium" role="alert">
+              <p className="mt-1 text-xs text-rose-500 font-medium" role="alert">
                 {dateErrors.start}
               </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="cmp-end" className="mb-1 block text-xs font-semibold text-neutral-600">
+            <label htmlFor="cmp-end" className="mb-1 block text-xs font-bold text-[#0A142F]">
               Return Date & Time
             </label>
             <input
@@ -411,14 +411,14 @@ export default function Compare() {
               onChange={(e) => setRange((r) => ({ ...r, end: e.target.value }))}
             />
             {dateErrors.end && (
-              <p className="mt-1 text-xs text-red-600 font-medium" role="alert">
+              <p className="mt-1 text-xs text-rose-500 font-medium" role="alert">
                 {dateErrors.end}
               </p>
             )}
           </div>
 
           <div className="flex flex-col justify-end">
-            <p className="text-xs text-neutral-500 leading-relaxed">
+            <p className="text-xs text-slate-500 leading-relaxed">
               Availability is verified live against existing confirmed and active bookings in the MySQL database.
             </p>
           </div>
@@ -426,14 +426,14 @@ export default function Compare() {
       </section>
 
       {/* COMPARISON MATRIX CONTAINER */}
-      <div className="overflow-x-auto rounded-2xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] shadow-2xl">
+      <div className="overflow-x-auto rounded-3xl border border-slate-200/90 bg-white shadow-sm">
         <table className="w-full min-w-[700px] border-collapse text-left">
           {/* Table Header: Car Cards */}
           <thead>
-            <tr className="border-b border-[rgba(198,205,213,0.12)] bg-[#1B2028]">
-              <th className="p-5 w-1/4 align-top text-xs font-mono font-bold uppercase tracking-wider text-[#C6CDD5]/60">
+            <tr className="border-b border-slate-200 bg-slate-50/80">
+              <th className="p-5 w-1/4 align-top text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
                 <div className="sticky top-20">
-                  <span className="block text-[#F5F7FA] font-display font-bold text-base mb-1">Specifications</span>
+                  <span className="block text-[#0A142F] font-heading font-black text-base mb-1">Specifications</span>
                   <span>Vehicle Architecture</span>
                 </div>
               </th>
@@ -451,44 +451,44 @@ export default function Compare() {
                 }).toString();
 
                 return (
-                  <th key={car.id} className="p-5 w-1/4 align-top border-l border-[rgba(198,205,213,0.1)]">
+                  <th key={car.id} className="p-5 w-1/4 align-top border-l border-slate-200">
                     <div className="relative flex flex-col h-full">
                       {/* Remove button */}
                       <button
                         type="button"
                         onClick={() => removeFromCompare(car.id)}
                         aria-label={`Remove ${car.brand} ${car.model} from comparison`}
-                        className="absolute -top-1 -right-1 z-10 grid h-7 w-7 place-items-center rounded-lg bg-[#111318] border border-[rgba(198,205,213,0.15)] text-[#C6CDD5] hover:text-red-400 hover:border-red-500/40 shadow transition"
+                        className="absolute -top-1 -right-1 z-10 grid h-7 w-7 place-items-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 shadow-sm transition"
                       >
                         <X size={14} />
                       </button>
 
                       {/* Car Image */}
-                      <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-[#111318] mb-3">
+                      <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-slate-100 border border-slate-200/80 mb-3">
                         <CarImage
                           src={carImg}
                           alt={`${car.brand} ${car.model}`}
                           className="h-full w-full object-cover"
                         />
-                        <span className="absolute bottom-2 left-2 rounded-md bg-[#111318]/80 border border-white/10 px-2 py-0.5 text-[10px] font-mono font-semibold text-[#75CFFF] backdrop-blur-md">
+                        <span className="absolute bottom-2 left-2 rounded-md bg-white/90 border border-slate-200/80 px-2 py-0.5 text-[10px] font-mono font-bold text-[#1E3A8A] backdrop-blur-sm shadow-xs">
                           {car.category}
                         </span>
                       </div>
 
                       {/* Title & Location */}
-                      <h3 className="font-display font-bold text-base leading-tight text-[#F5F7FA]">
+                      <h3 className="font-heading font-black text-base leading-tight text-[#0A142F]">
                         {car.brand} {car.model}
                       </h3>
-                      <p className="text-xs text-[#C6CDD5]/60 mt-0.5 font-mono">
+                      <p className="text-xs text-slate-500 mt-0.5 font-mono">
                         {car.year} · {car.location}
                       </p>
 
                       {/* Daily Rate */}
                       <div className="mt-2.5 flex items-baseline gap-1">
-                        <span className="text-lg font-mono font-extrabold text-[#F5F7FA]">{formatINR(car.pricePerDay)}</span>
-                        <span className="text-[11px] text-[#C6CDD5]/60 font-sans">/ day</span>
+                        <span className="text-lg font-mono font-extrabold text-[#0A142F]">{formatINR(car.pricePerDay)}</span>
+                        <span className="text-[11px] text-slate-500 font-sans">/ day</span>
                         {bestPriceId === car.id && (
-                          <span className="ml-auto inline-flex items-center gap-1 rounded-md bg-[#75CFFF]/15 border border-[#75CFFF]/30 px-2 py-0.5 text-[9px] font-mono font-bold text-[#75CFFF]">
+                          <span className="ml-auto inline-flex items-center gap-1 rounded-md bg-blue-50 border border-blue-900/15 px-2 py-0.5 text-[9px] font-mono font-bold text-[#1E3A8A]">
                             Best Value
                           </span>
                         )}
@@ -497,16 +497,16 @@ export default function Compare() {
                       {/* Live Availability Badge */}
                       <div className="mt-3">
                         {!car.available ? (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-neutral-800 px-2.5 py-1 text-[11px] font-semibold text-neutral-300">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600 border border-slate-200">
                             Fleet Unavailable
                           </span>
                         ) : isAvail ? (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-[#75CFFF]/10 px-2.5 py-1 text-[11px] font-semibold text-[#75CFFF] border border-[#75CFFF]/25">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
                             <Check size={13} /> Available for Dates
                           </span>
                         ) : (
                           <span
-                            className="inline-flex items-center gap-1 rounded-md bg-red-950/70 px-2.5 py-1 text-[11px] font-semibold text-red-300 border border-red-500/30"
+                            className="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2.5 py-1 text-[11px] font-semibold text-rose-700 border border-rose-200"
                             title={availInfo?.reason || 'Booked for these dates'}
                           >
                             <AlertTriangle size={13} /> Booked for Dates
@@ -525,7 +525,7 @@ export default function Compare() {
                           </Link>
                         ) : (
                           <span
-                            className="btn-dark py-2 text-center text-xs font-bold opacity-50 cursor-not-allowed"
+                            className="btn-outline py-2 text-center text-xs font-bold opacity-50 cursor-not-allowed text-slate-400 border-slate-200"
                             title="Unavailable for selected dates"
                           >
                             Unavailable
@@ -533,7 +533,7 @@ export default function Compare() {
                         )}
                         <Link
                           to={`/cars/${car.id}?start=${encodeURIComponent(range.start)}&end=${encodeURIComponent(range.end)}`}
-                          className="btn-outline py-2 text-center text-xs"
+                          className="btn-outline py-2 text-center text-xs text-slate-700"
                         >
                           Details
                         </Link>
@@ -545,16 +545,16 @@ export default function Compare() {
 
               {/* Empty placeholder slot up to 3 */}
               {Array.from({ length: 3 - compareCars.length }).map((_, idx) => (
-                <th key={`empty-col-${idx}`} className="p-5 w-1/4 align-top border-l border-[rgba(198,205,213,0.1)]">
+                <th key={`empty-col-${idx}`} className="p-5 w-1/4 align-top border-l border-slate-200">
                   <div
                     onClick={() => setShowAddModal(true)}
-                    className="flex flex-col items-center justify-center min-h-[300px] rounded-xl border-2 border-dashed border-[rgba(198,205,213,0.15)] bg-[#111318]/50 p-6 text-center hover:border-[#75CFFF]/40 hover:bg-[#111318] cursor-pointer transition"
+                    className="flex flex-col items-center justify-center min-h-[300px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/60 p-6 text-center hover:border-blue-300 hover:bg-blue-50/20 cursor-pointer transition"
                   >
-                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#1B2028] border border-[rgba(198,205,213,0.14)] text-[#75CFFF] mb-3">
+                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-white border border-slate-200 text-[#1E3A8A] mb-3 shadow-xs">
                       <Plus size={20} />
                     </div>
-                    <span className="font-display font-bold text-xs uppercase tracking-wider text-[#F5F7FA]">Add Vehicle</span>
-                    <span className="text-[11px] font-mono text-[#C6CDD5]/50 mt-1 max-w-[140px]">
+                    <span className="font-heading font-bold text-xs uppercase tracking-wider text-[#0A142F]">Add Vehicle</span>
+                    <span className="text-[11px] font-mono text-slate-400 mt-1 max-w-[140px]">
                       Compare with another fleet model
                     </span>
                   </div>
@@ -885,38 +885,38 @@ export default function Compare() {
 
       {/* QUICK ADD MODAL */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-entrance-1">
-          <div className="w-full max-w-xl max-h-[85vh] flex flex-col rounded-2xl bg-[#1B2028] shadow-2xl border border-[rgba(198,205,213,0.18)] overflow-hidden text-[#F5F7FA]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-xl max-h-[85vh] flex flex-col rounded-3xl bg-white shadow-2xl border border-slate-200/90 overflow-hidden text-[#0A142F]">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[rgba(198,205,213,0.1)] p-5">
+            <div className="flex items-center justify-between border-b border-slate-100 p-5">
               <div>
-                <h2 className="font-display text-base font-bold text-[#F5F7FA]">Add Vehicle to Comparison</h2>
-                <p className="text-[11px] font-mono text-[#C6CDD5]/60 mt-0.5">
+                <h2 className="font-heading text-base font-black text-[#0A142F]">Add Vehicle to Comparison</h2>
+                <p className="text-[11px] font-mono text-slate-500 mt-0.5">
                   Select a car from certified inventory ({3 - compareCars.length} slot available)
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="grid h-8 w-8 place-items-center rounded-lg text-[#C6CDD5] hover:bg-white/10 hover:text-white"
+                className="grid h-8 w-8 place-items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Search & Category Filter */}
-            <div className="border-b border-[rgba(198,205,213,0.08)] p-4 bg-[#161A22] flex flex-col sm:flex-row gap-2.5">
+            <div className="border-b border-slate-100 p-4 bg-slate-50 flex flex-col sm:flex-row gap-2.5">
               <input
                 type="text"
                 placeholder="Search by brand or model..."
                 value={modalSearch}
                 onChange={(e) => setModalSearch(e.target.value)}
-                className="field text-xs flex-1 bg-[#111318]"
+                className="field text-xs flex-1 bg-white"
               />
               <select
                 value={modalCategory}
                 onChange={(e) => setModalCategory(e.target.value)}
-                className="field text-xs sm:w-44 bg-[#111318]"
+                className="field text-xs sm:w-44 bg-white"
               >
                 <option value="">All Categories</option>
                 {categories.map((cat) => (
@@ -930,7 +930,7 @@ export default function Compare() {
             {/* Car List */}
             <div className="overflow-y-auto p-4 space-y-2.5 flex-1">
               {availableCarsToAdd.length === 0 ? (
-                <div className="py-12 text-center text-[#C6CDD5]/50">
+                <div className="py-12 text-center text-slate-400">
                   <p className="font-mono text-xs">No matching vehicles found in inventory.</p>
                 </div>
               ) : (
@@ -939,17 +939,17 @@ export default function Compare() {
                   return (
                     <div
                       key={car.id}
-                      className="flex items-center justify-between gap-3 p-3 rounded-xl border border-[rgba(198,205,213,0.1)] bg-[#161A22] hover:border-[#75CFFF]/40 transition"
+                      className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:border-slate-300 transition"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="h-12 w-16 overflow-hidden rounded-lg bg-[#111318] shrink-0">
+                        <div className="h-12 w-16 overflow-hidden rounded-xl bg-slate-100 shrink-0 border border-slate-200/80">
                           <CarImage src={carImg} alt={car.model} className="h-full w-full object-cover" />
                         </div>
                         <div>
-                          <h4 className="font-display font-bold text-xs text-[#F5F7FA]">
+                          <h4 className="font-heading font-black text-xs text-[#0A142F]">
                             {car.brand} {car.model}
                           </h4>
-                          <p className="text-[11px] text-[#C6CDD5]/60 mt-0.5 font-mono">
+                          <p className="text-[11px] text-slate-500 mt-0.5 font-mono">
                             {car.category} · {car.transmission} · {car.fuel} · {car.seats} seats
                           </p>
                         </div>
@@ -957,8 +957,8 @@ export default function Compare() {
 
                       <div className="flex items-center gap-3 shrink-0">
                         <div className="text-right">
-                          <span className="font-mono font-bold text-xs text-[#F5F7FA]">{formatINR(car.pricePerDay)}</span>
-                          <span className="text-[10px] text-[#C6CDD5]/50 block">/ day</span>
+                          <span className="font-mono font-bold text-xs text-[#0A142F]">{formatINR(car.pricePerDay)}</span>
+                          <span className="text-[10px] text-slate-400 block">/ day</span>
                         </div>
                         <button
                           type="button"
@@ -980,11 +980,11 @@ export default function Compare() {
             </div>
 
             {/* Modal Footer */}
-            <div className="border-t border-[rgba(198,205,213,0.08)] p-4 bg-[#161A22] text-right">
+            <div className="border-t border-slate-100 p-4 bg-white text-right">
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="btn-outline text-xs py-2 px-4 text-[#C6CDD5]"
+                className="btn-outline text-xs py-2 px-4 text-slate-700"
               >
                 Close
               </button>

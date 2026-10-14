@@ -5,13 +5,13 @@ import { faqs as seedFaqs, locations } from '../data/homeContent.js';
 
 export function About() {
   return (
-    <div className="container-x py-12 space-y-16">
+    <div className="container-x py-12 space-y-16 text-[#0A142F]">
       <section className="max-w-3xl">
-        <span className="font-mono text-xs uppercase tracking-widest text-[#75CFFF]">About Drivo</span>
-        <h1 className="font-heading text-3xl sm:text-4xl font-black text-[#F5F7FA] mt-2">
+        <span className="font-mono text-xs uppercase tracking-widest text-[#1E3A8A] font-bold">About Drivo</span>
+        <h1 className="font-heading text-3xl sm:text-4xl font-black text-[#0A142F] mt-2">
           Next-Generation Autonomous & Self-Drive Luxury Mobility
         </h1>
-        <p className="mt-4 text-base sm:text-lg leading-relaxed text-[#C6CDD5]">
+        <p className="mt-4 text-base sm:text-lg leading-relaxed text-slate-600">
           Drivo bridges the gap between precision digital engineering and premium automotive luxury across eight key hubs in India. Every vehicle in our catalogue is instrumented for safety, transparent pricing, and instant contactless dispatch.
         </p>
       </section>
@@ -23,20 +23,20 @@ export function About() {
           { icon: Award, title: 'Cryptographic Transparency', text: '100% upfront pricing: verified daily rate, 18% GST, and refundable security hold.' },
           { icon: Users, title: '24/7 Digital Concierge', text: 'Immediate roadside support and flight-synchronized vehicle handovers.' },
         ].map(({ icon: Icon, title, text }) => (
-          <div key={title} className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-6 shadow-xl transition hover:border-[#75CFFF]/40">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#75CFFF]/10 border border-[#75CFFF]/25 text-[#75CFFF]">
+          <div key={title} className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm transition hover:border-slate-300">
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-50 border border-blue-900/10 text-[#1E3A8A]">
               <Icon size={22} />
             </span>
-            <h2 className="mt-4 font-heading font-bold text-lg text-[#F5F7FA]">{title}</h2>
-            <p className="mt-1 text-xs text-[#C6CDD5] leading-relaxed">{text}</p>
+            <h2 className="mt-4 font-heading font-bold text-lg text-[#0A142F]">{title}</h2>
+            <p className="mt-1 text-xs text-slate-600 leading-relaxed">{text}</p>
           </div>
         ))}
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-[#161A22] p-8 sm:p-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center relative overflow-hidden">
+      <section className="rounded-3xl border border-slate-200/90 bg-white p-8 sm:p-12 shadow-sm flex flex-col items-start justify-between gap-6 md:flex-row md:items-center relative overflow-hidden">
         <div className="relative z-10">
-          <h2 className="font-heading text-2xl font-black text-[#F5F7FA] sm:text-3xl">Ready for next-gen travel?</h2>
-          <p className="mt-2 text-sm text-[#C6CDD5]">Explore the fleet matrix and secure your vehicle in under 60 seconds.</p>
+          <h2 className="font-heading text-2xl font-black text-[#0A142F] sm:text-3xl">Ready for next-gen travel?</h2>
+          <p className="mt-2 text-sm text-slate-600">Explore the fleet matrix and secure your vehicle in under 60 seconds.</p>
         </div>
         <Link to="/cars" className="btn-primary shrink-0 relative z-10">Browse Fleet</Link>
       </section>
@@ -63,24 +63,24 @@ const EXTENDED_FAQS = [
 export function FAQ() {
   const [open, setOpen] = useState(0);
   return (
-    <div className="container-x max-w-4xl py-12">
-      <span className="font-mono text-xs uppercase tracking-widest text-[#75CFFF]">Knowledge Base</span>
-      <h1 className="font-heading text-3xl sm:text-4xl font-black text-[#F5F7FA] mt-2">Frequently Answered Questions</h1>
-      <p className="mt-2 text-sm text-[#C6CDD5]">Everything regarding fleet bookings, security deposits, and cancellation terms.</p>
+    <div className="container-x max-w-4xl py-12 text-[#0A142F]">
+      <span className="font-mono text-xs uppercase tracking-widest text-[#1E3A8A] font-bold">Knowledge Base</span>
+      <h1 className="font-heading text-3xl sm:text-4xl font-black text-[#0A142F] mt-2">Frequently Answered Questions</h1>
+      <p className="mt-2 text-sm text-slate-600">Everything regarding fleet bookings, security deposits, and cancellation terms.</p>
 
-      <div className="mt-8 divide-y divide-white/10 rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] shadow-2xl">
+      <div className="mt-8 divide-y divide-slate-100 rounded-3xl border border-slate-200/90 bg-white shadow-sm overflow-hidden">
         {EXTENDED_FAQS.map((f, i) => (
           <div key={f.q}>
             <button
               onClick={() => setOpen(open === i ? -1 : i)}
               aria-expanded={open === i}
-              className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left font-bold text-[#F5F7FA] hover:text-[#75CFFF] transition"
+              className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left font-bold text-[#0A142F] hover:text-[#1E3A8A] transition"
             >
               <span className="text-sm font-semibold">{f.q}</span>
-              <ChevronDown size={18} className={`shrink-0 text-[#75CFFF] transition-transform duration-300 ${open === i ? 'rotate-180' : ''}`} />
+              <ChevronDown size={18} className={`shrink-0 text-[#1E3A8A] transition-transform duration-300 ${open === i ? 'rotate-180' : ''}`} />
             </button>
             {open === i && (
-              <p className="px-6 pb-5 text-xs leading-relaxed text-[#C6CDD5] font-sans border-t border-white/5 pt-3">
+              <p className="px-6 pb-5 text-xs leading-relaxed text-slate-600 font-sans border-t border-slate-100 pt-3">
                 {f.a}
               </p>
             )}
@@ -88,10 +88,10 @@ export function FAQ() {
         ))}
       </div>
 
-      <div className="mt-8 rounded-3xl border border-white/5 bg-[#1B2028] p-6 flex flex-wrap items-center justify-between gap-4">
+      <div className="mt-8 rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="font-bold text-sm text-[#F5F7FA]">Still have specific inquiries?</h2>
-          <p className="text-xs text-[#C6CDD5] mt-0.5">Our concierge team will resolve custom travel and vehicle requests.</p>
+          <h2 className="font-bold text-sm text-[#0A142F]">Still have specific inquiries?</h2>
+          <p className="text-xs text-slate-600 mt-0.5">Our concierge team will resolve custom travel and vehicle requests.</p>
         </div>
         <Link to="/contact" className="btn-primary text-xs">Contact Concierge</Link>
       </div>
@@ -131,14 +131,14 @@ export function PolicyPage({ type }) {
   }[type] || { title: 'Policy', updated: 'October 2026', sections: [] };
 
   return (
-    <div className="container-x max-w-3xl py-12">
-      <h1 className="font-heading text-3xl font-black text-[#F5F7FA]">{content.title}</h1>
-      <p className="mt-2 font-mono text-xs uppercase tracking-wider text-[#75CFFF]">Last updated: {content.updated}</p>
-      <div className="mt-8 space-y-6 rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-8 shadow-2xl">
+    <div className="container-x max-w-3xl py-12 text-[#0A142F]">
+      <h1 className="font-heading text-3xl font-black text-[#0A142F]">{content.title}</h1>
+      <p className="mt-2 font-mono text-xs uppercase tracking-wider text-[#1E3A8A] font-bold">Last updated: {content.updated}</p>
+      <div className="mt-8 space-y-6 rounded-3xl border border-slate-200/90 bg-white p-8 shadow-sm">
         {content.sections.map(([heading, body]) => (
-          <section key={heading} className="border-b border-white/5 pb-4 last:border-none last:pb-0">
-            <h2 className="font-bold text-base text-[#F5F7FA]">{heading}</h2>
-            <p className="mt-2 text-xs sm:text-sm leading-relaxed text-[#C6CDD5]">{body}</p>
+          <section key={heading} className="border-b border-slate-100 pb-4 last:border-none last:pb-0">
+            <h2 className="font-bold text-base text-[#0A142F]">{heading}</h2>
+            <p className="mt-2 text-xs sm:text-sm leading-relaxed text-slate-600">{body}</p>
           </section>
         ))}
       </div>

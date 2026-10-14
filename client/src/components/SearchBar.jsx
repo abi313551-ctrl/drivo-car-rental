@@ -36,7 +36,7 @@ export default function SearchBar() {
     const e = validateSearch(form);
     setErrors(e);
     if (Object.keys(e).length) {
-      toast.error('Please select location and dates');
+      toast.error('Please specify pickup city and rental dates');
       return;
     }
     const cleanParams = Object.fromEntries(Object.entries(form).filter(([, v]) => v));
@@ -47,23 +47,23 @@ export default function SearchBar() {
     <form
       onSubmit={onSubmit}
       noValidate
-      className="rounded-2xl border border-slate-100 bg-white p-4 sm:p-5 shadow-2xl shadow-slate-900/10 text-slate-800"
+      className="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-lg shadow-slate-900/5 text-[#0F172A]"
     >
-      <div className="grid gap-4 lg:grid-cols-4 lg:items-center">
+      <div className="grid gap-4 lg:grid-cols-5 lg:items-center">
         {/* 1. Pick-up Location */}
         <div className="relative flex items-center gap-3 px-3 py-1 lg:border-r lg:border-slate-100">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-50 text-[#0B1528] shrink-0">
-            <MapPin size={18} />
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-50 text-[#0A142F] shrink-0 border border-slate-100">
+            <MapPin size={17} />
           </div>
           <div className="flex-1 min-w-0">
-            <label htmlFor="sb-pickup" className="block text-[11px] font-semibold text-slate-400">
-              Pick-up Location
+            <label htmlFor="sb-pickup" className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Pick-up Hub
             </label>
             <select
               id="sb-pickup"
               value={form.pickup}
               onChange={set('pickup')}
-              className="w-full bg-transparent text-xs sm:text-sm font-bold text-[#0B1528] focus:outline-none cursor-pointer"
+              className="w-full bg-transparent text-xs sm:text-sm font-bold text-[#0A142F] focus:outline-none cursor-pointer mt-0.5"
             >
               <option value="">Select location</option>
               {availableLocations.map((l) => (
@@ -72,18 +72,18 @@ export default function SearchBar() {
                 </option>
               ))}
             </select>
-            {errors.pickup && <p className="text-[10px] text-red-500 font-semibold">{errors.pickup}</p>}
+            {errors.pickup && <p className="text-[10px] text-rose-600 font-semibold">{errors.pickup}</p>}
           </div>
         </div>
 
         {/* 2. Pick-up Date */}
         <div className="relative flex items-center gap-3 px-3 py-1 lg:border-r lg:border-slate-100">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-50 text-[#0B1528] shrink-0">
-            <Calendar size={18} />
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-50 text-[#0A142F] shrink-0 border border-slate-100">
+            <Calendar size={17} />
           </div>
           <div className="flex-1 min-w-0">
-            <label htmlFor="sb-start" className="block text-[11px] font-semibold text-slate-400">
-              Pick-up Date
+            <label htmlFor="sb-start" className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Pick-up Schedule
             </label>
             <input
               id="sb-start"
@@ -91,20 +91,20 @@ export default function SearchBar() {
               min={now}
               value={form.start}
               onChange={set('start')}
-              className="w-full bg-transparent text-xs sm:text-sm font-bold text-[#0B1528] focus:outline-none cursor-pointer"
+              className="w-full bg-transparent text-xs sm:text-sm font-bold text-[#0A142F] focus:outline-none cursor-pointer mt-0.5"
             />
-            {errors.start && <p className="text-[10px] text-red-500 font-semibold">{errors.start}</p>}
+            {errors.start && <p className="text-[10px] text-rose-600 font-semibold">{errors.start}</p>}
           </div>
         </div>
 
         {/* 3. Drop-off Date */}
         <div className="relative flex items-center gap-3 px-3 py-1 lg:border-r lg:border-slate-100">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-50 text-[#0B1528] shrink-0">
-            <Calendar size={18} />
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-50 text-[#0A142F] shrink-0 border border-slate-100">
+            <Calendar size={17} />
           </div>
           <div className="flex-1 min-w-0">
-            <label htmlFor="sb-end" className="block text-[11px] font-semibold text-slate-400">
-              Drop-off Date
+            <label htmlFor="sb-end" className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Return Schedule
             </label>
             <input
               id="sb-end"
@@ -112,44 +112,45 @@ export default function SearchBar() {
               min={form.start || now}
               value={form.end}
               onChange={set('end')}
-              className="w-full bg-transparent text-xs sm:text-sm font-bold text-[#0B1528] focus:outline-none cursor-pointer"
+              className="w-full bg-transparent text-xs sm:text-sm font-bold text-[#0A142F] focus:outline-none cursor-pointer mt-0.5"
             />
-            {errors.end && <p className="text-[10px] text-red-500 font-semibold">{errors.end}</p>}
+            {errors.end && <p className="text-[10px] text-rose-600 font-semibold">{errors.end}</p>}
           </div>
         </div>
 
-        {/* 4. Car Type & Search Button */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 px-2">
-          <div className="flex items-center gap-3 flex-1 min-w-0 w-full sm:w-auto">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-50 text-[#0B1528] shrink-0">
-              <Car size={18} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <label htmlFor="sb-category" className="block text-[11px] font-semibold text-slate-400">
-                Car Type
-              </label>
-              <select
-                id="sb-category"
-                value={form.category}
-                onChange={set('category')}
-                className="w-full bg-transparent text-xs sm:text-sm font-bold text-[#0B1528] focus:outline-none cursor-pointer"
-              >
-                <option value="">All Cars</option>
-                {defaultCategories.map((c) => (
-                  <option key={c.name} value={c.name}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+        {/* 4. Car Type */}
+        <div className="relative flex items-center gap-3 px-3 py-1 lg:border-r lg:border-slate-100">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-50 text-[#0A142F] shrink-0 border border-slate-100">
+            <Car size={17} />
           </div>
+          <div className="flex-1 min-w-0">
+            <label htmlFor="sb-category" className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Vehicle Segment
+            </label>
+            <select
+              id="sb-category"
+              value={form.category}
+              onChange={set('category')}
+              className="w-full bg-transparent text-xs sm:text-sm font-bold text-[#0A142F] focus:outline-none cursor-pointer mt-0.5"
+            >
+              <option value="">All Segments</option>
+              {defaultCategories.map((c) => (
+                <option key={c.name} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
+        {/* 5. Search Button */}
+        <div className="px-2">
           <button
             type="submit"
-            className="w-full sm:w-auto rounded-full bg-[#0B1528] hover:bg-[#1E293B] text-white px-7 py-3 text-xs sm:text-sm font-bold tracking-wide transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 shrink-0"
+            className="w-full rounded-xl bg-[#0A142F] hover:bg-[#1E293B] text-white py-3.5 text-xs sm:text-sm font-bold tracking-wider uppercase transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Search size={15} />
-            <span>Search Cars</span>
+            <Search size={16} />
+            <span>Search Fleet</span>
           </button>
         </div>
       </div>

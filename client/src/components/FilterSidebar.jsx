@@ -3,18 +3,18 @@ import { formatINR } from '../utils/pricing.js';
 function Select({ id, label, value, onChange, options, format = (o) => o }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-xs font-mono font-medium tracking-wider text-[#C6CDD5]">
+      <label htmlFor={id} className="mb-1.5 block text-xs font-bold text-slate-700">
         {label}
       </label>
       <select
         id={id}
-        className="field text-xs font-semibold text-[#F5F7FA] bg-[#111318]"
+        className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none transition cursor-pointer"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >
-        <option value="" className="bg-[#111318] text-[#C6CDD5]">All {label}s</option>
+        <option value="">All {label}s</option>
         {options.map((o) => (
-          <option key={o} value={o} className="bg-[#111318] text-[#F5F7FA]">
+          <option key={o} value={o}>
             {format(o)}
           </option>
         ))}
@@ -27,17 +27,17 @@ export default function FilterSidebar({ filters, options, onChange, onClear, act
   const max = filters.maxPrice ?? options.ceiling;
   return (
     <aside
-      className="space-y-4 rounded-2xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-2xl text-[#F5F7FA]"
+      className="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs text-[#0F172A]"
       aria-label="Fleet Filters"
     >
-      <div className="flex items-center justify-between border-b border-[rgba(198,205,213,0.08)] pb-3">
-        <h2 className="font-display text-sm font-bold tracking-wider uppercase text-[#F5F7FA]">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h2 className="font-display text-xs font-bold tracking-wider uppercase text-[#0A142F]">
           Fleet Filters
         </h2>
         <button
           onClick={onClear}
           disabled={!activeCount}
-          className="text-xs font-mono font-bold text-[#75CFFF] hover:underline disabled:text-[#C6CDD5]/30 transition"
+          className="text-xs font-bold text-blue-900 hover:underline disabled:text-slate-300 transition cursor-pointer"
         >
           Reset ({activeCount})
         </button>
@@ -80,12 +80,12 @@ export default function FilterSidebar({ filters, options, onChange, onClear, act
         format={(o) => `${o} Seats`}
       />
 
-      <div className="pt-2 border-t border-[rgba(198,205,213,0.08)]">
+      <div className="pt-2 border-t border-slate-100">
         <div className="flex items-center justify-between mb-2">
-          <label htmlFor="f-price" className="text-xs font-mono font-medium text-[#C6CDD5]">
+          <label htmlFor="f-price" className="text-xs font-bold text-slate-700">
             Max Daily Rate
           </label>
-          <span className="font-mono text-xs font-bold text-[#75CFFF]">{formatINR(max)}</span>
+          <span className="font-display text-xs font-bold text-[#0A142F]">{formatINR(max)}</span>
         </div>
         <input
           id="f-price"
@@ -97,19 +97,23 @@ export default function FilterSidebar({ filters, options, onChange, onClear, act
           onChange={(e) =>
             onChange('maxPrice', Number(e.target.value) >= options.ceiling ? null : Number(e.target.value))
           }
-          className="w-full accent-[#75CFFF] cursor-pointer"
+          className="w-full accent-[#0A142F] cursor-pointer"
         />
+        <div className="mt-1 flex justify-between text-[10px] text-slate-400 font-medium">
+          <span>₹1,000</span>
+          <span>{formatINR(options.ceiling)}</span>
+        </div>
       </div>
 
-      <div className="pt-3 border-t border-[rgba(198,205,213,0.08)]">
-        <label className="flex items-center gap-2.5 cursor-pointer select-none text-xs font-medium text-[#C6CDD5]">
+      <div className="pt-2 border-t border-slate-100">
+        <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
           <input
             type="checkbox"
-            checked={!!filters.availableOnly}
+            checked={filters.availableOnly}
             onChange={(e) => onChange('availableOnly', e.target.checked)}
-            className="h-4 w-4 rounded border-[rgba(198,205,213,0.3)] bg-[#111318] text-[#75CFFF] focus:ring-[#75CFFF]/30"
+            className="h-4 w-4 rounded border-slate-300 text-[#0A142F] focus:ring-1 focus:ring-[#0A142F] cursor-pointer"
           />
-          <span>Show available cars only</span>
+          <span>Show only available vehicles</span>
         </label>
       </div>
     </aside>

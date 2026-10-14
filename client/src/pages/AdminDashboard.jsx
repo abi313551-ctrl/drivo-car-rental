@@ -182,11 +182,11 @@ export default function AdminDashboard() {
   // Handle Unauthorized / Non-admin
   if (!isAuthenticated) {
     return (
-      <div className="container-x py-20 min-h-[70vh] flex items-center justify-center">
-        <div className="mx-auto max-w-md rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-8 text-center shadow-2xl">
-          <Shield size={40} className="mx-auto text-[#75CFFF]" />
-          <h1 className="mt-4 text-2xl font-black text-[#F5F7FA]">Admin Authentication Required</h1>
-          <p className="mt-2 text-sm text-[#C6CDD5]">Please log in with an administrator account to access this portal.</p>
+      <div className="container-x py-20 min-h-[70vh] flex items-center justify-center text-[#0A142F]">
+        <div className="mx-auto max-w-md rounded-3xl border border-slate-200/90 bg-white p-8 text-center shadow-sm">
+          <Shield size={40} className="mx-auto text-[#1E3A8A]" />
+          <h1 className="mt-4 font-heading text-2xl font-black text-[#0A142F]">Admin Authentication Required</h1>
+          <p className="mt-2 text-sm text-slate-600">Please log in with an administrator account to access this portal.</p>
           <Link to="/login" className="btn-primary mt-6 inline-block">Sign In as Admin</Link>
         </div>
       </div>
@@ -195,14 +195,14 @@ export default function AdminDashboard() {
 
   if (!isAdmin) {
     return (
-      <div className="container-x py-20 min-h-[70vh] flex items-center justify-center text-center">
-        <div className="mx-auto max-w-md rounded-3xl border border-rose-500/30 bg-[#161A22] p-8 shadow-2xl">
-          <AlertTriangle size={40} className="mx-auto text-rose-400" />
-          <h1 className="mt-4 text-2xl font-black text-[#F5F7FA]">Access Denied (403 Forbidden)</h1>
-          <p className="mt-2 text-sm text-[#C6CDD5]">You do not have administrative privileges. Only authorized staff may view the admin dashboard.</p>
+      <div className="container-x py-20 min-h-[70vh] flex items-center justify-center text-center text-[#0A142F]">
+        <div className="mx-auto max-w-md rounded-3xl border border-rose-200 bg-white p-8 shadow-sm">
+          <AlertTriangle size={40} className="mx-auto text-rose-500" />
+          <h1 className="mt-4 font-heading text-2xl font-black text-[#0A142F]">Access Denied (403 Forbidden)</h1>
+          <p className="mt-2 text-sm text-slate-600">You do not have administrative privileges. Only authorized staff may view the admin dashboard.</p>
           <div className="mt-6 flex justify-center gap-3">
             <Link to="/dashboard" className="btn-primary text-xs">Customer Dashboard</Link>
-            <Link to="/" className="btn-outline text-xs text-[#C6CDD5]">Return Home</Link>
+            <Link to="/" className="btn-outline text-xs text-slate-700">Return Home</Link>
           </div>
         </div>
       </div>
@@ -401,20 +401,20 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="container-x py-10">
+    <div className="container-x py-10 text-[#0A142F]">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/10 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#75CFFF]/10 border border-[#75CFFF]/30 text-[#75CFFF]">
+            <span className="grid h-8 w-8 place-items-center rounded-xl bg-blue-50 border border-blue-900/15 text-[#1E3A8A]">
               <Shield size={18} />
             </span>
-            <h1 className="font-heading text-2xl font-black text-[#F5F7FA]">Drivo Admin Portal</h1>
-            <span className="rounded-full bg-[#75CFFF]/10 border border-[#75CFFF]/25 px-3 py-0.5 font-mono text-[11px] font-bold text-[#75CFFF]">
+            <h1 className="font-heading text-2xl font-black text-[#0A142F]">Drivo Admin Portal</h1>
+            <span className="rounded-full bg-blue-50 border border-blue-900/15 px-3 py-0.5 font-mono text-[11px] font-bold text-[#1E3A8A]">
               Authorized Staff
             </span>
           </div>
-          <p className="mt-1 text-xs text-[#C6CDD5]">
+          <p className="mt-1 text-xs text-slate-500">
             Real-time MySQL fleet management, live revenue analytics, and booking controls.
           </p>
         </div>
@@ -429,10 +429,10 @@ export default function AdminDashboard() {
               fetchAnalytics(timeRange, customStart, customEnd);
               toast.success('Admin data synchronized');
             }}
-            className="btn-outline text-xs px-3 py-2 flex items-center gap-1.5 text-[#C6CDD5]"
+            className="btn-outline text-xs px-3 py-2 flex items-center gap-1.5 text-slate-700"
             title="Refresh database records"
           >
-            <RefreshCw size={14} className={loadingStats || loadingAnalytics ? 'animate-spin text-[#75CFFF]' : ''} /> Refresh
+            <RefreshCw size={14} className={loadingStats || loadingAnalytics ? 'animate-spin text-[#1E3A8A]' : ''} /> Refresh
           </button>
           <Link to="/dashboard" className="btn-primary text-xs px-3 py-2">
             Customer View
@@ -441,7 +441,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Tabs */}
-      <div className="mt-6 flex flex-wrap gap-2 border-b border-white/10 pb-3">
+      <div className="mt-6 flex flex-wrap gap-2 border-b border-slate-200 pb-3">
         {[
           ['overview', 'Overview & Analytics'],
           ['fleet', `Fleet Management (${cars.length})`],
@@ -454,8 +454,8 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab(key)}
             className={`rounded-full px-4 py-2 font-mono text-xs font-semibold transition ${
               activeTab === key
-                ? 'bg-[#75CFFF] text-[#111318] shadow-md shadow-[#75CFFF]/15'
-                : 'bg-[#1B2028] text-[#C6CDD5] hover:bg-white/10 border border-white/5'
+                ? 'bg-[#0A142F] text-white shadow-sm font-bold'
+                : 'bg-white text-slate-600 hover:text-[#0A142F] border border-slate-200/80 hover:bg-slate-50'
             }`}
           >
             {label}
@@ -467,14 +467,14 @@ export default function AdminDashboard() {
       {activeTab === 'overview' && (
         <div className="mt-8 space-y-8">
           {/* Analytics Header & Date Range Filter */}
-          <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 sm:p-6 shadow-xl">
+          <div className="rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-sm">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <BarChart3 size={18} className="text-[#75CFFF]" />
-                  <h2 className="text-lg font-bold text-[#F5F7FA]">Analytics & Performance Metrics</h2>
+                  <BarChart3 size={18} className="text-[#1E3A8A]" />
+                  <h2 className="text-lg font-heading font-black text-[#0A142F]">Analytics & Performance Metrics</h2>
                 </div>
-                <p className="mt-1 text-xs text-[#C6CDD5]">
+                <p className="mt-1 text-xs text-slate-500">
                   Aggregated from MySQL database bookings, verified payments, and fleet utilization records.
                 </p>
               </div>
@@ -499,8 +499,8 @@ export default function AdminDashboard() {
                     }}
                     className={`rounded-full px-3.5 py-1.5 font-mono text-xs font-semibold transition ${
                       timeRange === key
-                        ? 'bg-[#75CFFF] text-[#111318] shadow-sm'
-                        : 'bg-[#1B2028] text-[#C6CDD5] hover:bg-white/10 border border-white/5'
+                        ? 'bg-[#0A142F] text-white shadow-sm font-bold'
+                        : 'bg-slate-50 text-slate-600 hover:text-[#0A142F] border border-slate-200 hover:bg-slate-100'
                     }`}
                   >
                     {label}
@@ -511,9 +511,9 @@ export default function AdminDashboard() {
 
             {/* Custom Range Inputs */}
             {timeRange === 'custom' && (
-              <div className="mt-4 pt-4 border-t border-white/10 flex flex-wrap items-end gap-3 animate-in fade-in">
+              <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-end gap-3 animate-in fade-in">
                 <div>
-                  <label htmlFor="adm-start" className="block font-mono text-[11px] font-semibold text-[#75CFFF] mb-1">
+                  <label htmlFor="adm-start" className="block font-mono text-[11px] font-bold text-[#0A142F] mb-1">
                     Start Date & Time
                   </label>
                   <input
@@ -521,11 +521,11 @@ export default function AdminDashboard() {
                     type="datetime-local"
                     value={customStart}
                     onChange={(e) => setCustomStart(e.target.value)}
-                    className="field text-xs py-1.5"
+                    className="field text-xs py-1.5 bg-white"
                   />
                 </div>
                 <div>
-                  <label htmlFor="adm-end" className="block font-mono text-[11px] font-semibold text-[#75CFFF] mb-1">
+                  <label htmlFor="adm-end" className="block font-mono text-[11px] font-bold text-[#0A142F] mb-1">
                     End Date & Time
                   </label>
                   <input
@@ -533,7 +533,7 @@ export default function AdminDashboard() {
                     type="datetime-local"
                     value={customEnd}
                     onChange={(e) => setCustomEnd(e.target.value)}
-                    className="field text-xs py-1.5"
+                    className="field text-xs py-1.5 bg-white"
                   />
                 </div>
                 <button
@@ -549,20 +549,20 @@ export default function AdminDashboard() {
 
           {/* Loading & Error States */}
           {loadingAnalytics && !analytics && (
-            <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-12 text-center shadow-xl">
-              <RefreshCw size={28} className="mx-auto text-[#75CFFF] animate-spin" />
-              <p className="mt-3 text-sm font-semibold text-[#C6CDD5]">Calculating real-time analytics from database...</p>
+            <div className="rounded-3xl border border-slate-200/90 bg-white p-12 text-center shadow-sm">
+              <RefreshCw size={28} className="mx-auto text-[#1E3A8A] animate-spin" />
+              <p className="mt-3 text-sm font-semibold text-slate-500">Calculating real-time analytics from database...</p>
             </div>
           )}
 
           {analyticsError && (
-            <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-center">
-              <AlertTriangle size={28} className="mx-auto text-red-600" />
-              <p className="mt-2 text-sm font-bold text-red-900">{analyticsError}</p>
+            <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-center">
+              <AlertTriangle size={28} className="mx-auto text-rose-600" />
+              <p className="mt-2 text-sm font-bold text-rose-900">{analyticsError}</p>
               <button
                 type="button"
                 onClick={() => fetchAnalytics(timeRange, customStart, customEnd)}
-                className="mt-3 btn-outline text-xs py-1.5 px-3 border-red-300 text-red-700 hover:bg-red-100"
+                className="mt-3 btn-outline text-xs py-1.5 px-3 border-rose-300 text-rose-700 hover:bg-rose-100"
               >
                 Retry Loading
               </button>
@@ -574,138 +574,138 @@ export default function AdminDashboard() {
               {/* PRIMARY FINANCIAL & BOOKINGS KPI GRID */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {/* 1. Gross Booking Value (GBV) */}
-                <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-xl transition hover:border-[#75CFFF]/40">
+                <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm transition hover:border-slate-300">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#75CFFF]">Gross Booking Value</span>
-                    <span className="rounded-full bg-white/5 border border-white/10 px-2 py-0.5 font-mono text-[10px] font-bold text-[#C6CDD5]">Contracted</span>
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#1E3A8A]">Gross Booking Value</span>
+                    <span className="rounded-full bg-slate-100 border border-slate-200 px-2 py-0.5 font-mono text-[10px] font-bold text-slate-600">Contracted</span>
                   </div>
-                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#F5F7FA]">{formatINR(analytics.kpis.grossBookingValue)}</p>
-                  <p className="mt-1 text-xs text-[#C6CDD5]">Confirmed & completed rental value</p>
+                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#0A142F]">{formatINR(analytics.kpis.grossBookingValue)}</p>
+                  <p className="mt-1 text-xs text-slate-500">Confirmed & completed rental value</p>
                 </div>
 
                 {/* 2. Actual Collected Revenue */}
-                <div className="rounded-3xl border border-emerald-500/20 bg-[#161A22] p-5 shadow-xl transition hover:border-emerald-500/40">
+                <div className="rounded-3xl border border-emerald-200 bg-white p-5 shadow-sm transition hover:border-emerald-300">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-400">Collected Revenue</span>
-                    <span className="rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-400">Settled Cash</span>
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-emerald-700">Collected Revenue</span>
+                    <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-700">Settled Cash</span>
                   </div>
-                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-emerald-400">{formatINR(analytics.kpis.collectedRevenue)}</p>
-                  <p className="mt-1 text-xs text-[#C6CDD5]">Verified payments marked 'Paid'</p>
+                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-emerald-700">{formatINR(analytics.kpis.collectedRevenue)}</p>
+                  <p className="mt-1 text-xs text-slate-500">Verified payments marked 'Paid'</p>
                 </div>
 
                 {/* 3. Pending / Uncollected Balance */}
-                <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-xl transition hover:border-[#75CFFF]/40">
+                <div className="rounded-3xl border border-amber-200 bg-white p-5 shadow-sm transition hover:border-amber-300">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-amber-400">Pending Collection</span>
-                    <span className="rounded-full bg-amber-500/10 border border-amber-500/25 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-300">Awaiting</span>
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-amber-700">Pending Collection</span>
+                    <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-700">Awaiting</span>
                   </div>
-                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#F5F7FA]">{formatINR(analytics.kpis.pendingRevenue)}</p>
-                  <p className="mt-1 text-xs text-[#C6CDD5]">Active rentals awaiting payment settlement</p>
+                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#0A142F]">{formatINR(analytics.kpis.pendingRevenue)}</p>
+                  <p className="mt-1 text-xs text-slate-500">Active rentals awaiting payment settlement</p>
                 </div>
 
                 {/* 4. Average Order Value (AOV) */}
-                <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-xl transition hover:border-[#75CFFF]/40">
+                <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm transition hover:border-slate-300">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#75CFFF]">Average Ticket Value</span>
-                    <span className="rounded-full bg-white/5 border border-white/10 px-2 py-0.5 font-mono text-[10px] font-bold text-[#C6CDD5]">AOV</span>
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#1E3A8A]">Average Ticket Value</span>
+                    <span className="rounded-full bg-slate-100 border border-slate-200 px-2 py-0.5 font-mono text-[10px] font-bold text-slate-600">AOV</span>
                   </div>
-                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#F5F7FA]">{formatINR(analytics.kpis.avgOrderValue)}</p>
-                  <p className="mt-1 text-xs text-[#C6CDD5]">Avg size per verified reservation</p>
+                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#0A142F]">{formatINR(analytics.kpis.avgOrderValue)}</p>
+                  <p className="mt-1 text-xs text-slate-500">Avg size per verified reservation</p>
                 </div>
 
                 {/* 5. Total Bookings */}
-                <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-xl transition hover:border-[#75CFFF]/40">
+                <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm transition hover:border-slate-300">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#C6CDD5]">Total Reservations</span>
-                    <CalendarCheck size={16} className="text-[#75CFFF]" />
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-600">Total Reservations</span>
+                    <CalendarCheck size={16} className="text-[#1E3A8A]" />
                   </div>
-                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#F5F7FA]">{analytics.kpis.totalBookings}</p>
-                  <p className="mt-1 text-xs text-[#C6CDD5]">{analytics.kpis.confirmedBookings} confirmed · {analytics.kpis.completedBookings} completed</p>
+                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#0A142F]">{analytics.kpis.totalBookings}</p>
+                  <p className="mt-1 text-xs text-slate-500">{analytics.kpis.confirmedBookings} confirmed · {analytics.kpis.completedBookings} completed</p>
                 </div>
 
                 {/* 6. Fleet Inventory */}
-                <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-xl transition hover:border-[#75CFFF]/40">
+                <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm transition hover:border-slate-300">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#C6CDD5]">Fleet Units</span>
-                    <Car size={16} className="text-emerald-400" />
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-600">Fleet Units</span>
+                    <Car size={16} className="text-emerald-600" />
                   </div>
-                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#F5F7FA]">{analytics.kpis.totalCars}</p>
-                  <p className="mt-1 text-xs text-emerald-400 font-medium">{analytics.kpis.availableCars} active & ready ({analytics.kpis.maintenanceCars} service)</p>
+                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#0A142F]">{analytics.kpis.totalCars}</p>
+                  <p className="mt-1 text-xs text-emerald-700 font-medium">{analytics.kpis.availableCars} active & ready ({analytics.kpis.maintenanceCars} service)</p>
                 </div>
 
                 {/* 7. Live Fleet Utilization */}
-                <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-xl transition hover:border-[#75CFFF]/40">
+                <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm transition hover:border-slate-300">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#C6CDD5]">Fleet Utilization</span>
-                    <Activity size={16} className="text-[#75CFFF]" />
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-600">Fleet Utilization</span>
+                    <Activity size={16} className="text-[#1E3A8A]" />
                   </div>
-                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#75CFFF]">{analytics.kpis.fleetUtilizationRate}%</p>
-                  <p className="mt-1 text-xs text-[#C6CDD5]">{analytics.kpis.currentlyBookedCars} cars currently on road</p>
+                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#1E3A8A]">{analytics.kpis.fleetUtilizationRate}%</p>
+                  <p className="mt-1 text-xs text-slate-500">{analytics.kpis.currentlyBookedCars} cars currently on road</p>
                 </div>
 
                 {/* 8. Registered Accounts */}
-                <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-xl transition hover:border-[#75CFFF]/40">
+                <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm transition hover:border-slate-300">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#C6CDD5]">Registered Drivers</span>
-                    <Users size={16} className="text-[#75CFFF]" />
+                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-600">Registered Drivers</span>
+                    <Users size={16} className="text-[#1E3A8A]" />
                   </div>
-                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#F5F7FA]">{analytics.kpis.totalUsers}</p>
-                  <p className="mt-1 text-xs text-[#C6CDD5]">{analytics.kpis.customerUsers} customers · {analytics.kpis.adminUsers} staff</p>
+                  <p className="mt-2 font-mono text-2xl sm:text-3xl font-black text-[#0A142F]">{analytics.kpis.totalUsers}</p>
+                  <p className="mt-1 text-xs text-slate-500">{analytics.kpis.customerUsers} customers · {analytics.kpis.adminUsers} staff</p>
                 </div>
               </div>
 
               {/* BOOKING STATUS DISTRIBUTION BAR */}
-              <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-xl">
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#75CFFF] block mb-3">
+              <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm">
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#1E3A8A] block mb-3">
                   Telemetry Status Distribution ({analytics.kpis.totalBookings} Total)
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-                    <span className="text-xs font-bold text-emerald-400">Confirmed Bookings</span>
-                    <p className="text-xl font-black font-mono text-[#F5F7FA] mt-1">{analytics.kpis.confirmedBookings}</p>
-                    <span className="text-[11px] text-emerald-400/80 font-medium">Active reservations</span>
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200">
+                    <span className="text-xs font-bold text-emerald-800">Confirmed Bookings</span>
+                    <p className="text-xl font-black font-mono text-[#0A142F] mt-1">{analytics.kpis.confirmedBookings}</p>
+                    <span className="text-[11px] text-emerald-700 font-medium">Active reservations</span>
                   </div>
-                  <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-                    <span className="text-xs font-bold text-blue-400">Completed Trips</span>
-                    <p className="text-xl font-black font-mono text-[#F5F7FA] mt-1">{analytics.kpis.completedBookings}</p>
-                    <span className="text-[11px] text-blue-400/80 font-medium">Successfully finished</span>
+                  <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200">
+                    <span className="text-xs font-bold text-blue-800">Completed Trips</span>
+                    <p className="text-xl font-black font-mono text-[#0A142F] mt-1">{analytics.kpis.completedBookings}</p>
+                    <span className="text-[11px] text-blue-700 font-medium">Successfully finished</span>
                   </div>
-                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-                    <span className="text-xs font-bold text-amber-300">Pending Bookings</span>
-                    <p className="text-xl font-black font-mono text-[#F5F7FA] mt-1">{analytics.kpis.pendingBookings}</p>
-                    <span className="text-[11px] text-amber-300/80 font-medium">Awaiting payment</span>
+                  <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200">
+                    <span className="text-xs font-bold text-amber-800">Pending Bookings</span>
+                    <p className="text-xl font-black font-mono text-[#0A142F] mt-1">{analytics.kpis.pendingBookings}</p>
+                    <span className="text-[11px] text-amber-700 font-medium">Awaiting payment</span>
                   </div>
-                  <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20">
-                    <span className="text-xs font-bold text-rose-400">Cancelled Bookings</span>
-                    <p className="text-xl font-black font-mono text-[#F5F7FA] mt-1">{analytics.kpis.cancelledBookings}</p>
-                    <span className="text-[11px] text-rose-400/80 font-medium">Refunded or cancelled</span>
+                  <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200">
+                    <span className="text-xs font-bold text-rose-800">Cancelled Bookings</span>
+                    <p className="text-xl font-black font-mono text-[#0A142F] mt-1">{analytics.kpis.cancelledBookings}</p>
+                    <span className="text-[11px] text-rose-700 font-medium">Refunded or cancelled</span>
                   </div>
                 </div>
               </div>
 
               {/* MONTHLY REVENUE & BOOKING TRENDS CHART */}
               {analytics.monthlyTrends && analytics.monthlyTrends.length > 0 && (
-                <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-6 shadow-xl">
+                <div className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                     <div>
-                      <h3 className="font-heading font-black text-lg text-[#F5F7FA] flex items-center gap-2">
-                        <TrendingUp size={18} className="text-[#75CFFF]" />
+                      <h3 className="font-heading font-black text-lg text-[#0A142F] flex items-center gap-2">
+                        <TrendingUp size={18} className="text-[#1E3A8A]" />
                         Monthly Booking & Revenue Trends
                       </h3>
-                      <p className="text-xs text-[#C6CDD5] mt-0.5">
+                      <p className="text-xs text-slate-500 mt-0.5">
                         Direct chronological aggregation from persistent MySQL database timestamps.
                       </p>
                     </div>
 
                     {/* Chart Mode Toggle */}
-                    <div className="flex items-center gap-1.5 rounded-full bg-[#1B2028] border border-white/5 p-1">
+                    <div className="flex items-center gap-1.5 rounded-full bg-slate-50 border border-slate-200 p-1">
                       <button
                         type="button"
                         onClick={() => setChartMode('revenue')}
                         className={`rounded-full px-3 py-1 font-mono text-xs font-semibold transition ${
                           chartMode === 'revenue'
-                            ? 'bg-[#75CFFF] text-[#111318] shadow'
-                            : 'text-[#C6CDD5] hover:text-white'
+                            ? 'bg-[#0A142F] text-white shadow-sm font-bold'
+                            : 'text-slate-600 hover:text-[#0A142F]'
                         }`}
                       >
                         Revenue (₹)
@@ -715,8 +715,8 @@ export default function AdminDashboard() {
                         onClick={() => setChartMode('volume')}
                         className={`rounded-full px-3 py-1 font-mono text-xs font-semibold transition ${
                           chartMode === 'volume'
-                            ? 'bg-[#75CFFF] text-[#111318] shadow'
-                            : 'text-[#C6CDD5] hover:text-white'
+                            ? 'bg-[#0A142F] text-white shadow-sm font-bold'
+                            : 'text-slate-600 hover:text-[#0A142F]'
                         }`}
                       >
                         Booking Volume
@@ -725,23 +725,23 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Chart Legend */}
-                  <div className="flex items-center justify-end gap-4 text-xs font-mono mb-4 text-[#C6CDD5]">
+                  <div className="flex items-center justify-end gap-4 text-xs font-mono mb-4 text-slate-500">
                     {chartMode === 'revenue' ? (
                       <>
                         <span className="flex items-center gap-1.5">
-                          <span className="h-3 w-3 rounded bg-[#75CFFF]" /> Gross Booking Value
+                          <span className="h-3 w-3 rounded bg-[#1E3A8A]" /> Gross Booking Value
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <span className="h-3 w-3 rounded bg-emerald-400" /> Collected Revenue
+                          <span className="h-3 w-3 rounded bg-emerald-600" /> Collected Revenue
                         </span>
                       </>
                     ) : (
                       <>
                         <span className="flex items-center gap-1.5">
-                          <span className="h-3 w-3 rounded bg-[#75CFFF]" /> Total Bookings
+                          <span className="h-3 w-3 rounded bg-[#1E3A8A]" /> Total Bookings
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <span className="h-3 w-3 rounded bg-rose-400" /> Cancellations
+                          <span className="h-3 w-3 rounded bg-rose-500" /> Cancellations
                         </span>
                       </>
                     )}
@@ -757,7 +757,7 @@ export default function AdminDashboard() {
 
                     return (
                       <div className="pt-6 pb-2">
-                        <div className="flex items-end justify-between gap-2 sm:gap-4 h-56 border-b border-white/10 px-2 sm:px-4">
+                        <div className="flex items-end justify-between gap-2 sm:gap-4 h-56 border-b border-slate-200 px-2 sm:px-4">
                           {trends.map((t) => {
                             const bar1Val = chartMode === 'revenue' ? t.grossValue : t.bookings;
                             const bar2Val = chartMode === 'revenue' ? t.collectedRevenue : t.cancelled;
@@ -770,17 +770,17 @@ export default function AdminDashboard() {
                                 className="group relative flex-1 flex flex-col items-center justify-end h-full"
                               >
                                 {/* Tooltip on hover */}
-                                <div className="pointer-events-none absolute -top-12 z-20 hidden rounded-xl bg-[#1B2028] border border-white/10 px-2.5 py-1.5 text-[11px] text-[#F5F7FA] shadow-xl group-hover:block whitespace-nowrap font-mono">
+                                <div className="pointer-events-none absolute -top-12 z-20 hidden rounded-2xl bg-white border border-slate-200 px-3 py-1.5 text-[11px] text-[#0A142F] shadow-xl group-hover:block whitespace-nowrap font-mono">
                                   <p className="font-bold">{t.label}</p>
                                   {chartMode === 'revenue' ? (
                                     <>
-                                      <p className="text-[#75CFFF]">GBV: {formatINR(t.grossValue)}</p>
-                                      <p className="text-emerald-400">Paid: {formatINR(t.collectedRevenue)}</p>
+                                      <p className="text-[#1E3A8A] font-bold">GBV: {formatINR(t.grossValue)}</p>
+                                      <p className="text-emerald-700 font-bold">Paid: {formatINR(t.collectedRevenue)}</p>
                                     </>
                                   ) : (
                                     <>
-                                      <p className="text-[#75CFFF]">Bookings: {t.bookings}</p>
-                                      <p className="text-rose-400">Cancelled: {t.cancelled}</p>
+                                      <p className="text-[#1E3A8A] font-bold">Bookings: {t.bookings}</p>
+                                      <p className="text-rose-600 font-bold">Cancelled: {t.cancelled}</p>
                                     </>
                                   )}
                                 </div>
@@ -792,8 +792,8 @@ export default function AdminDashboard() {
                                     style={{ height: `${h1}%` }}
                                     className={`w-full rounded-t transition-all duration-500 ${
                                       chartMode === 'revenue'
-                                        ? 'bg-[#75CFFF]/40 group-hover:bg-[#75CFFF]'
-                                        : 'bg-[#75CFFF]/50 group-hover:bg-[#75CFFF]'
+                                        ? 'bg-blue-300 group-hover:bg-[#1E3A8A]'
+                                        : 'bg-blue-300 group-hover:bg-[#1E3A8A]'
                                     }`}
                                   />
                                   {/* Bar 2 */}
@@ -801,14 +801,14 @@ export default function AdminDashboard() {
                                     style={{ height: `${h2}%` }}
                                     className={`w-full rounded-t transition-all duration-500 ${
                                       chartMode === 'revenue'
-                                        ? 'bg-emerald-500/60 group-hover:bg-emerald-400'
-                                        : 'bg-rose-500/60 group-hover:bg-rose-400'
+                                        ? 'bg-emerald-300 group-hover:bg-emerald-600'
+                                        : 'bg-rose-300 group-hover:bg-rose-600'
                                     }`}
                                   />
                                 </div>
 
                                 {/* Month Label */}
-                                <span className="mt-2 font-mono text-[11px] font-semibold text-[#C6CDD5] truncate w-full text-center">
+                                <span className="mt-2 font-mono text-[11px] font-semibold text-slate-500 truncate w-full text-center">
                                   {t.label.split(' ')[0]}
                                 </span>
                               </div>
@@ -824,14 +824,14 @@ export default function AdminDashboard() {
               {/* TWO COLUMN INSIGHTS: POPULAR CARS & FLEET CATEGORIES */}
               <div className="grid gap-6 lg:grid-cols-2">
                 {/* 1. Popular Cars by Real Bookings */}
-                <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-6 shadow-xl">
+                <div className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-heading font-black text-lg text-[#F5F7FA] flex items-center gap-2">
-                      <Award size={18} className="text-[#75CFFF]" />
+                    <h3 className="font-heading font-black text-lg text-[#0A142F] flex items-center gap-2">
+                      <Award size={18} className="text-[#1E3A8A]" />
                       Popular Fleet Cars (Real Booking Counts)
                     </h3>
                   </div>
-                  <p className="text-xs text-[#C6CDD5] mb-4">
+                  <p className="text-xs text-slate-500 mb-4">
                     Ranked by total completed and confirmed reservations recorded in the database.
                   </p>
 
@@ -840,30 +840,30 @@ export default function AdminDashboard() {
                       {analytics.popularCars.map((car, idx) => (
                         <div
                           key={car.id}
-                          className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-white/5 bg-[#1B2028] hover:border-[#75CFFF]/30 transition"
+                          className="flex items-center justify-between gap-3 p-3 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:border-slate-300 transition"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="grid h-6 w-6 place-items-center rounded-full bg-[#75CFFF]/10 border border-[#75CFFF]/30 text-[#75CFFF] font-mono text-xs font-bold shrink-0">
+                            <span className="grid h-6 w-6 place-items-center rounded-full bg-blue-50 border border-blue-900/15 text-[#1E3A8A] font-mono text-xs font-bold shrink-0">
                               #{idx + 1}
                             </span>
-                            <div className="h-10 w-14 overflow-hidden rounded-xl bg-neutral-900 border border-white/5 shrink-0">
+                            <div className="h-10 w-14 overflow-hidden rounded-xl bg-white border border-slate-200/80 shrink-0">
                               <CarImage src={car.image} alt={car.model} className="h-full w-full object-cover" />
                             </div>
                             <div>
-                              <h4 className="font-bold text-sm text-[#F5F7FA] leading-tight">
+                              <h4 className="font-bold text-sm text-[#0A142F] leading-tight">
                                 {car.brand} {car.model}
                               </h4>
-                              <p className="font-mono text-[11px] text-[#C6CDD5]">
+                              <p className="font-mono text-[11px] text-slate-500">
                                 {car.category} · {formatINR(car.pricePerDay)}/day
                               </p>
                             </div>
                           </div>
 
                           <div className="text-right shrink-0">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 font-mono text-xs font-bold text-emerald-400">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 font-mono text-xs font-bold text-emerald-700">
                               {car.bookingsCount} booking{car.bookingsCount === 1 ? '' : 's'}
                             </span>
-                            <span className="block font-mono text-[11px] font-semibold text-[#75CFFF] mt-1">
+                            <span className="block font-mono text-[11px] font-bold text-[#0A142F] mt-1">
                               {formatINR(car.revenue)} earned
                             </span>
                           </div>
@@ -871,21 +871,21 @@ export default function AdminDashboard() {
                       ))}
                     </div>
                   ) : (
-                    <div className="py-8 text-center text-neutral-500 font-mono text-xs">
+                    <div className="py-8 text-center text-slate-400 font-mono text-xs">
                       No car bookings recorded yet.
                     </div>
                   )}
                 </div>
 
                 {/* 2. Fleet Inventory & Availability Summary by Category */}
-                <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-6 shadow-xl">
+                <div className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-heading font-black text-lg text-[#F5F7FA] flex items-center gap-2">
-                      <PieChart size={18} className="text-[#75CFFF]" />
+                    <h3 className="font-heading font-black text-lg text-[#0A142F] flex items-center gap-2">
+                      <PieChart size={18} className="text-[#1E3A8A]" />
                       Fleet Inventory & Category Availability
                     </h3>
                   </div>
-                  <p className="text-xs text-[#C6CDD5] mb-4">
+                  <p className="text-xs text-slate-500 mb-4">
                     Active availability and operational breakdown across car categories.
                   </p>
 
@@ -894,23 +894,23 @@ export default function AdminDashboard() {
                       {analytics.categorySummary.map((cat) => (
                         <div key={cat.category} className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="font-bold text-[#F5F7FA]">{cat.category}</span>
-                            <span className="font-mono text-[#C6CDD5]">
-                              <strong className="text-emerald-400">{cat.available}</strong> ready / {cat.total} total ({cat.sharePercent}% of fleet)
+                            <span className="font-bold text-[#0A142F]">{cat.category}</span>
+                            <span className="font-mono text-slate-600">
+                              <strong className="text-emerald-700">{cat.available}</strong> ready / {cat.total} total ({cat.sharePercent}% of fleet)
                             </span>
                           </div>
                           {/* Progress bar */}
-                          <div className="h-2 w-full rounded-full bg-[#1B2028] border border-white/5 overflow-hidden flex">
+                          <div className="h-2 w-full rounded-full bg-slate-100 border border-slate-200/80 overflow-hidden flex">
                             <div
                               style={{ width: `${cat.sharePercent}%` }}
-                              className="h-full bg-gradient-to-r from-[#75CFFF] to-emerald-400 rounded-full"
+                              className="h-full bg-gradient-to-r from-[#1E3A8A] to-blue-500 rounded-full"
                             />
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="py-8 text-center text-neutral-500 font-mono text-xs">
+                    <div className="py-8 text-center text-slate-400 font-mono text-xs">
                       No fleet category records available.
                     </div>
                   )}
@@ -918,21 +918,21 @@ export default function AdminDashboard() {
               </div>
 
               {/* RECENT BOOKINGS SUMMARY TABLE */}
-              <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-6 shadow-xl">
+              <div className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                   <div>
-                    <h3 className="font-heading font-black text-lg text-[#F5F7FA] flex items-center gap-2">
-                      <Clock size={18} className="text-[#75CFFF]" />
+                    <h3 className="font-heading font-black text-lg text-[#0A142F] flex items-center gap-2">
+                      <Clock size={18} className="text-[#1E3A8A]" />
                       Recent Bookings Overview
                     </h3>
-                    <p className="text-xs text-[#C6CDD5] mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       Direct view of the latest customer bookings with verified database pricing.
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setActiveTab('bookings')}
-                    className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1 text-[#C6CDD5]"
+                    className="btn-outline text-xs py-1.5 px-3 flex items-center gap-1 text-slate-700"
                   >
                     View All ({bookings.length}) <ArrowRight size={13} />
                   </button>
@@ -942,7 +942,7 @@ export default function AdminDashboard() {
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[650px] text-left text-xs">
                       <thead>
-                        <tr className="border-b border-white/10 bg-[#1B2028] text-[#75CFFF] font-mono text-[11px] font-bold uppercase tracking-wider">
+                        <tr className="border-b border-slate-200 bg-slate-50 text-[#1E3A8A] font-mono text-[11px] font-bold uppercase tracking-wider">
                           <th className="py-2.5 px-3">Booking Ref</th>
                           <th className="py-2.5 px-3">Customer</th>
                           <th className="py-2.5 px-3">Vehicle</th>
@@ -953,18 +953,18 @@ export default function AdminDashboard() {
                           <th className="py-2.5 px-3 text-right">Action</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/5">
+                      <tbody className="divide-y divide-slate-100">
                         {analytics.recentBookings.map((b) => (
-                          <tr key={b.id} className="hover:bg-white/5 transition">
-                            <td className="py-3 px-3 font-mono font-bold text-[#75CFFF]">{b.ref}</td>
+                          <tr key={b.id} className="hover:bg-slate-50/80 transition">
+                            <td className="py-3 px-3 font-mono font-bold text-[#1E3A8A]">{b.ref}</td>
                             <td className="py-3 px-3">
-                              <p className="font-bold text-[#F5F7FA]">{b.customer?.fullName || 'Customer'}</p>
-                              <p className="text-[10px] text-[#C6CDD5]">{b.customer?.email || '—'}</p>
+                              <p className="font-bold text-[#0A142F]">{b.customer?.fullName || 'Customer'}</p>
+                              <p className="text-[10px] text-slate-500">{b.customer?.email || '—'}</p>
                             </td>
-                            <td className="py-3 px-3 font-semibold text-[#F5F7FA]">
+                            <td className="py-3 px-3 font-semibold text-[#0A142F]">
                               {b.car?.brand} {b.car?.model}
                             </td>
-                            <td className="py-3 px-3 font-mono text-[#C6CDD5]">
+                            <td className="py-3 px-3 font-mono text-slate-500">
                               {b.start ? b.start.split('T')[0] : '—'} &rarr; {b.end ? b.end.split('T')[0] : '—'}
                             </td>
                             <td className="py-3 px-3">
@@ -973,14 +973,14 @@ export default function AdminDashboard() {
                             <td className="py-3 px-3">
                               <StatusBadge status={b.paymentStatus} />
                             </td>
-                            <td className="py-3 px-3 text-right font-mono font-bold text-[#75CFFF]">
+                            <td className="py-3 px-3 text-right font-mono font-bold text-[#0A142F]">
                               {formatINR(b.pricing?.total || 0)}
                             </td>
                             <td className="py-3 px-3 text-right">
                               <button
                                 type="button"
                                 onClick={() => setReceiptRef(b.ref)}
-                                className="font-mono text-[11px] font-bold text-[#75CFFF] hover:underline"
+                                className="font-mono text-[11px] font-bold text-[#1E3A8A] hover:underline"
                               >
                                 Invoice
                               </button>
@@ -991,7 +991,7 @@ export default function AdminDashboard() {
                     </table>
                   </div>
                 ) : (
-                  <p className="text-center py-6 text-xs text-neutral-500 font-mono">No recent bookings recorded.</p>
+                  <p className="text-center py-6 text-xs text-slate-400 font-mono">No recent bookings recorded.</p>
                 )}
               </div>
             </>
@@ -999,9 +999,9 @@ export default function AdminDashboard() {
 
           {/* Quick Actions Shortcuts */}
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-6 shadow-xl">
-              <h3 className="font-heading font-black text-lg text-[#F5F7FA]">Fleet Controls</h3>
-              <p className="mt-1 text-xs text-[#C6CDD5]">Quickly add new vehicles or configure daily rental rates.</p>
+            <div className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm">
+              <h3 className="font-heading font-black text-lg text-[#0A142F]">Fleet Controls</h3>
+              <p className="mt-1 text-xs text-slate-500">Quickly add new vehicles or configure daily rental rates.</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
                   onClick={openAddModal}
@@ -1009,20 +1009,20 @@ export default function AdminDashboard() {
                 >
                   <Plus size={15} /> Add New Car
                 </button>
-                <button onClick={() => setActiveTab('fleet')} className="btn-outline text-xs text-[#C6CDD5]">
+                <button onClick={() => setActiveTab('fleet')} className="btn-outline text-xs text-slate-700">
                   Manage Fleet ({cars.length})
                 </button>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-6 shadow-xl">
-              <h3 className="font-heading font-black text-lg text-[#F5F7FA]">Booking Dispatch</h3>
-              <p className="mt-1 text-xs text-[#C6CDD5]">Process confirmed bookings, print tax receipts, or handle refunds.</p>
+            <div className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm">
+              <h3 className="font-heading font-black text-lg text-[#0A142F]">Booking Dispatch</h3>
+              <p className="mt-1 text-xs text-slate-500">Process confirmed bookings, print tax receipts, or handle refunds.</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <button onClick={() => setActiveTab('bookings')} className="btn-primary text-xs flex items-center gap-1.5">
                   <CalendarCheck size={15} /> Review Bookings ({bookings.length})
                 </button>
-                <button onClick={() => setActiveTab('inquiries')} className="btn-outline text-xs flex items-center gap-1.5 text-[#C6CDD5]">
+                <button onClick={() => setActiveTab('inquiries')} className="btn-outline text-xs flex items-center gap-1.5 text-slate-700">
                   <Mail size={15} /> Inquiries ({messages.length})
                 </button>
               </div>
@@ -1067,11 +1067,11 @@ export default function AdminDashboard() {
             </button>
           </div>
 
-          <p className="font-mono text-xs text-[#C6CDD5]">Showing {filteredCars.length} of {cars.length} cars in catalog</p>
+          <p className="font-mono text-xs text-slate-500">Showing {filteredCars.length} of {cars.length} cars in catalog</p>
 
-          <div className="overflow-x-auto rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] shadow-xl">
+          <div className="overflow-x-auto rounded-3xl border border-slate-200/90 bg-white shadow-sm">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-white/10 bg-[#1B2028] font-mono text-[11px] font-bold uppercase tracking-wider text-[#75CFFF]">
+              <thead className="border-b border-slate-200 bg-slate-50/80 font-mono text-[11px] font-bold uppercase tracking-wider text-[#0A142F]">
                 <tr>
                   <th className="p-4">Car ID & Vehicle</th>
                   <th className="p-4">Category</th>
@@ -1082,32 +1082,32 @@ export default function AdminDashboard() {
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-100">
                 {filteredCars.map((c) => (
-                  <tr key={c.id} className="hover:bg-white/5 transition">
+                  <tr key={c.id} className="hover:bg-slate-50/60 transition">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-14 shrink-0 overflow-hidden rounded-xl bg-neutral-900 border border-white/5">
+                        <div className="h-10 w-14 shrink-0 overflow-hidden rounded-xl bg-slate-100 border border-slate-200">
                           <CarImage src={c.image} alt="" className="h-full w-full object-cover" />
                         </div>
                         <div>
-                          <p className="font-black text-[#F5F7FA]">{c.brand} {c.model}</p>
-                          <span className="font-mono text-[10px] text-[#C6CDD5]">ID: #{c.id} · {c.year}</span>
+                          <p className="font-bold text-[#0A142F]">{c.brand} {c.model}</p>
+                          <span className="font-mono text-[10px] text-slate-500">ID: #{c.id} · {c.year}</span>
                         </div>
                       </div>
                     </td>
                     <td className="p-4">
-                      <span className="rounded-full bg-white/5 border border-white/10 px-2.5 py-1 font-mono font-semibold text-[11px] text-[#C6CDD5]">
+                      <span className="rounded-full bg-slate-100 border border-slate-200 px-2.5 py-1 font-mono font-semibold text-[11px] text-slate-700">
                         {c.category}
                       </span>
                     </td>
-                    <td className="p-4 text-[#C6CDD5]">
+                    <td className="p-4 text-slate-600">
                       {c.fuel} · {c.transmission} · {c.seats} seats
                     </td>
-                    <td className="p-4 text-[#C6CDD5] font-medium">
+                    <td className="p-4 text-slate-700 font-medium">
                       {c.location}
                     </td>
-                    <td className="p-4 font-mono font-bold text-[#75CFFF]">
+                    <td className="p-4 font-mono font-bold text-[#1E3A8A]">
                       {formatINR(c.pricePerDay)}
                     </td>
                     <td className="p-4">
@@ -1115,8 +1115,8 @@ export default function AdminDashboard() {
                         onClick={() => toggleCarAvailability(c.id, !c.available)}
                         className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-[11px] font-bold border transition ${
                           c.available
-                            ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20'
-                            : 'bg-rose-500/10 border-rose-500/25 text-rose-400 hover:bg-rose-500/20'
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
+                            : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'
                         }`}
                         title="Click to toggle availability"
                       >
@@ -1128,14 +1128,14 @@ export default function AdminDashboard() {
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => openEditModal(c)}
-                          className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-[#C6CDD5] hover:bg-white/10 hover:text-white transition"
+                          className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-[#0A142F] transition"
                           title="Edit vehicle"
                         >
                           <Edit size={14} />
                         </button>
                         <button
                           onClick={() => handleDeleteCar(c.id, `${c.brand} ${c.model}`)}
-                          className="grid h-8 w-8 place-items-center rounded-lg border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 transition"
+                          className="grid h-8 w-8 place-items-center rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 transition"
                           title="Delete vehicle"
                         >
                           <Trash2 size={14} />
@@ -1179,9 +1179,9 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] shadow-xl">
+          <div className="overflow-x-auto rounded-3xl border border-slate-200/90 bg-white shadow-sm">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-white/10 bg-[#1B2028] font-mono text-[11px] font-bold uppercase tracking-wider text-[#75CFFF]">
+              <thead className="border-b border-slate-200 bg-slate-50/80 font-mono text-[11px] font-bold uppercase tracking-wider text-[#0A142F]">
                 <tr>
                   <th className="p-4">Booking Ref</th>
                   <th className="p-4">Customer Details</th>
@@ -1192,32 +1192,32 @@ export default function AdminDashboard() {
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-100">
                 {filteredBookings.map((b) => (
-                  <tr key={b.id || b.ref} className="hover:bg-white/5 transition">
+                  <tr key={b.id || b.ref} className="hover:bg-slate-50/60 transition">
                     <td className="p-4">
-                      <span className="font-mono font-bold text-[#75CFFF]">{b.ref}</span>
-                      <p className="text-[11px] font-medium text-[#C6CDD5] mt-0.5 flex items-center gap-1">
-                        <MapPin size={11} className="text-[#75CFFF] shrink-0" /> {b.pickup}
+                      <span className="font-mono font-bold text-[#1E3A8A]">{b.ref}</span>
+                      <p className="text-[11px] font-medium text-slate-600 mt-0.5 flex items-center gap-1">
+                        <MapPin size={11} className="text-[#1E3A8A] shrink-0" /> {b.pickup}
                       </p>
                       {b.dropoff && b.dropoff !== b.pickup && (
-                        <p className="text-[10px] text-neutral-400">Return: {b.dropoff}</p>
+                        <p className="text-[10px] text-slate-400">Return: {b.dropoff}</p>
                       )}
                     </td>
                     <td className="p-4">
-                      <p className="font-bold text-[#F5F7FA]">{b.customer?.fullName}</p>
-                      <p className="text-[#C6CDD5]">{b.customer?.email}</p>
-                      <p className="font-mono text-neutral-400 text-[10px]">{b.customer?.phone}</p>
+                      <p className="font-bold text-[#0A142F]">{b.customer?.fullName}</p>
+                      <p className="text-slate-600">{b.customer?.email}</p>
+                      <p className="font-mono text-slate-400 text-[10px]">{b.customer?.phone}</p>
                     </td>
                     <td className="p-4">
-                      <p className="font-bold text-[#F5F7FA]">{b.car?.brand} {b.car?.model}</p>
-                      <span className="font-mono text-[10px] text-[#C6CDD5]">{b.car?.category}</span>
+                      <p className="font-bold text-[#0A142F]">{b.car?.brand} {b.car?.model}</p>
+                      <span className="font-mono text-[10px] text-slate-500">{b.car?.category}</span>
                     </td>
-                    <td className="p-4 font-mono text-[#C6CDD5]">
+                    <td className="p-4 font-mono text-slate-600">
                       <div>Start: {new Date(b.start).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}</div>
-                      <div className="text-[10px] text-neutral-400">End: {new Date(b.end).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}</div>
+                      <div className="text-[10px] text-slate-400">End: {new Date(b.end).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}</div>
                     </td>
-                    <td className="p-4 font-mono font-extrabold text-[#75CFFF]">
+                    <td className="p-4 font-mono font-extrabold text-[#1E3A8A]">
                       {formatINR(b.pricing?.total || 0)}
                     </td>
                     <td className="p-4">
@@ -1225,7 +1225,7 @@ export default function AdminDashboard() {
                         <StatusBadge status={b.status} />
                         <span
                           className={`block font-mono text-[10px] font-semibold ${
-                            b.paymentStatus === 'Paid' ? 'text-emerald-400' : 'text-amber-300'
+                            b.paymentStatus === 'Paid' ? 'text-emerald-700' : 'text-amber-700'
                           }`}
                         >
                           Payment: {b.paymentStatus}
@@ -1236,7 +1236,7 @@ export default function AdminDashboard() {
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => setReceiptRef(b.ref)}
-                          className="btn-outline px-2 py-1 text-[11px] flex items-center gap-1 text-[#C6CDD5]"
+                          className="btn-outline px-2 py-1 text-[11px] flex items-center gap-1 text-slate-700 hover:text-[#0A142F]"
                           title="Print or view tax invoice"
                         >
                           <FileText size={13} /> Invoice
@@ -1244,7 +1244,7 @@ export default function AdminDashboard() {
                         {b.status === 'Confirmed' && (
                           <button
                             onClick={() => handleUpdateBookingStatus(b.id, 'Completed', 'Paid')}
-                            className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 font-mono text-[11px] font-bold text-emerald-400 hover:bg-emerald-500/20 transition"
+                            className="rounded-lg bg-emerald-50 border border-emerald-200 px-2 py-1 font-mono text-[11px] font-bold text-emerald-700 hover:bg-emerald-100 transition"
                             title="Mark trip as completed"
                           >
                             Complete
@@ -1253,7 +1253,7 @@ export default function AdminDashboard() {
                         {b.status === 'Confirmed' && (
                           <button
                             onClick={() => handleUpdateBookingStatus(b.id, 'Cancelled')}
-                            className="rounded-lg bg-rose-500/10 border border-rose-500/20 px-2 py-1 font-mono text-[11px] font-bold text-rose-400 hover:bg-rose-500/20 transition"
+                            className="rounded-lg bg-rose-50 border border-rose-200 px-2 py-1 font-mono text-[11px] font-bold text-rose-700 hover:bg-rose-100 transition"
                             title="Cancel booking"
                           >
                             Cancel
@@ -1272,22 +1272,22 @@ export default function AdminDashboard() {
       {/* TAB 4: CUSTOMER INQUIRIES */}
       {activeTab === 'inquiries' && (
         <div className="mt-8 space-y-4">
-          <p className="font-mono text-xs text-[#C6CDD5]">Contact form transmissions stored in database</p>
+          <p className="font-mono text-xs text-slate-500">Contact form transmissions stored in database</p>
           <div className="grid gap-4 md:grid-cols-2">
             {messages.map((m) => (
-              <div key={m.id} className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-6 shadow-xl">
-                <div className="flex items-start justify-between gap-2 border-b border-white/5 pb-3">
+              <div key={m.id} className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm">
+                <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
                   <div>
-                    <h3 className="font-bold text-sm text-[#F5F7FA]">{m.name}</h3>
-                    <p className="text-xs text-[#C6CDD5]">{m.email} · {m.phone || 'No phone'}</p>
+                    <h3 className="font-bold text-sm text-[#0A142F]">{m.name}</h3>
+                    <p className="text-xs text-slate-500">{m.email} · {m.phone || 'No phone'}</p>
                   </div>
-                  <span className="text-[10px] text-neutral-400 font-mono">
+                  <span className="text-[10px] text-slate-400 font-mono">
                     {new Date(m.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
                 </div>
                 <div className="mt-3">
-                  <p className="font-bold text-xs text-[#75CFFF]">Subject: {m.subject}</p>
-                  <p className="mt-1.5 text-xs text-[#C6CDD5] leading-relaxed bg-[#1B2028] p-3 rounded-2xl border border-white/5">{m.message}</p>
+                  <p className="font-bold text-xs text-[#1E3A8A]">Subject: {m.subject}</p>
+                  <p className="mt-1.5 text-xs text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-200/80">{m.message}</p>
                 </div>
               </div>
             ))}
@@ -1300,16 +1300,16 @@ export default function AdminDashboard() {
         <div className="mt-8 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h2 className="font-heading text-lg font-black text-[#F5F7FA] flex items-center gap-2">
-                <MapPin size={20} className="text-[#75CFFF]" /> Drivo Network Hubs & Handover Stations
+              <h2 className="font-heading text-lg font-bold text-[#0A142F] flex items-center gap-2">
+                <MapPin size={20} className="text-[#1E3A8A]" /> Drivo Network Hubs & Handover Stations
               </h2>
-              <p className="mt-0.5 text-xs text-[#C6CDD5]">
+              <p className="mt-0.5 text-xs text-slate-600">
                 Authoritative physical dispatch hubs, airport terminal kiosks, and railway concierge points with verified coordinates.
               </p>
             </div>
 
             {/* City Selector */}
-            <div className="flex flex-wrap gap-1.5 rounded-2xl bg-[#1B2028] border border-white/5 p-1 text-xs">
+            <div className="flex flex-wrap gap-1.5 rounded-2xl bg-white border border-slate-200 p-1 text-xs shadow-sm">
               {['Coimbatore', 'Chennai', 'Bengaluru', 'Kochi', 'Hyderabad', 'Mumbai', 'Delhi', 'Nagercoil'].map((c) => (
                 <button
                   key={c}
@@ -1317,8 +1317,8 @@ export default function AdminDashboard() {
                   onClick={() => setSelectedLocationCity(c)}
                   className={`rounded-xl px-3 py-1 font-mono text-xs font-semibold transition ${
                     selectedLocationCity === c
-                      ? 'bg-[#75CFFF] text-[#111318] shadow-sm'
-                      : 'text-[#C6CDD5] hover:text-white'
+                      ? 'bg-[#0A142F] text-white shadow-sm'
+                      : 'text-slate-600 hover:text-[#0A142F] hover:bg-slate-100'
                   }`}
                 >
                   {c}
@@ -1336,8 +1336,8 @@ export default function AdminDashboard() {
 
           {/* Station Directory Cards */}
           <div className="space-y-3">
-            <h3 className="font-heading font-black text-sm text-[#F5F7FA] flex items-center gap-2">
-              <Building size={16} className="text-[#75CFFF]" /> Registered Stations in {selectedLocationCity}
+            <h3 className="font-heading font-bold text-sm text-[#0A142F] flex items-center gap-2">
+              <Building size={16} className="text-[#1E3A8A]" /> Registered Stations in {selectedLocationCity}
             </h3>
 
             <div className="grid gap-4 md:grid-cols-3">
@@ -1346,48 +1346,48 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={loc.id}
-                    className="flex flex-col justify-between rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-xl hover:border-[#75CFFF]/40 transition"
+                    className="flex flex-col justify-between rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm hover:border-[#1E3A8A]/40 transition"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 font-mono text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider">
+                        <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 font-mono text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider">
                           {loc.tag}
                         </span>
-                        <span className="font-mono text-[11px] font-semibold text-[#C6CDD5]">
+                        <span className="font-mono text-[11px] font-semibold text-slate-500">
                           {cityFleetCount} Fleet Vehicles
                         </span>
                       </div>
 
-                      <h4 className="font-black text-base text-[#F5F7FA]">{loc.name}</h4>
-                      <p className="mt-1 text-xs text-[#C6CDD5] leading-relaxed">{loc.address}</p>
+                      <h4 className="font-bold text-base text-[#0A142F]">{loc.name}</h4>
+                      <p className="mt-1 text-xs text-slate-600 leading-relaxed">{loc.address}</p>
 
-                      <div className="mt-3 rounded-xl bg-[#1B2028] border border-white/5 p-2.5 text-[11px] space-y-1 text-[#C6CDD5]">
+                      <div className="mt-3 rounded-xl bg-slate-50 border border-slate-200 p-2.5 text-[11px] space-y-1 text-slate-600">
                         <p className="flex items-center justify-between">
-                          <span className="font-semibold text-neutral-400">Hours:</span>
-                          <span className="font-medium text-[#F5F7FA]">{loc.hours}</span>
+                          <span className="font-semibold text-slate-400">Hours:</span>
+                          <span className="font-medium text-[#0A142F]">{loc.hours}</span>
                         </p>
                         <p className="flex items-center justify-between">
-                          <span className="font-semibold text-neutral-400">Desk Phone:</span>
-                          <a href={`tel:${loc.phone.replace(/\s+/g, '')}`} className="font-mono font-bold text-[#75CFFF] hover:underline">
+                          <span className="font-semibold text-slate-400">Desk Phone:</span>
+                          <a href={`tel:${loc.phone.replace(/\s+/g, '')}`} className="font-mono font-bold text-[#1E3A8A] hover:underline">
                             {loc.phone}
                           </a>
                         </p>
                         <p className="flex items-center justify-between">
-                          <span className="font-semibold text-neutral-400">Coordinates:</span>
-                          <span className="font-mono text-[10px] text-[#75CFFF]">
+                          <span className="font-semibold text-slate-400">Coordinates:</span>
+                          <span className="font-mono text-[10px] text-[#1E3A8A]">
                             {loc.lat}, {loc.lng}
                           </span>
                         </p>
                       </div>
 
-                      <div className="mt-3 text-xs text-[#C6CDD5]">
-                        <strong className="text-[#F5F7FA] block text-[11px]">Handover Instructions:</strong>
-                        <p className="mt-0.5 leading-relaxed text-[#C6CDD5]/90">{loc.instructions}</p>
+                      <div className="mt-3 text-xs text-slate-600">
+                        <strong className="text-[#0A142F] block text-[11px]">Handover Instructions:</strong>
+                        <p className="mt-0.5 leading-relaxed text-slate-600">{loc.instructions}</p>
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
-                      <span className="font-mono text-[10px] text-neutral-400 uppercase">
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <span className="font-mono text-[10px] text-slate-400 uppercase">
                         Landmark: {loc.landmark}
                       </span>
                       <button
@@ -1396,7 +1396,7 @@ export default function AdminDashboard() {
                           navigator.clipboard.writeText(`${loc.lat}, ${loc.lng}`);
                           toast.success(`Copied coordinates: ${loc.lat}, ${loc.lng}`);
                         }}
-                        className="btn-outline text-[11px] px-2.5 py-1 flex items-center gap-1 text-[#C6CDD5]"
+                        className="btn-outline text-[11px] px-2.5 py-1 flex items-center gap-1 text-slate-700 hover:text-[#0A142F]"
                         title="Copy GPS coordinates"
                       >
                         <Copy size={11} /> Copy GPS
@@ -1412,15 +1412,15 @@ export default function AdminDashboard() {
 
       {/* CREATE / EDIT CAR MODAL */}
       {showAddCarModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fade-in">
-          <div className="relative max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl bg-[#161A22] border border-[rgba(198,205,213,0.15)] text-[#F5F7FA] p-6 shadow-2xl sm:p-8">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <h2 className="font-heading text-lg font-black text-[#F5F7FA]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="relative max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl bg-white border border-slate-200 text-[#0A142F] p-6 shadow-2xl sm:p-8">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <h2 className="font-heading text-lg font-bold text-[#0A142F]">
                 {editingCar ? `Edit ${editingCar.brand} ${editingCar.model}` : 'Add Vehicle to Fleet'}
               </h2>
               <button
                 onClick={closeCarModal}
-                className="grid h-8 w-8 place-items-center rounded-full text-neutral-400 hover:bg-white/10 hover:text-white transition"
+                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
               >
                 <XCircle size={20} />
               </button>
@@ -1429,7 +1429,7 @@ export default function AdminDashboard() {
             <form onSubmit={handleSaveCar} className="mt-6 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-mono text-xs font-bold text-[#75CFFF]">Brand</label>
+                  <label className="font-mono text-xs font-bold text-slate-700">Brand</label>
                   <input
                     type="text"
                     required
@@ -1440,7 +1440,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-xs font-bold text-[#75CFFF]">Model</label>
+                  <label className="font-mono text-xs font-bold text-slate-700">Model</label>
                   <input
                     type="text"
                     required
@@ -1454,7 +1454,7 @@ export default function AdminDashboard() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="font-mono text-xs font-bold text-[#75CFFF]">Category</label>
+                  <label className="font-mono text-xs font-bold text-slate-700">Category</label>
                   <select
                     value={carForm.category}
                     onChange={(e) => setCarForm({ ...carForm, category: e.target.value })}
@@ -1466,7 +1466,7 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="font-mono text-xs font-bold text-[#75CFFF]">Powertrain</label>
+                  <label className="font-mono text-xs font-bold text-slate-700">Powertrain</label>
                   <select
                     value={carForm.fuel}
                     onChange={(e) => setCarForm({ ...carForm, fuel: e.target.value })}
@@ -1479,7 +1479,7 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="font-mono text-xs font-bold text-[#75CFFF]">Transmission</label>
+                  <label className="font-mono text-xs font-bold text-slate-700">Transmission</label>
                   <select
                     value={carForm.transmission}
                     onChange={(e) => setCarForm({ ...carForm, transmission: e.target.value })}
@@ -1493,7 +1493,7 @@ export default function AdminDashboard() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="font-mono text-xs font-bold text-[#75CFFF]">Year</label>
+                  <label className="font-mono text-xs font-bold text-slate-700">Year</label>
                   <input
                     type="number"
                     value={carForm.year}
@@ -1502,7 +1502,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-xs font-bold text-[#75CFFF]">Seats</label>
+                  <label className="font-mono text-xs font-bold text-slate-700">Seats</label>
                   <input
                     type="number"
                     value={carForm.seats}
@@ -1511,7 +1511,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-xs font-bold text-[#75CFFF]">Daily Rate (₹)</label>
+                  <label className="font-mono text-xs font-bold text-slate-700">Daily Rate (₹)</label>
                   <input
                     type="number"
                     value={carForm.pricePerDay}
@@ -1523,7 +1523,7 @@ export default function AdminDashboard() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-mono text-xs font-bold text-[#75CFFF]">City Hub</label>
+                  <label className="font-mono text-xs font-bold text-slate-700">City Hub</label>
                   <select
                     value={carForm.location}
                     onChange={(e) => setCarForm({ ...carForm, location: e.target.value })}
@@ -1535,7 +1535,7 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="font-mono text-xs font-bold text-[#75CFFF]">Security Deposit (₹)</label>
+                  <label className="font-mono text-xs font-bold text-slate-700">Security Deposit (₹)</label>
                   <input
                     type="number"
                     value={carForm.deposit}
@@ -1546,18 +1546,18 @@ export default function AdminDashboard() {
               </div>
 
               {/* UPLOAD CAR IMAGE & LIVE PREVIEW */}
-              <div className="space-y-2 rounded-2xl border border-white/5 bg-[#1B2028] p-4">
+              <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between">
-                  <label className="font-mono text-xs font-bold text-[#75CFFF] flex items-center gap-1.5">
-                    <ImageIcon size={14} className="text-[#75CFFF]" />
-                    Vehicle Media Asset <span className="text-rose-400">*</span>
+                  <label className="font-mono text-xs font-bold text-[#0A142F] flex items-center gap-1.5">
+                    <ImageIcon size={14} className="text-[#1E3A8A]" />
+                    Vehicle Media Asset <span className="text-rose-500">*</span>
                   </label>
-                  <div className="flex rounded-lg bg-[#111318] p-0.5 text-[11px] font-semibold border border-white/5">
+                  <div className="flex rounded-lg bg-slate-200/80 p-0.5 text-[11px] font-semibold border border-slate-200">
                     <button
                       type="button"
                       onClick={() => setImageMode('upload')}
                       className={`rounded-md px-2.5 py-0.5 transition font-mono ${
-                        imageMode === 'upload' ? 'bg-[#75CFFF] text-[#111318] shadow font-bold' : 'text-[#C6CDD5] hover:text-white'
+                        imageMode === 'upload' ? 'bg-white text-[#0A142F] shadow font-bold' : 'text-slate-600 hover:text-[#0A142F]'
                       }`}
                     >
                       Upload File
@@ -1566,7 +1566,7 @@ export default function AdminDashboard() {
                       type="button"
                       onClick={() => setImageMode('url')}
                       className={`rounded-md px-2.5 py-0.5 transition font-mono ${
-                        imageMode === 'url' ? 'bg-[#75CFFF] text-[#111318] shadow font-bold' : 'text-[#C6CDD5] hover:text-white'
+                        imageMode === 'url' ? 'bg-white text-[#0A142F] shadow font-bold' : 'text-slate-600 hover:text-[#0A142F]'
                       }`}
                     >
                       Image URL
@@ -1586,9 +1586,9 @@ export default function AdminDashboard() {
 
                     {/* Preview box if a file was selected or if editing an existing car */}
                     {(previewUrl || (editingCar && editingCar.image)) ? (
-                      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#111318] p-3 shadow-md">
+                      <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
                         <div className="flex items-center gap-4">
-                          <div className="h-24 w-36 shrink-0 overflow-hidden rounded-xl bg-neutral-900 border border-white/5">
+                          <div className="h-24 w-36 shrink-0 overflow-hidden rounded-xl bg-slate-100 border border-slate-200">
                             <img
                               src={previewUrl || resolveImageUrl(editingCar?.image)}
                               alt="Car Preview"
@@ -1599,17 +1599,17 @@ export default function AdminDashboard() {
                             <div className="flex items-center gap-1.5">
                               <span
                                 className={`rounded-full px-2 py-0.5 font-mono text-[10px] font-bold ${
-                                  selectedFile ? 'bg-emerald-500/10 border border-emerald-500/25 text-emerald-400' : 'bg-white/5 border border-white/10 text-[#C6CDD5]'
+                                  selectedFile ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-slate-100 border border-slate-200 text-slate-600'
                                 }`}
                               >
                                 {selectedFile ? 'New Image Selected' : 'Current Saved Asset'}
                               </span>
                             </div>
-                            <p className="mt-1 truncate text-xs font-bold text-[#F5F7FA]">
+                            <p className="mt-1 truncate text-xs font-bold text-[#0A142F]">
                               {selectedFile ? selectedFile.name : (editingCar ? `${editingCar.brand} ${editingCar.model}` : 'Vehicle Image')}
                             </p>
                             {selectedFile && (
-                              <p className="font-mono text-[11px] text-[#C6CDD5]">
+                              <p className="font-mono text-[11px] text-slate-500">
                                 Size: {(selectedFile.size / 1024).toFixed(0)} KB · Type: {selectedFile.type.split('/')[1]?.toUpperCase()}
                               </p>
                             )}
@@ -1617,7 +1617,7 @@ export default function AdminDashboard() {
                               <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="btn-outline px-2.5 py-1 text-[11px] flex items-center gap-1 text-[#C6CDD5]"
+                                className="btn-outline px-2.5 py-1 text-[11px] flex items-center gap-1 text-slate-700 hover:text-[#0A142F]"
                               >
                                 <UploadCloud size={13} /> {selectedFile ? 'Change Image' : 'Upload Replacement'}
                               </button>
@@ -1625,7 +1625,7 @@ export default function AdminDashboard() {
                                 <button
                                   type="button"
                                   onClick={handleRemoveFile}
-                                  className="rounded-lg px-2.5 py-1 text-[11px] font-semibold text-rose-400 hover:bg-rose-500/10 transition"
+                                  className="rounded-lg px-2.5 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50 transition"
                                 >
                                   Remove
                                 </button>
@@ -1638,20 +1638,20 @@ export default function AdminDashboard() {
                       /* Drag & drop / upload button */
                       <div
                         onClick={() => fileInputRef.current?.click()}
-                        className="group flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-white/15 bg-[#111318] p-6 text-center transition hover:border-[#75CFFF] hover:bg-white/5"
+                        className="group flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white p-6 text-center transition hover:border-[#1E3A8A] hover:bg-slate-50/50"
                       >
-                        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/5 text-[#75CFFF] group-hover:scale-110 transition">
+                        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-[#1E3A8A] group-hover:scale-110 transition">
                           <UploadCloud size={24} />
                         </div>
-                        <p className="mt-2 text-xs font-bold text-[#F5F7FA]">
+                        <p className="mt-2 text-xs font-bold text-[#0A142F]">
                           Choose Image to Upload
                         </p>
-                        <p className="mt-0.5 text-[11px] text-[#C6CDD5]">
+                        <p className="mt-0.5 text-[11px] text-slate-500">
                           JPG, JPEG, PNG, or WEBP (Max size: 5 MB)
                         </p>
                         <button
                           type="button"
-                          className="btn-outline mt-3 px-3 py-1 text-xs pointer-events-none text-[#C6CDD5]"
+                          className="btn-outline mt-3 px-3 py-1 text-xs pointer-events-none text-slate-700"
                         >
                           Choose File
                         </button>
@@ -1668,7 +1668,7 @@ export default function AdminDashboard() {
                       className="field text-xs"
                     />
                     {carForm.image && (
-                      <div className="mt-2 h-20 w-32 overflow-hidden rounded-xl border border-white/10 bg-neutral-900">
+                      <div className="mt-2 h-20 w-32 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
                         <img
                           src={resolveImageUrl(carForm.image)}
                           alt="URL preview"
@@ -1687,18 +1687,18 @@ export default function AdminDashboard() {
                   id="car-available"
                   checked={carForm.available}
                   onChange={(e) => setCarForm({ ...carForm, available: e.target.checked })}
-                  className="rounded border-white/20 bg-[#111318] text-[#75CFFF] focus:ring-[#75CFFF]"
+                  className="rounded border-slate-300 text-[#1E3A8A] focus:ring-[#1E3A8A]"
                 />
-                <label htmlFor="car-available" className="text-xs font-bold text-[#F5F7FA]">
+                <label htmlFor="car-available" className="text-xs font-bold text-[#0A142F]">
                   Mark as Available for Rent
                 </label>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={closeCarModal}
-                  className="btn-outline text-xs text-[#C6CDD5]"
+                  className="btn-outline text-xs text-slate-700 hover:text-[#0A142F]"
                 >
                   Cancel
                 </button>

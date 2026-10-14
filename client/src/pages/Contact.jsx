@@ -46,11 +46,11 @@ export default function Contact() {
   };
 
   return (
-    <div className="container-x py-12">
+    <div className="container-x py-12 text-[#0A142F]">
       <div className="max-w-2xl">
-        <span className="font-mono text-xs uppercase tracking-widest text-[#75CFFF]">Customer Concierge</span>
-        <h1 className="font-heading text-3xl sm:text-4xl font-black text-[#F5F7FA] mt-2">Connect with Drivo</h1>
-        <p className="mt-3 text-[#C6CDD5] text-sm leading-relaxed">
+        <span className="font-mono text-xs uppercase tracking-widest text-[#1E3A8A] font-bold">Customer Concierge</span>
+        <h1 className="font-heading text-3xl sm:text-4xl font-black text-[#0A142F] mt-2">Connect with Drivo</h1>
+        <p className="mt-3 text-slate-600 text-sm leading-relaxed">
           Questions regarding fleet telemetry, airport dispatch hubs, or specialized vehicle reservations? Our concierge team is active 24/7.
         </p>
       </div>
@@ -63,63 +63,63 @@ export default function Contact() {
             { icon: MapPin, title: 'Headquarters Hub', detail: 'Aero Hub, RS Puram', sub: 'Coimbatore, Tamil Nadu 641002' },
             { icon: Clock, title: 'Emergency Roadside', detail: 'Zero-Latency Dispatch', sub: 'GPS-synchronized across 8 metro hubs' },
           ].map(({ icon: Icon, title, detail, sub }) => (
-            <div key={title} className="flex items-start gap-4 rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5 shadow-xl">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#75CFFF]/10 border border-[#75CFFF]/25 text-[#75CFFF]">
+            <div key={title} className="flex items-start gap-4 rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-blue-50 border border-blue-900/10 text-[#1E3A8A]">
                 <Icon size={20} />
               </span>
               <div>
-                <h2 className="font-bold text-sm text-[#F5F7FA]">{title}</h2>
-                <p className="mt-0.5 font-mono font-semibold text-[#75CFFF] text-xs">{detail}</p>
-                <p className="text-xs text-[#C6CDD5] mt-0.5">{sub}</p>
+                <h2 className="font-bold text-sm text-[#0A142F]">{title}</h2>
+                <p className="mt-0.5 font-mono font-bold text-[#1E3A8A] text-xs">{detail}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{sub}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="rounded-3xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-8 shadow-2xl lg:col-span-2">
+        <div className="rounded-3xl border border-slate-200/90 bg-white p-8 shadow-sm lg:col-span-2">
           {submitted ? (
             <div className="py-12 text-center">
-              <CheckCircle2 size={44} className="mx-auto text-emerald-400" />
-              <h2 className="mt-4 text-2xl font-black text-[#F5F7FA]">Transmission Logged</h2>
-              <p className="mt-2 text-sm text-[#C6CDD5]">
+              <CheckCircle2 size={44} className="mx-auto text-emerald-600" />
+              <h2 className="mt-4 text-2xl font-black text-[#0A142F]">Transmission Logged</h2>
+              <p className="mt-2 text-sm text-slate-600">
                 Your inquiry has been assigned a priority dispatch token. A concierge manager will reach out via email shortly.
               </p>
-              <button type="button" onClick={() => setSubmitted(false)} className="btn-outline mt-6 text-[#C6CDD5]">
+              <button type="button" onClick={() => setSubmitted(false)} className="btn-outline mt-6 text-slate-700">
                 Transmit Another Message
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} noValidate className="space-y-4">
-              <h2 className="font-heading text-xl font-bold text-[#F5F7FA]">Send a Transmission</h2>
+              <h2 className="font-heading text-xl font-black text-[#0A142F]">Send a Transmission</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="cnt-name" className="mb-1 block font-mono text-xs font-semibold text-[#75CFFF]">Your Name *</label>
+                  <label htmlFor="cnt-name" className="mb-1 block font-mono text-xs font-semibold text-[#0A142F]">Your Name *</label>
                   <input id="cnt-name" className="field" placeholder="Priya Raman" value={form.name} onChange={setField('name')} aria-invalid={!!errors.name} />
-                  {errors.name && <p className="mt-1 font-mono text-xs text-rose-400">{errors.name}</p>}
+                  {errors.name && <p className="mt-1 font-mono text-xs text-rose-500">{errors.name}</p>}
                 </div>
                 <div>
-                  <label htmlFor="cnt-email" className="mb-1 block font-mono text-xs font-semibold text-[#75CFFF]">Email Address *</label>
+                  <label htmlFor="cnt-email" className="mb-1 block font-mono text-xs font-semibold text-[#0A142F]">Email Address *</label>
                   <input id="cnt-email" type="email" className="field" placeholder="you@example.com" value={form.email} onChange={setField('email')} aria-invalid={!!errors.email} />
-                  {errors.email && <p className="mt-1 font-mono text-xs text-rose-400">{errors.email}</p>}
+                  {errors.email && <p className="mt-1 font-mono text-xs text-rose-500">{errors.email}</p>}
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="cnt-phone" className="mb-1 block font-mono text-xs font-semibold text-[#75CFFF]">Contact Mobile (optional)</label>
+                  <label htmlFor="cnt-phone" className="mb-1 block font-mono text-xs font-semibold text-[#0A142F]">Contact Mobile (optional)</label>
                   <input id="cnt-phone" type="tel" className="field" placeholder="+91 98765 43210" value={form.phone} onChange={setField('phone')} />
                 </div>
                 <div>
-                  <label htmlFor="cnt-subj" className="mb-1 block font-mono text-xs font-semibold text-[#75CFFF]">Subject *</label>
+                  <label htmlFor="cnt-subj" className="mb-1 block font-mono text-xs font-semibold text-[#0A142F]">Subject *</label>
                   <input id="cnt-subj" className="field" placeholder="Fleet inquiry or reservation assistance" value={form.subject} onChange={setField('subject')} aria-invalid={!!errors.subject} />
-                  {errors.subject && <p className="mt-1 font-mono text-xs text-rose-400">{errors.subject}</p>}
+                  {errors.subject && <p className="mt-1 font-mono text-xs text-rose-500">{errors.subject}</p>}
                 </div>
               </div>
 
               <div>
-                <label htmlFor="cnt-msg" className="mb-1 block font-mono text-xs font-semibold text-[#75CFFF]">Message Content *</label>
+                <label htmlFor="cnt-msg" className="mb-1 block font-mono text-xs font-semibold text-[#0A142F]">Message Content *</label>
                 <textarea id="cnt-msg" rows={5} className="field resize-none" placeholder="Provide trip details, desired vehicle model, or support requirements..." value={form.message} onChange={setField('message')} aria-invalid={!!errors.message} />
-                {errors.message && <p className="mt-1 font-mono text-xs text-rose-400">{errors.message}</p>}
+                {errors.message && <p className="mt-1 font-mono text-xs text-rose-500">{errors.message}</p>}
               </div>
 
               <button type="submit" disabled={submitting} className="btn-primary flex items-center gap-2">

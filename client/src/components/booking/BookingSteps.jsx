@@ -8,12 +8,12 @@ import PickupLocationMap from '../PickupLocationMap.jsx';
 function Field({ id, label, error, hint, children }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-xs font-mono font-medium tracking-wider text-[#C6CDD5]">
+      <label htmlFor={id} className="mb-1.5 block text-xs font-bold text-slate-700">
         {label}
       </label>
       {children}
-      {hint && !error && <p className="mt-1 text-[11px] font-mono text-[#C6CDD5]/50">{hint}</p>}
-      {error && <p className="field-error" role="alert">{error}</p>}
+      {hint && !error && <p className="mt-1 text-[11px] text-slate-400 font-medium">{hint}</p>}
+      {error && <p className="mt-1 text-xs font-semibold text-rose-600" role="alert">{error}</p>}
     </div>
   );
 }
@@ -21,17 +21,17 @@ function Field({ id, label, error, hint, children }) {
 export function StepCar({ draft, cars, car, errors, conflict, rangeOk, onChange }) {
   const now = toLocalInput(new Date());
   return (
-    <div className="space-y-5 text-[#F5F7FA]">
+    <div className="space-y-5 text-[#0F172A]">
       <Field id="b-car" label="Select Vehicle Specification" error={errors.carId}>
         <select
           id="b-car"
-          className="field text-xs font-semibold bg-[#161A22] text-[#F5F7FA]"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-3 text-xs font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none transition cursor-pointer"
           value={draft.carId ?? ''}
           onChange={(e) => onChange({ carId: e.target.value ? Number(e.target.value) : null })}
         >
-          <option value="" className="bg-[#161A22] text-[#C6CDD5]">Select a vehicle from certified fleet</option>
+          <option value="">Select a vehicle from certified fleet</option>
           {cars.map((c) => (
-            <option key={c.id} value={c.id} disabled={!c.available} className="bg-[#161A22] text-[#F5F7FA]">
+            <option key={c.id} value={c.id} disabled={!c.available}>
               {c.brand} {c.model} ({c.location}) — {formatINR(c.pricePerDay)}/day{c.available ? '' : ' (Currently Unavailable)'}
             </option>
           ))}
@@ -43,7 +43,7 @@ export function StepCar({ draft, cars, car, errors, conflict, rangeOk, onChange 
           <input
             id="b-start"
             type="datetime-local"
-            className="field text-xs bg-[#161A22] text-[#F5F7FA]"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-3 text-xs font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none transition cursor-pointer"
             min={now}
             value={draft.start}
             onChange={(e) => onChange({ start: e.target.value })}
@@ -53,7 +53,7 @@ export function StepCar({ draft, cars, car, errors, conflict, rangeOk, onChange 
           <input
             id="b-end"
             type="datetime-local"
-            className="field text-xs bg-[#161A22] text-[#F5F7FA]"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-3 text-xs font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none transition cursor-pointer"
             min={draft.start || now}
             value={draft.end}
             onChange={(e) => onChange({ end: e.target.value })}
@@ -62,24 +62,24 @@ export function StepCar({ draft, cars, car, errors, conflict, rangeOk, onChange 
       </div>
 
       {car && rangeOk && (conflict ? (
-        <div className="flex items-start gap-2.5 rounded-xl bg-red-950/60 p-4 text-xs text-red-200 border border-red-500/30" role="alert">
-          <AlertTriangle size={16} className="mt-0.5 shrink-0 text-red-400" />
+        <div className="flex items-start gap-2.5 rounded-2xl bg-rose-50 p-4 text-xs text-rose-900 border border-rose-200" role="alert">
+          <AlertTriangle size={16} className="mt-0.5 shrink-0 text-rose-600" />
           <div>
-            <p className="font-bold text-red-300">Unavailable for Selected Dates</p>
-            <p className="mt-0.5 text-red-300/80">
+            <p className="font-bold text-rose-900">Unavailable for Selected Dates</p>
+            <p className="mt-0.5 text-rose-700">
               Already booked from {new Date(conflict.start).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })} to {new Date(conflict.end).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}.
             </p>
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-2 rounded-xl bg-[#75CFFF]/10 p-3.5 text-xs text-[#75CFFF] border border-[#75CFFF]/25">
-          <CheckCircle2 size={16} className="shrink-0 text-[#75CFFF]" />
-          <span>Vehicle is verified available in live inventory for your dates.</span>
+        <div className="flex items-center gap-2 rounded-2xl bg-emerald-50 p-3.5 text-xs text-emerald-800 border border-emerald-200">
+          <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
+          <span>Vehicle is verified available in live inventory for your selected window.</span>
         </div>
       ))}
 
-      <p className="flex items-center gap-2 text-[11px] font-mono text-[#C6CDD5]/60">
-        <Info size={13} className="shrink-0 text-[#75CFFF]" />
+      <p className="flex items-center gap-2 text-[11px] text-slate-400 font-medium">
+        <Info size={13} className="shrink-0 text-blue-900" />
         Real-time dispatch availability is verified directly against MySQL database.
       </p>
     </div>
@@ -93,7 +93,7 @@ export function StepCustomer({ customer, points, pickup, dropoff, city = 'Coimba
     <Field id={id} label={label} error={errors[key]} hint={props.hint}>
       <input
         id={id}
-        className="field text-xs bg-[#161A22] text-[#F5F7FA]"
+        className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 py-3 text-xs font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none transition"
         value={customer[key]}
         onChange={(e) => onCustomer(key, e.target.value)}
         aria-invalid={!!errors[key]}
@@ -111,9 +111,9 @@ export function StepCustomer({ customer, points, pickup, dropoff, city = 'Coimba
   };
 
   return (
-    <div className="space-y-6 text-[#F5F7FA]">
-      <div className="flex items-start gap-2.5 rounded-xl bg-[#1B2028] p-4 text-xs text-[#C6CDD5] border border-[rgba(198,205,213,0.12)]">
-        <ShieldCheck size={18} className="mt-0.5 shrink-0 text-[#75CFFF]" />
+    <div className="space-y-6 text-[#0F172A]">
+      <div className="flex items-start gap-2.5 rounded-2xl bg-blue-50/70 p-4 text-xs text-blue-900 border border-blue-100">
+        <ShieldCheck size={18} className="mt-0.5 shrink-0 text-blue-900" />
         <span>Please provide verified driver credentials. Handover is authorized upon matching your physical driving licence.</span>
       </div>
 
@@ -126,7 +126,7 @@ export function StepCustomer({ customer, points, pickup, dropoff, city = 'Coimba
       </div>
 
       {/* Interactive Pickup Location Map & Selector */}
-      <div className="pt-2 border-t border-[rgba(198,205,213,0.08)]">
+      <div className="pt-2 border-t border-slate-100">
         <PickupLocationMap
           city={city}
           selectedLocationName={pickup}
@@ -137,18 +137,18 @@ export function StepCustomer({ customer, points, pickup, dropoff, city = 'Coimba
       </div>
 
       {/* Return Location Configuration */}
-      <div className="rounded-xl border border-[rgba(198,205,213,0.12)] bg-[#1B2028] p-4">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="font-display font-bold text-xs uppercase tracking-wider text-[#F5F7FA] block">
+            <span className="font-display font-bold text-xs uppercase tracking-wider text-[#0A142F] block">
               Return Hub Station
             </span>
-            <p className="text-[11px] text-[#C6CDD5]/60 mt-0.5">Where will you hand over the vehicle at conclusion?</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">Where will you hand over the vehicle at conclusion?</p>
           </div>
-          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#C6CDD5] bg-[#161A22] px-3 py-1.5 rounded-lg border border-[rgba(198,205,213,0.14)]">
+          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
             <input
               type="checkbox"
-              className="rounded text-[#75CFFF] focus:ring-[#75CFFF]/30 h-4 w-4 bg-[#111318]"
+              className="rounded text-[#0A142F] focus:ring-[#0A142F] h-4 w-4 cursor-pointer"
               checked={returnSameLocation}
               onChange={(e) => {
                 const checked = e.target.checked;
@@ -163,16 +163,16 @@ export function StepCustomer({ customer, points, pickup, dropoff, city = 'Coimba
         </div>
 
         {!returnSameLocation && (
-          <div className="mt-3 pt-3 border-t border-[rgba(198,205,213,0.08)]">
+          <div className="mt-3 pt-3 border-t border-slate-200">
             <Field id="c-return" label="Select return hub station">
               <select
                 id="c-return"
-                className="field text-xs bg-[#161A22]"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-[#0F172A] focus:border-[#0A142F] focus:outline-none transition cursor-pointer"
                 value={dropoff}
                 onChange={(e) => onChange({ dropoff: e.target.value })}
               >
                 {points.map((p) => (
-                  <option key={p} value={p} className="bg-[#161A22] text-[#F5F7FA]">
+                  <option key={p} value={p}>
                     {p}
                   </option>
                 ))}
@@ -187,32 +187,32 @@ export function StepCustomer({ customer, points, pickup, dropoff, city = 'Coimba
 
 export function StepExtras({ extras, days, onChange }) {
   return (
-    <fieldset className="text-[#F5F7FA]">
-      <legend className="mb-4 text-xs font-mono uppercase tracking-wider text-[#C6CDD5]/70">
+    <fieldset className="text-[#0F172A]">
+      <legend className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">
         Optional enhancements billed per 24-hour cycle.
       </legend>
       <div className="grid gap-3 sm:grid-cols-2">
         {EXTRAS.map((e) => (
           <label
             key={e.key}
-            className={`flex cursor-pointer items-start gap-3.5 rounded-xl border p-4 transition-all ${
+            className={`flex cursor-pointer items-start gap-3.5 rounded-2xl border p-4 transition-all ${
               extras[e.key]
-                ? 'border-[#75CFFF] bg-[#75CFFF]/10 shadow-sm'
-                : 'border-[rgba(198,205,213,0.12)] bg-[#161A22] hover:border-[rgba(198,205,213,0.25)]'
+                ? 'border-[#0A142F] bg-blue-50/30 shadow-xs'
+                : 'border-slate-200 bg-white hover:border-slate-300'
             }`}
           >
             <input
               type="checkbox"
-              className="mt-1 h-4 w-4 accent-[#75CFFF]"
+              className="mt-1 h-4 w-4 accent-[#0A142F] cursor-pointer"
               checked={!!extras[e.key]}
               onChange={(ev) => onChange({ ...extras, [e.key]: ev.target.checked })}
             />
             <div>
-              <span className="block font-display font-bold text-xs text-[#F5F7FA]">{e.label}</span>
-              <span className="block text-[11px] text-[#C6CDD5]/60 mt-0.5">{e.description}</span>
-              <span className="mt-2 block font-mono text-xs font-bold text-[#75CFFF]">
+              <span className="block font-display font-bold text-xs text-[#0A142F]">{e.label}</span>
+              <span className="block text-[11px] text-slate-500 mt-0.5">{e.description}</span>
+              <span className="mt-2 block font-display text-xs font-bold text-[#0A142F]">
                 {formatINR(e.perDay)}/day
-                {days > 0 && <span className="font-normal text-[#C6CDD5]/50"> ({formatINR(e.perDay * days)} total)</span>}
+                {days > 0 && <span className="font-normal text-slate-400"> ({formatINR(e.perDay * days)} total)</span>}
               </span>
             </div>
           </label>
@@ -227,16 +227,16 @@ export function StepSummary({ summaryProps, couponCode, couponError, onApply, on
   const [msg, setMsg] = useState('');
   const apply = () => { const m = onApply(code); setMsg(m || ''); if (!m) setCode(''); };
   return (
-    <div className="space-y-5 text-[#F5F7FA]">
+    <div className="space-y-5 text-[#0F172A]">
       <BookingSummary {...summaryProps} />
-      <div className="rounded-xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-5">
-        <h3 className="font-display text-xs font-bold uppercase tracking-wider text-[#F5F7FA]">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+        <h3 className="font-display text-xs font-bold uppercase tracking-wider text-[#0A142F]">
           Privilege Coupon Code
         </h3>
         {couponCode ? (
-          <div className="mt-3 flex items-center justify-between text-xs rounded-lg bg-[#75CFFF]/10 p-2.5 border border-[#75CFFF]/25">
-            <span>Applied: <strong className="font-mono text-[#75CFFF]">{couponCode}</strong></span>
-            <button className="font-mono font-bold text-xs text-red-400 hover:underline" onClick={onRemove}>
+          <div className="mt-3 flex items-center justify-between text-xs rounded-xl bg-emerald-50 p-3 border border-emerald-200 text-emerald-900">
+            <span>Applied: <strong className="font-bold">{couponCode}</strong></span>
+            <button className="font-bold text-xs text-rose-600 hover:underline cursor-pointer" onClick={onRemove}>
               Remove
             </button>
           </div>
@@ -245,73 +245,45 @@ export function StepSummary({ summaryProps, couponCode, couponError, onApply, on
             <label htmlFor="coupon" className="sr-only">Coupon code</label>
             <input
               id="coupon"
-              className="field font-mono uppercase text-xs bg-[#111318]"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-2.5 text-xs font-bold uppercase text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none"
               placeholder="e.g. WELCOME10"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), apply())}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
             />
-            <button className="btn-primary text-xs px-5 py-2.5" onClick={apply}>
+            <button
+              type="button"
+              className="rounded-xl bg-[#0A142F] text-white px-5 py-2.5 text-xs font-bold uppercase hover:bg-[#1E293B] transition shrink-0 cursor-pointer"
+              onClick={apply}
+            >
               Apply
             </button>
           </div>
         )}
-        {(msg || couponError) && <p className="field-error" role="alert">{msg || couponError}</p>}
+        {(msg || couponError) && (
+          <p className="mt-2 text-xs font-medium text-rose-600">{msg || couponError}</p>
+        )}
       </div>
     </div>
   );
 }
 
-export function StepReview({ customer, summaryProps, agreed, onAgree, error, onEdit }) {
-  const row = (k, v) => (
-    <div className="flex justify-between gap-4 text-xs">
-      <dt className="font-mono text-[#C6CDD5]/60">{k}</dt>
-      <dd className="text-right font-medium text-[#F5F7FA]">{v}</dd>
-    </div>
-  );
-  const section = (title, step, children) => (
-    <div className="rounded-xl border border-[rgba(198,205,213,0.12)] bg-[#161A22] p-4">
-      <div className="mb-2 flex items-center justify-between border-b border-[rgba(198,205,213,0.06)] pb-2">
-        <h3 className="font-display font-bold text-xs uppercase tracking-wider text-[#F5F7FA]">{title}</h3>
-        <button className="text-xs font-mono font-semibold text-[#75CFFF] hover:underline" onClick={() => onEdit(step)}>
-          Edit
-        </button>
-      </div>
-      <dl className="space-y-1.5">{children}</dl>
-    </div>
-  );
+export function StepReview({ summaryProps, agreed, onAgreed }) {
   return (
-    <div className="space-y-4 text-[#F5F7FA]">
-      {section('Driver Credentials', 2, (
-        <>
-          {row('Name', customer.fullName)}
-          {row('Email', customer.email)}
-          {row('Phone', customer.phone)}
-          {row('Licence', customer.license)}
-          {row('Departure Hub', summaryProps.pickup)}
-          {row('Return Hub', summaryProps.dropoff)}
-        </>
-      ))}
-      {section(
-        'Selected Add-ons',
-        3,
-        row('Active Extras', EXTRAS.filter((e) => summaryProps.extras[e.key]).map((e) => e.label).join(', ') || 'None')
-      )}
-      <BookingSummary {...summaryProps} title="Final Tariff Breakdown" />
-      <div className="rounded-xl bg-[#1B2028] p-3.5 border border-[rgba(198,205,213,0.1)] text-xs text-[#C6CDD5]/80 flex items-start gap-2">
-        <Info size={16} className="text-[#75CFFF] shrink-0 mt-0.5" />
-        <span>Reservation will be confirmed into Drivo's secure reservation database and an instant reference token generated.</span>
+    <div className="space-y-5 text-[#0F172A]">
+      <BookingSummary {...summaryProps} title="Final Reservation Audit" />
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+        <label className="flex items-start gap-3 cursor-pointer text-xs leading-relaxed text-slate-700">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 rounded accent-[#0A142F] cursor-pointer"
+            checked={agreed}
+            onChange={(e) => onAgreed(e.target.checked)}
+          />
+          <span>
+            I acknowledge that I hold a valid driving licence and official government ID, and agree to the DRIVO rental agreement, fuel deposit policy, and cancellation terms.
+          </span>
+        </label>
       </div>
-      <label className="flex items-start gap-2.5 text-xs text-[#C6CDD5] cursor-pointer">
-        <input
-          type="checkbox"
-          className="mt-0.5 h-4 w-4 rounded accent-[#75CFFF]"
-          checked={agreed}
-          onChange={(e) => onAgree(e.target.checked)}
-        />
-        <span>I have reviewed the driver details, rental dates, and agree to the 2027 rental and verification terms.</span>
-      </label>
-      {error && <p className="field-error" role="alert">{error}</p>}
     </div>
   );
 }

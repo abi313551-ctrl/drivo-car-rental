@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Check, Zap, ShieldCheck } from 'lucide-react';
+import { Check, ShieldCheck, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCars } from '../context/CarContext.jsx';
 import { useBookings } from '../context/BookingContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { computePricing } from '../services/bookingService.js';
-import { applyCoupon } from '../services/couponService.js';
 import { defaultRange, rentalDays } from '../utils/pricing.js';
 import { pickupPoints } from '../utils/locations.js';
-import { validateBookingRange, validateCustomer } from '../utils/validation.js';
+import { validateBookingRange } from '../utils/validation.js';
 import { apiRequest } from '../services/api.js';
 import BookingSummary from '../components/BookingSummary.jsx';
 import { StepCar, StepCustomer, StepExtras, StepSummary, StepReview } from '../components/booking/BookingSteps.jsx';
@@ -100,41 +99,44 @@ export default function Booking() {
       else if (conflict) e.carId = 'This vehicle is already booked for these dates';
       return e;
     }
-    if (s === 2) return validateCustomer(draft.customer);
-    if (s === 5 && !agreed) return { agreed: 'Accept the rental terms to continue' };
+    if (s === 2) {
+      const e = {};
+      const c = draft.customer || {};
+      if (!c.fullName?.trim()) e.fullName = 'Full name is required';
+      if (!c.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email)) e.email = 'Valid email address is required';
+      if (!c.phone?.trim() || !/^\d{10}$/.test(c.phone.replace(/\D/g, ''))) e.phone = '10-digit mobile number is required';
+      if (!c.license?.trim()) e.license = 'Driving licence number is required';
+      return e;
+    }
+    if (s === 5) {
+      const e = {};
+      if (!agreed) e.agreed = 'You must agree to the rental terms and conditions';
+      return e;
+    }
     return {};
   };
 
-  const goTo = (n) => { setErrors({}); setStep(n); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  const next = async () => {
+  const goTo = (s) => {
+    setErrors({});
+    setStep(s);
+  };
+
+  const next = () => {
     const e = validate(step);
-    setErrors(e);
-    if (Object.keys(e).length) { toast.error('Please fix the highlighted fields'); return; }
-
-    if (step === 1 && car) {
-      try {
-        const avail = await apiRequest(`/cars/${car.id}/availability?start=${encodeURIComponent(draft.start)}&end=${encodeURIComponent(draft.end)}`);
-        if (!avail.available) {
-          const msg = avail.reason || 'This vehicle is already booked for these selected dates.';
-          setErrors({ carId: msg });
-          toast.error(msg);
-          return;
-        }
-      } catch (err) {
-        if (err.message) {
-          setErrors({ carId: err.message });
-          toast.error(err.message);
-          return;
-        }
-      }
+    if (Object.keys(e).length) {
+      setErrors(e);
+      toast.error('Please complete all required fields');
+      return;
     }
-
     goTo(step + 1);
   };
 
   const confirm = async () => {
     const e = validate(5);
-    if (Object.keys(e).length) { setErrors(e); return; }
+    if (Object.keys(e).length) {
+      setErrors(e);
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await createBooking({ ...draft, pickup, dropoff }, car);
@@ -177,134 +179,142 @@ export default function Booking() {
   };
 
   return (
-    <div className="container-x py-10 text-[#F5F7FA]">
-      <div className="max-w-3xl">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#75CFFF]/30 bg-[#75CFFF]/10 px-3 py-1 text-[11px] font-mono font-bold tracking-wider text-[#75CFFF] uppercase mb-2">
-          <Zap size={11} className="fill-[#75CFFF]" /> Step {step} of 5
-        </span>
-        <h1 className="heading">Reserve Your Fleet Vehicle</h1>
-        <p className="mt-2 text-xs sm:text-sm text-[#C6CDD5]/80">
-          Complete verified digital handover authorization and lock in your guaranteed tariff.
-        </p>
-      </div>
-
-      {/* Stepper Navigation */}
-      <ol className="mt-8 flex flex-wrap gap-2.5" aria-label="Booking steps">
-        {STEPS.map((label, i) => {
-          const n = i + 1;
-          const done = n < step;
-          return (
-            <li key={label}>
-              <button
-                disabled={!done}
-                onClick={() => goTo(n)}
-                aria-current={n === step ? 'step' : undefined}
-                className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-mono font-bold transition-all ${
-                  n === step
-                    ? 'bg-[#75CFFF] text-[#111318] shadow-lg shadow-[#75CFFF]/25'
-                    : done
-                    ? 'border border-[#75CFFF]/30 bg-[#75CFFF]/10 text-[#75CFFF]'
-                    : 'border border-[rgba(198,205,213,0.12)] bg-[#1B2028] text-[#C6CDD5]/60'
-                }`}
-              >
-                {done ? <Check size={14} className="stroke-[3]" /> : <span>0{n}</span>}
-                <span>{label}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
-
-      <div className={`mt-8 grid gap-8 ${step === 4 ? '' : 'lg:grid-cols-3'}`}>
-        <div className={`rounded-2xl border border-[rgba(198,205,213,0.14)] bg-[#1B2028] p-6 shadow-2xl ${step === 4 ? 'max-w-2xl' : 'lg:col-span-2'}`}>
-          <h2 className="mb-6 font-display text-lg font-bold uppercase tracking-wider text-[#F5F7FA] border-b border-[rgba(198,205,213,0.08)] pb-3">
-            {STEPS[step - 1]}
-          </h2>
-
-          {step === 1 && (
-            <StepCar
-              draft={draft}
-              cars={cars}
-              car={car}
-              errors={errors}
-              conflict={conflict}
-              rangeOk={rangeOk}
-              onChange={updateDraft}
-            />
-          )}
-          {step === 2 && (
-            <StepCustomer
-              customer={draft.customer}
-              points={points}
-              pickup={pickup}
-              dropoff={dropoff}
-              city={car?.location || 'Coimbatore'}
-              errors={errors}
-              onCustomer={(k, v) => updateDraft({ customer: { ...draft.customer, [k]: v } })}
-              onChange={updateDraft}
-            />
-          )}
-          {step === 3 && (
-            <StepExtras
-              extras={draft.extras}
-              days={rentalDays(draft.start, draft.end)}
-              onChange={(extras) => updateDraft({ extras })}
-            />
-          )}
-          {step === 4 && pricing && (
-            <StepSummary
-              summaryProps={summaryProps}
-              couponCode={pricing.couponCode}
-              couponError={pricing.couponError}
-              onApply={applyCode}
-              onRemove={() => updateDraft({ couponCode: '' })}
-            />
-          )}
-          {step === 5 && pricing && (
-            <StepReview
-              customer={draft.customer}
-              summaryProps={summaryProps}
-              agreed={agreed}
-              onAgree={setAgreed}
-              error={errors.agreed}
-              onEdit={goTo}
-            />
-          )}
-          {step >= 4 && !pricing && (
-            <p className="text-xs font-mono text-[#C6CDD5]/60">
-              Please return to Step 1 and select a vehicle with valid booking dates.
-            </p>
-          )}
-
-          <div className="mt-8 flex justify-between gap-3 border-t border-[rgba(198,205,213,0.08)] pt-6">
-            <button
-              className="btn-outline text-xs px-6 py-2.5"
-              onClick={() => goTo(step - 1)}
-              disabled={step === 1 || submitting}
-            >
-              Back
-            </button>
-            {step < 5 ? (
-              <button className="btn-primary text-xs px-7 py-2.5" onClick={next}>
-                Continue
-              </button>
-            ) : (
-              <button
-                className="btn-primary text-xs px-8 py-3"
-                onClick={confirm}
-                disabled={!pricing || submitting}
-              >
-                {submitting ? 'Confirming Dispatch...' : 'Confirm Reservation'}
-              </button>
-            )}
-          </div>
+    <div className="bg-[#F8F9FA] min-h-screen text-[#0F172A] py-10 sm:py-14">
+      <div className="container-x">
+        <div className="max-w-3xl">
+          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 block mb-1.5">
+            STEP {step} OF 5
+          </span>
+          <h1 className="font-display text-3xl sm:text-5xl font-black text-[#0A142F] tracking-tight">
+            Reserve Your Fleet Vehicle
+          </h1>
+          <p className="mt-2 text-xs sm:text-sm text-slate-600">
+            Complete digital handover authorization and lock in your verified guaranteed tariff.
+          </p>
         </div>
 
-        {step !== 4 && (
-          <div className="lg:sticky lg:top-24 lg:self-start">
-            <BookingSummary {...summaryProps} />
+        {/* Stepper Navigation */}
+        <ol className="mt-8 flex flex-wrap gap-2.5" aria-label="Booking steps">
+          {STEPS.map((label, i) => {
+            const n = i + 1;
+            const done = n < step;
+            return (
+              <li key={label}>
+                <button
+                  type="button"
+                  disabled={!done}
+                  onClick={() => goTo(n)}
+                  aria-current={n === step ? 'step' : undefined}
+                  className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all cursor-pointer ${
+                    n === step
+                      ? 'bg-[#0A142F] text-white shadow-sm'
+                      : done
+                      ? 'border border-slate-300 bg-white text-[#0A142F] hover:bg-slate-50'
+                      : 'border border-slate-200 bg-slate-100/60 text-slate-400 cursor-not-allowed'
+                  }`}
+                >
+                  {done ? <Check size={14} className="stroke-[3] text-emerald-600" /> : <span>0{n}</span>}
+                  <span>{label}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+
+        <div className={`mt-8 grid gap-8 ${step === 4 ? '' : 'lg:grid-cols-3'}`}>
+          <div className={`rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-sm ${step === 4 ? 'max-w-2xl' : 'lg:col-span-2'}`}>
+            <h2 className="mb-6 font-display text-base font-bold uppercase tracking-wider text-[#0A142F] border-b border-slate-100 pb-3">
+              {STEPS[step - 1]}
+            </h2>
+
+            {step === 1 && (
+              <StepCar
+                draft={draft}
+                cars={cars}
+                car={car}
+                errors={errors}
+                conflict={conflict}
+                rangeOk={rangeOk}
+                onChange={updateDraft}
+              />
+            )}
+            {step === 2 && (
+              <StepCustomer
+                customer={draft.customer}
+                points={points}
+                pickup={pickup}
+                dropoff={dropoff}
+                city={car?.location || 'Coimbatore'}
+                errors={errors}
+                onCustomer={(k, v) => updateDraft({ customer: { ...draft.customer, [k]: v } })}
+                onChange={updateDraft}
+              />
+            )}
+            {step === 3 && (
+              <StepExtras
+                extras={draft.extras}
+                days={rentalDays(draft.start, draft.end)}
+                onChange={(extras) => updateDraft({ extras })}
+              />
+            )}
+            {step === 4 && pricing && (
+              <StepSummary
+                summaryProps={summaryProps}
+                couponCode={pricing.couponCode}
+                couponError={pricing.couponError}
+                onApply={applyCode}
+                onRemove={() => updateDraft({ couponCode: '' })}
+              />
+            )}
+            {step === 5 && pricing && (
+              <StepReview
+                summaryProps={summaryProps}
+                agreed={agreed}
+                onAgreed={setAgreed}
+              />
+            )}
+            {step >= 4 && !pricing && (
+              <p className="text-xs text-slate-500">
+                Please return to Step 1 and select a vehicle with valid booking dates.
+              </p>
+            )}
+
+            <div className="mt-8 flex justify-between gap-3 border-t border-slate-100 pt-6">
+              <button
+                type="button"
+                className="rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold uppercase tracking-wider px-6 py-3 transition cursor-pointer"
+                onClick={() => goTo(step - 1)}
+                disabled={step === 1 || submitting}
+              >
+                Back
+              </button>
+              {step < 5 ? (
+                <button
+                  type="button"
+                  className="rounded-xl bg-[#0A142F] hover:bg-[#1E293B] text-white text-xs font-bold uppercase tracking-wider px-8 py-3 transition shadow-sm cursor-pointer"
+                  onClick={next}
+                >
+                  Continue &rarr;
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="rounded-xl bg-[#0A142F] hover:bg-[#1E293B] text-white text-xs font-bold uppercase tracking-wider px-8 py-3.5 transition shadow-sm cursor-pointer disabled:opacity-40"
+                  onClick={confirm}
+                  disabled={!pricing || submitting}
+                >
+                  {submitting ? 'Confirming Dispatch...' : 'Confirm Reservation'}
+                </button>
+              )}
+            </div>
           </div>
-        )}
+
+          {step !== 4 && (
+            <div className="lg:sticky lg:top-24 lg:self-start">
+              <BookingSummary {...summaryProps} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
