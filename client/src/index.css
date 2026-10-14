@@ -1,0 +1,202 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+  body {
+    background-color: #111318;
+    color: #F5F7FA;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    selection-background-color: #75CFFF;
+    selection-color: #111318;
+  }
+  ::selection {
+    background-color: rgba(117, 207, 255, 0.3);
+    color: #F5F7FA;
+  }
+  :focus-visible {
+    outline: 2px solid #75CFFF;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .section {
+    @apply py-16 sm:py-24;
+  }
+  
+  /* Futuristic Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold tracking-wider uppercase transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.98];
+  }
+  .btn-primary {
+    @apply btn bg-[#75CFFF] text-[#111318] shadow-lg shadow-[#75CFFF]/20 hover:bg-[#95DBFF] hover:shadow-[#75CFFF]/35 hover:-translate-y-0.5;
+  }
+  .btn-dark {
+    @apply btn bg-[#1B2028] text-[#F5F7FA] border border-[rgba(198,205,213,0.18)] hover:bg-[#252C37] hover:border-[#75CFFF]/40 hover:-translate-y-0.5;
+  }
+  .btn-outline {
+    @apply btn border border-[rgba(198,205,213,0.22)] bg-[#161A22]/80 backdrop-blur text-[#C6CDD5] hover:border-[#75CFFF] hover:text-[#F5F7FA] hover:bg-[#75CFFF]/10 hover:-translate-y-0.5;
+  }
+  .btn-electric {
+    @apply btn bg-gradient-to-r from-[#75CFFF] to-[#3CA5DE] text-[#111318] font-extrabold shadow-lg shadow-[#75CFFF]/25 hover:shadow-[#75CFFF]/45 hover:-translate-y-0.5;
+  }
+  .btn-gold {
+    @apply btn-primary;
+  }
+  .btn-gold-outline {
+    @apply btn-outline;
+  }
+
+  /* Futuristic Form Fields */
+  .field {
+    @apply w-full rounded-xl border border-[rgba(198,205,213,0.18)] bg-[#161A22] px-4 py-3 text-sm text-[#F5F7FA] placeholder-[#C6CDD5]/40 outline-none transition-all duration-200 focus:border-[#75CFFF] focus:ring-2 focus:ring-[#75CFFF]/20;
+  }
+  .field-error {
+    @apply mt-1 text-xs font-medium text-red-400;
+  }
+  .heading {
+    @apply font-display text-3xl font-extrabold tracking-tight sm:text-5xl text-[#F5F7FA];
+  }
+
+  /* Futuristic Card System */
+  .futuristic-card {
+    @apply relative overflow-hidden rounded-2xl border border-[rgba(198,205,213,0.12)] bg-[#161A22]/90 backdrop-blur-md transition-all duration-300 hover:border-[#75CFFF]/40 hover:shadow-card-hover hover:-translate-y-1;
+  }
+  .futuristic-panel {
+    @apply rounded-2xl border border-[rgba(198,205,213,0.14)] bg-[#1B2028]/80 backdrop-blur-xl;
+  }
+  .glass-card {
+    @apply futuristic-card;
+  }
+  .royal-card {
+    @apply futuristic-card;
+  }
+
+  /* Badges & Tags */
+  .badge-electric {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-[#75CFFF]/30 bg-[#75CFFF]/10 px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#75CFFF];
+  }
+  .badge-titanium {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-[rgba(198,205,213,0.2)] bg-[#1B2028] px-3 py-0.5 text-[11px] font-semibold text-[#C6CDD5];
+  }
+  .gold-badge {
+    @apply badge-electric;
+  }
+  .gold-gradient-text {
+    background: linear-gradient(135deg, #F5F7FA 0%, #C6CDD5 50%, #75CFFF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+/* 2027 Keyframe Entrance & Glow Animations */
+@keyframes fadeInSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes electricPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px -3px rgba(117, 207, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px 2px rgba(117, 207, 255, 0.45);
+  }
+}
+
+.animate-entrance-1 {
+  animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-entrance-2 {
+  animation: fadeInSlideUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
+  opacity: 0;
+}
+
+.animate-entrance-3 {
+  animation: fadeInSlideUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
+  opacity: 0;
+}
+
+.animate-electric-glow {
+  animation: electricPulse 4s ease-in-out infinite;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Custom Scrollbar for 2027 Dark UI */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #111318;
+}
+::-webkit-scrollbar-thumb {
+  background: #252C37;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #75CFFF;
+}
+
+/* Leaflet Map & Custom Pin Customization in Dark Mode */
+.leaflet-container {
+  font-family: inherit;
+  z-index: 1;
+  background-color: #111318 !important;
+}
+
+.leaflet-pane {
+  z-index: 10;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 20;
+}
+
+.drivo-map-pin {
+  background: transparent !important;
+  border: none !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #1B2028 !important;
+  color: #F5F7FA !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(117, 207, 255, 0.3) !important;
+  padding: 4px !important;
+}
+
+.leaflet-popup-content {
+  margin: 12px 14px !important;
+}
+
+.leaflet-popup-tip {
+  background: #1B2028 !important;
+}

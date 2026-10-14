@@ -1,0 +1,422 @@
+/**
+ * Drivo Supported Pickup & Return Stations
+ * Verified locations, physical addresses, GPS coordinates, operating hours, and handover instructions.
+ */
+
+export const CITY_COORDINATES = {
+  Coimbatore: { lat: 11.0168, lng: 76.9558, zoom: 12 },
+  Chennai: { lat: 13.0827, lng: 80.2707, zoom: 11 },
+  Bengaluru: { lat: 12.9716, lng: 77.5946, zoom: 11 },
+  Kochi: { lat: 9.9312, lng: 76.2673, zoom: 11 },
+  Hyderabad: { lat: 17.3850, lng: 78.4867, zoom: 11 },
+  Mumbai: { lat: 19.0760, lng: 72.8777, zoom: 11 },
+  Delhi: { lat: 28.6139, lng: 77.2090, zoom: 11 },
+  Nagercoil: { lat: 8.1833, lng: 77.4119, zoom: 12 },
+};
+
+export const SUPPORTED_LOCATIONS = [
+  // --- Coimbatore ---
+  {
+    id: 'cjb-airport',
+    name: 'Coimbatore Airport',
+    city: 'Coimbatore',
+    type: 'airport',
+    tag: 'Airport Terminal',
+    address: 'Civil Aerodrome Post, Peelamedu, Coimbatore, Tamil Nadu - 641014',
+    lat: 11.0298,
+    lng: 77.0434,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 422 259 2155',
+    instructions: 'Drivo Welcome Desk located at Terminal 1 Arrival Hall exit. Vehicle parked in Bay 4 with 24/7 key handover.',
+    landmark: 'Opposite Domestic Baggage Claim Gate B',
+  },
+  {
+    id: 'cjb-city',
+    name: 'Coimbatore City Center',
+    city: 'Coimbatore',
+    type: 'city',
+    tag: 'Flagship Center',
+    address: '104, West Club Road, RS Puram, Coimbatore, Tamil Nadu - 641002',
+    lat: 11.0088,
+    lng: 76.9525,
+    hours: '06:00 AM – 11:00 PM',
+    phone: '+91 98765 43210',
+    instructions: 'Drivo Flagship Center. Customer lounge on Ground Floor with reserved parking and digital inspection desk.',
+    landmark: 'Near Diwan Bahadur Road Junction',
+  },
+  {
+    id: 'cjb-railway',
+    name: 'Coimbatore Railway Station',
+    city: 'Coimbatore',
+    type: 'railway',
+    tag: 'Railway Station',
+    address: 'State Bank Road, Gopalapuram, Coimbatore, Tamil Nadu - 641018',
+    lat: 10.9979,
+    lng: 76.9669,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 422 230 0134',
+    instructions: 'Meet our representative at the Main Concourse Commercial Valet Parking Bay near Clock Tower.',
+    landmark: 'Platform 1 Main Concourse Parking',
+  },
+
+  // --- Chennai ---
+  {
+    id: 'maa-airport',
+    name: 'Chennai Airport',
+    city: 'Chennai',
+    type: 'airport',
+    tag: 'Airport Terminal',
+    address: 'Grand Southern Trunk Road, Meenambakkam, Chennai, Tamil Nadu - 600027',
+    lat: 12.9941,
+    lng: 80.1709,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 44 2256 0551',
+    instructions: 'Terminal 2 Domestic Arrivals, Column 14. Dedicated Drivo valet kiosk with fast biometric ID check.',
+    landmark: 'Multi-Level Car Park West Pillar 14',
+  },
+  {
+    id: 'maa-city',
+    name: 'Chennai City Center',
+    city: 'Chennai',
+    type: 'city',
+    tag: 'Downtown Station',
+    address: 'North Usman Road, T. Nagar, Chennai, Tamil Nadu - 600017',
+    lat: 13.0418,
+    lng: 80.2341,
+    hours: '06:30 AM – 10:30 PM',
+    phone: '+91 44 2815 3901',
+    instructions: 'Drivo T. Nagar Hub. Basement parking Level B1. Express contactless key collection available.',
+    landmark: 'Near Panagal Park Metro Exit',
+  },
+  {
+    id: 'maa-railway',
+    name: 'Chennai Railway Station',
+    city: 'Chennai',
+    type: 'railway',
+    tag: 'Railway Station',
+    address: 'Kannappar Thidal, Periyamet, Chennai, Tamil Nadu - 600003',
+    lat: 13.0827,
+    lng: 80.2707,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 44 2535 3525',
+    instructions: 'Chennai Central Station Forecourt, Premium Car Parking Zone near Gate 2.',
+    landmark: 'Gate 2 Pre-paid Taxi & Rental Bay',
+  },
+
+  // --- Bengaluru ---
+  {
+    id: 'blr-airport',
+    name: 'Bengaluru Airport',
+    city: 'Bengaluru',
+    type: 'airport',
+    tag: 'Airport Terminal',
+    address: 'KIAL Road, Devanahalli, Bengaluru, Karnataka - 560300',
+    lat: 13.1986,
+    lng: 77.7066,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 80 6678 2425',
+    instructions: 'Terminal 1 P4 Parking Zone, Pillar B3. 24/7 dedicated handover lane with clean sanitised vehicles.',
+    landmark: 'P4 Parking Commercial Lane Pillar B3',
+  },
+  {
+    id: 'blr-city',
+    name: 'Bengaluru City Center',
+    city: 'Bengaluru',
+    type: 'city',
+    tag: 'Tech Hub Center',
+    address: '100 Feet Road, HAL 2nd Stage, Indiranagar, Bengaluru, Karnataka - 560038',
+    lat: 12.9716,
+    lng: 77.6412,
+    hours: '06:00 AM – 11:30 PM',
+    phone: '+91 80 2521 8844',
+    instructions: 'Drivo Tech Hub Station, Indiranagar. Fast paperwork verification and seamless EV fast charging bays.',
+    landmark: 'Near Indiranagar Club & 12th Main',
+  },
+  {
+    id: 'blr-railway',
+    name: 'Bengaluru Railway Station',
+    city: 'Bengaluru',
+    type: 'railway',
+    tag: 'Railway Station',
+    address: 'Krantivira Sangolli Rayanna (Majestic), Gubbi Thotadappa Rd, Bengaluru - 560023',
+    lat: 12.9781,
+    lng: 77.5695,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 80 2287 1441',
+    instructions: 'Platform 1 Exit Gate Commercial Pick-Up Bay. Contact executive upon arriving at Majestic.',
+    landmark: 'Majestic Metro Interchange Walkway',
+  },
+
+  // --- Kochi ---
+  {
+    id: 'cok-airport',
+    name: 'Kochi Airport',
+    city: 'Kochi',
+    type: 'airport',
+    tag: 'Airport Terminal',
+    address: 'Airport Road, Nedumbassery, Kochi, Kerala - 683111',
+    lat: 10.1518,
+    lng: 76.3930,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 484 261 0115',
+    instructions: 'Arrival Canopy Pillar 12. Drivo Airport Representative with name board and keys ready.',
+    landmark: 'Canopy Walkway Pillar 12',
+  },
+  {
+    id: 'cok-city',
+    name: 'Kochi City Center',
+    city: 'Kochi',
+    type: 'city',
+    tag: 'Coastal Hub',
+    address: 'Mahatma Gandhi Road, Shenoys, Kochi, Kerala - 682035',
+    lat: 9.9722,
+    lng: 76.2801,
+    hours: '07:00 AM – 10:00 PM',
+    phone: '+91 484 237 8102',
+    instructions: 'Drivo Coastal Hub, MG Road. Easy parking access with detailed local tourist & route guides.',
+    landmark: 'Near Shenoys Junction Metro Station',
+  },
+  {
+    id: 'cok-railway',
+    name: 'Kochi Railway Station',
+    city: 'Kochi',
+    type: 'railway',
+    tag: 'Railway Station',
+    address: 'South Railway Station Road, Karshaka Rd, Ernakulam, Kochi, Kerala - 682016',
+    lat: 9.9678,
+    lng: 76.2917,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 484 237 6131',
+    instructions: 'Ernakulam Junction West Entrance Commercial Vehicle Stand. 24/7 dispatch desk.',
+    landmark: 'West Entrance Auto & Rental Bay',
+  },
+
+  // --- Hyderabad ---
+  {
+    id: 'hyd-airport',
+    name: 'Hyderabad Airport',
+    city: 'Hyderabad',
+    type: 'airport',
+    tag: 'Airport Terminal',
+    address: 'Shamshabad, Hyderabad, Telangana - 500409',
+    lat: 17.2403,
+    lng: 78.4294,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 40 6654 6370',
+    instructions: 'Level E Car Park Zone B. Key kiosk with fast digital check-in and luggage assistance.',
+    landmark: 'Car Park Level E Zone B Pillar 8',
+  },
+  {
+    id: 'hyd-city',
+    name: 'Hyderabad City Center',
+    city: 'Hyderabad',
+    type: 'city',
+    tag: 'Cyber Station',
+    address: 'Hitec City Main Rd, Patrika Nagar, Madhapur, Hyderabad, Telangana - 500081',
+    lat: 17.4504,
+    lng: 78.3808,
+    hours: '06:00 AM – 11:00 PM',
+    phone: '+91 40 2311 9080',
+    instructions: 'Drivo Cyber Station, Opposite Cyber Towers. Premium executive fleet pickup lounge.',
+    landmark: 'Opposite Cyber Towers Main Gate',
+  },
+  {
+    id: 'hyd-railway',
+    name: 'Hyderabad Railway Station',
+    city: 'Hyderabad',
+    type: 'railway',
+    tag: 'Railway Station',
+    address: 'Station Road, Railway Colony, Secunderabad, Telangana - 500003',
+    lat: 17.4344,
+    lng: 78.5015,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 40 2780 4455',
+    instructions: 'Main Concourse Car Parking Area near Platform 1 VIP Gate. 24/7 staff support.',
+    landmark: 'Platform 1 VIP Concourse Gate',
+  },
+
+  // --- Mumbai ---
+  {
+    id: 'bom-airport',
+    name: 'Mumbai Airport',
+    city: 'Mumbai',
+    type: 'airport',
+    tag: 'Airport Terminal',
+    address: 'Terminal 2, Sahar Road, Andheri East, Mumbai, Maharashtra - 400099',
+    lat: 19.0902,
+    lng: 72.8628,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 22 6685 1010',
+    instructions: 'Terminal 2 Multi-Level Car Parking Level P7, Section B. 24/7 concierge pickup service.',
+    landmark: 'MLCP Level P7 Section B Pillar 22',
+  },
+  {
+    id: 'bom-city',
+    name: 'Mumbai City Center',
+    city: 'Mumbai',
+    type: 'city',
+    tag: 'Financial Hub',
+    address: 'G Block, Bandra Kurla Complex, Bandra East, Mumbai, Maharashtra - 400051',
+    lat: 19.0664,
+    lng: 72.8687,
+    hours: '06:00 AM – 11:00 PM',
+    phone: '+91 22 2650 9920',
+    instructions: 'Drivo BKC Hub, One BKC Ground Concourse. Dedicated executive vehicle dispatch.',
+    landmark: 'Opposite Bharat Diamond Bourse',
+  },
+  {
+    id: 'bom-railway',
+    name: 'Mumbai Railway Station',
+    city: 'Mumbai',
+    type: 'railway',
+    tag: 'Railway Station',
+    address: 'Chhatrapati Shivaji Maharaj Terminus, Fort, Mumbai, Maharashtra - 400001',
+    lat: 18.9401,
+    lng: 72.8352,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 22 2262 0155',
+    instructions: 'CSMT Station Taxi & Valet Bay, GPO side exit. Executive waiting at vehicle bay.',
+    landmark: 'GPO Side Station Exit Bay 3',
+  },
+
+  // --- Delhi ---
+  {
+    id: 'del-airport',
+    name: 'Delhi Airport',
+    city: 'Delhi',
+    type: 'airport',
+    tag: 'Airport Terminal',
+    address: 'Terminal 3, Indira Gandhi International Airport, New Delhi - 110037',
+    lat: 28.5562,
+    lng: 77.1000,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 11 4965 2000',
+    instructions: 'T3 Multi-Level Parking Level 2, Column F. 24/7 key handover desk with express paperwork.',
+    landmark: 'T3 Multi-Level Car Park Floor 2',
+  },
+  {
+    id: 'del-city',
+    name: 'Delhi City Center',
+    city: 'Delhi',
+    type: 'city',
+    tag: 'Capital Hub',
+    address: 'Inner Circle, Block C, Connaught Place, New Delhi - 110001',
+    lat: 28.6328,
+    lng: 77.2197,
+    hours: '06:00 AM – 11:00 PM',
+    phone: '+91 11 2341 8760',
+    instructions: 'Drivo Capital Hub, Connaught Place. Central location with secure multi-level parking.',
+    landmark: 'Block C Inner Circle Metro Gate 4',
+  },
+  {
+    id: 'del-railway',
+    name: 'Delhi Railway Station',
+    city: 'Delhi',
+    type: 'railway',
+    tag: 'Railway Station',
+    address: 'Bhavbhuti Marg, Ratan Lal Market, Paharganj, New Delhi - 110055',
+    lat: 28.6430,
+    lng: 77.2195,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 11 2334 3333',
+    instructions: 'New Delhi Railway Station (NDLS), Ajmeri Gate Side Premium Parking Lot.',
+    landmark: 'Ajmeri Gate Main Parking Concourse',
+  },
+
+  // --- Nagercoil ---
+  {
+    id: 'ncj-railway',
+    name: 'Nagercoil Railway Station',
+    city: 'Nagercoil',
+    type: 'railway',
+    tag: 'Railway Station',
+    address: 'Railway Feeder Road, Kottar, Nagercoil, Tamil Nadu - 629002',
+    lat: 8.1754,
+    lng: 77.4395,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 4652 240 231',
+    instructions: 'Nagercoil Junction Forecourt Vehicle Stand. Representative waiting with vehicle keys.',
+    landmark: 'Main Entrance Vehicle Forecourt',
+  },
+  {
+    id: 'ncj-city',
+    name: 'Nagercoil City Center',
+    city: 'Nagercoil',
+    type: 'city',
+    tag: 'District Hub',
+    address: 'Court Road, Vadasery, Nagercoil, Tamil Nadu - 629001',
+    lat: 8.1925,
+    lng: 77.4287,
+    hours: '06:30 AM – 10:00 PM',
+    phone: '+91 4652 232 450',
+    instructions: 'Drivo Kanyakumari District Hub, Vadasery. Complete fleet inspection and briefing.',
+    landmark: 'Near Vadasery Central Clock Tower',
+  },
+  {
+    id: 'ncj-airport',
+    name: 'Nagercoil Airport',
+    city: 'Nagercoil',
+    type: 'airport',
+    tag: 'Airport Terminal Link',
+    address: 'Airport Road, Chacka, Thiruvananthapuram - 695008 (Direct Link for Nagercoil Region)',
+    lat: 8.4821,
+    lng: 76.9200,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 471 250 0283',
+    instructions: 'TRV Domestic Terminal 1 Pickup Area. Dedicated express transfer connection to Nagercoil.',
+    landmark: 'Terminal 1 Dedicated Express Transit Bay',
+  },
+];
+
+/**
+ * Returns supported pickup locations for a city, or all if no city given.
+ */
+export function getLocationsForCity(city) {
+  if (!city) return SUPPORTED_LOCATIONS;
+  const filtered = SUPPORTED_LOCATIONS.filter(
+    (l) => l.city.toLowerCase() === city.toLowerCase()
+  );
+  return filtered.length > 0 ? filtered : SUPPORTED_LOCATIONS;
+}
+
+/**
+ * Find location object by exact or fuzzy name match.
+ */
+export function getLocationByName(name) {
+  if (!name) return null;
+  const clean = name.trim().toLowerCase();
+  // 1. Exact match
+  const exact = SUPPORTED_LOCATIONS.find((l) => l.name.toLowerCase() === clean);
+  if (exact) return exact;
+
+  // 2. Substring match
+  const sub = SUPPORTED_LOCATIONS.find(
+    (l) => clean.includes(l.name.toLowerCase()) || l.name.toLowerCase().includes(clean)
+  );
+  if (sub) return sub;
+
+  // 3. City + Type token matching
+  const words = new Set(clean.replace(/[-()]/g, ' ').split(/\s+/).filter(Boolean));
+  for (const l of SUPPORTED_LOCATIONS) {
+    const locWords = new Set(l.name.toLowerCase().replace(/[-()]/g, ' ').split(/\s+/).filter(Boolean));
+    if (words.has(l.city.toLowerCase())) {
+      if (
+        (words.has('airport') && locWords.has('airport')) ||
+        ((words.has('railway') || words.has('station') || words.has('central')) &&
+          (locWords.has('railway') || locWords.has('station'))) ||
+        ((words.has('center') || words.has('hub') || words.has('downtown')) && locWords.has('center'))
+      ) {
+        return l;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Backward-compatible helper returning location name strings for a city.
+ */
+export const pickupPoints = (city) => {
+  const locs = getLocationsForCity(city);
+  return locs.map((l) => l.name);
+};
