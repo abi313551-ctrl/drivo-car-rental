@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ChevronDown,
@@ -20,9 +20,8 @@ import CarImage from '../components/CarImage.jsx';
 import { useCars } from '../context/CarContext.jsx';
 import { testimonials, faqs } from '../data/homeContent.js';
 
-const HERO_POSTER = 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=2000&q=80';
-const HERO_VIDEO = '/hero-drive-cinematic.mp4';
-const HERO_FALLBACK_VIDEO = '/hero-drive.mp4';
+const HERO_POSTER = '/hero-drive-bright-poster.jpg';
+const HERO_VIDEO = '/hero-drive-bright.mp4';
 const STORY_IMAGE = 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80';
 
 const categoriesData = [
@@ -87,95 +86,106 @@ export default function Home() {
   const navigate = useNavigate();
   const { cars } = useCars();
   const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, []);
 
   // Show top featured vehicles matching the 4-column showroom layout in reference image
   const featured = [...cars].sort((a, b) => b.rating - a.rating || b.popularity - a.popularity).slice(0, 8);
 
   return (
-    <div className="bg-[#FAFCFE] text-[#0B1528] min-h-screen">
-      {/* 1. Cinematic Hero Section (Exact Match to Reference Screenshot, Static High-Res Image - No Autoplay Video) */}
-      <section className="relative min-h-[85vh] sm:min-h-[88vh] flex items-center overflow-hidden bg-[#0B1528] text-white">
-        {/* High-res BMW Sunset Coast Background Image */}
+    <div className="bg-[#FAF9F6] text-[#0A142F] min-h-screen">
+      {/* 1. Cinematic Hero Section with Bright Daytime Luxury Driving Video */}
+      <section className="relative min-h-[85vh] sm:min-h-[88vh] flex items-center overflow-hidden bg-[#FAF9F6]">
+        {/* Genuine High-Resolution Luxury Car Driving Video Background */}
         <div className="absolute inset-0 w-full h-full overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
-            style={{ backgroundImage: `url(${HERO_POSTER})` }}
+          {/* High-quality static poster fallback */}
+          <img
+            src={HERO_POSTER}
+            alt="Luxury Cars Driving on Architectural Bridge"
+            className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${
+              videoLoaded && !videoFailed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            }`}
           />
-          {/* Deep Navy/Black Vignette for Crisp Contrast */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1528]/80 via-transparent to-transparent" />
+
+          {!videoFailed && (
+            <video
+              ref={videoRef}
+              autoPlay
+              loop
+              muted
+              playsInline
+              poster={HERO_POSTER}
+              onCanPlay={() => setVideoLoaded(true)}
+              onError={() => setVideoFailed(true)}
+              className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 ${
+                videoLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <source src={HERO_VIDEO} type="video/mp4" />
+            </video>
+          )}
+
+          {/* Gentle Left-Side Ivory Gradient for Flawless Text Readability Without Darkening the Cars */}
+          <div className="absolute inset-y-0 left-0 w-full sm:w-3/4 lg:w-1/2 bg-gradient-to-r from-[#FAF9F6]/95 via-[#FAF9F6]/75 to-transparent pointer-events-none z-10" />
+
+          {/* Subtle Bottom Light Fade to integrate smoothly into Floating Search Bar */}
+          <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#FAF9F6] to-transparent pointer-events-none z-10" />
         </div>
 
-        {/* Hero Left Content */}
-        <div className="container-x relative z-10 pt-16 pb-28 sm:pt-24 sm:pb-36 flex flex-col justify-center">
+        {/* Hero Left Content (Deep Navy Typography & Clear CTAs) */}
+        <div className="container-x relative z-20 pt-16 pb-28 sm:pt-24 sm:pb-36 flex flex-col justify-center">
           <div className="max-w-2xl text-left">
             {/* Top Subtitle Badge */}
-            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.25em] text-white/90 mb-4 block">
-              PREMIUM CAR RENTAL
-            </span>
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 backdrop-blur-md px-3.5 py-1 text-xs font-bold tracking-widest text-[#0A142F] shadow-sm mb-5">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="uppercase text-[11px] font-extrabold tracking-[0.2em] text-[#0A142F]">
+                PREMIUM CAR RENTAL
+              </span>
+            </div>
 
             {/* Main Headline */}
-            <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl font-black leading-[1.02] tracking-tight text-white">
+            <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl font-black leading-[1.02] tracking-tight text-[#0A142F]">
               DRIVE BEYOND <br />
-              <span className="text-white">ORDINARY.</span>
+              <span className="text-[#1E3A8A]">ORDINARY.</span>
             </h1>
 
             {/* Subtitle */}
-            <p className="mt-6 text-sm sm:text-base font-normal text-slate-200/90 leading-relaxed max-w-lg">
-              Premium cars. Unforgettable journeys.
-              <br />
-              Your next adventure starts here.
+            <p className="mt-6 text-base sm:text-lg lg:text-xl font-normal text-slate-700 leading-relaxed max-w-lg">
+              Your journey deserves something extraordinary.
             </p>
 
             {/* Action Buttons */}
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Link
                 to="/cars"
-                className="rounded-full bg-white hover:bg-slate-100 text-[#0B1528] font-bold px-7 py-3.5 text-xs sm:text-sm transition-all shadow-xl active:scale-95 flex items-center gap-2"
+                className="rounded-full bg-[#0A142F] hover:bg-[#1E293B] text-white font-bold px-8 py-4 text-xs sm:text-sm tracking-wide uppercase transition-all shadow-lg active:scale-95 flex items-center gap-2"
               >
                 <span>Explore Cars</span>
                 <span className="text-base">&rarr;</span>
               </Link>
 
-              <button
-                type="button"
-                onClick={() => setVideoModalOpen(true)}
-                className="rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/25 font-semibold px-6 py-3.5 text-xs sm:text-sm transition-all flex items-center gap-2 cursor-pointer"
+              <a
+                href="#booking-panel"
+                className="rounded-full bg-white/90 hover:bg-white text-[#0A142F] border border-slate-200/90 font-bold px-7 py-4 text-xs sm:text-sm tracking-wide uppercase transition-all shadow-sm backdrop-blur-md flex items-center gap-2 cursor-pointer"
               >
                 <span>Find Your Drive</span>
-                <Play size={14} className="fill-white" />
-              </button>
+                <Play size={14} className="fill-[#0A142F] text-[#0A142F]" />
+              </a>
             </div>
           </div>
         </div>
 
-        {/* Vertical Pagination Indicator (Right Edge) */}
-        <div className="hidden lg:flex absolute right-12 top-1/2 -translate-y-1/2 flex-col items-center gap-4 z-20 text-white select-none">
-          <span className="text-xs font-black tracking-widest text-white">01</span>
-          <div className="w-[2px] h-16 bg-white/20 relative rounded-full overflow-hidden">
-            <div className="w-full h-8 bg-white rounded-full animate-pulse" />
-          </div>
-          <span className="text-xs font-semibold tracking-widest text-white/40">02</span>
-          <span className="text-xs font-semibold tracking-widest text-white/40">03</span>
-        </div>
-
-        {/* Watch Video Button (Bottom Right of Hero) */}
-        <button
-          type="button"
-          onClick={() => setVideoModalOpen(true)}
-          className="absolute right-6 sm:right-12 bottom-24 sm:bottom-28 z-20 flex items-center gap-2.5 text-white text-xs sm:text-sm font-semibold hover:text-white transition group cursor-pointer bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-white/10"
-        >
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-white/20 group-hover:bg-white group-hover:text-[#0B1528] transition">
-            <Play size={12} className="fill-current ml-0.5" />
-          </span>
-          <span>Watch Video</span>
-        </button>
-
-        {/* Carousel Dashes (Bottom Left of Hero) */}
-        <div className="absolute left-6 sm:left-12 bottom-24 sm:bottom-28 z-20 flex items-center gap-2">
-          <span className="h-1 w-8 rounded-full bg-white" />
-          <span className="h-1 w-3 rounded-full bg-white/40" />
-          <span className="h-1 w-3 rounded-full bg-white/40" />
+        {/* Live Active Driving Indicator (Bottom Right) */}
+        <div className="hidden sm:flex absolute right-6 sm:right-12 bottom-24 sm:bottom-28 z-20 items-center gap-3 bg-white/85 backdrop-blur-md px-4 py-2 rounded-full border border-slate-200/80 shadow-sm text-xs font-semibold text-[#0A142F]">
+          <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-ping" />
+          <span>Real-time Active Fleet · 1080p Motion</span>
         </div>
       </section>
 
