@@ -25,8 +25,10 @@ export function CarProvider({ children }) {
         setCars(data.cars);
         save('cars', data.cars);
       }
-    } catch {
-      // Fallback to local seed dataset if backend is unreachable
+    } catch (err) {
+      // Fallback to local seed dataset if backend is unreachable, record error message for UI
+      console.warn('[CarContext] Backend unreachable or failed, using local/cached cars:', err?.message);
+      setError(err?.message || 'Unable to load real-time fleet from server');
     } finally {
       setLoading(false);
     }

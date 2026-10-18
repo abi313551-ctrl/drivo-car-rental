@@ -2,16 +2,25 @@ import os
 import random
 import uuid
 import time
+import secrets
+import hashlib
 from pathlib import Path
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import FastAPI, Depends, HTTPException, Query, status, File, UploadFile, Response
+from fastapi import FastAPI, Depends, HTTPException, Query, status, File, UploadFile, Response, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, func
 from pdf_generator import generate_invoice_pdf
+
+try:
+    from google.oauth2 import id_token as google_id_token
+    from google.auth.transport import requests as google_requests
+    GOOGLE_AUTH_AVAILABLE = True
+except ImportError:
+    GOOGLE_AUTH_AVAILABLE = False
 
 import asyncio
 from database import Base, engine, SessionLocal, get_db, ACTIVE_DB_BACKEND
@@ -33,6 +42,16 @@ from models import (
     WeddingDecorationBooking,
     Driver,
     DriverPricingConfig,
+    Payment,
+    SupportedLocation,
+    EmailOTP,
+)
+from payment_service import (
+    get_payment_config,
+    create_gateway_order,
+    verify_gateway_signature,
+    get_razorpay_key_id,
+    is_razorpay_configured,
 )
 from auth import (
     hash_password,
@@ -48,6 +67,9 @@ from schemas import (
     ProfileUpdateRequest,
     BookingCreateRequest,
     PaymentUpdateRequest,
+    RazorpayCreateOrderRequest,
+    RazorpayVerifyPaymentRequest,
+    RazorpayFailureRequest,
     CarCreateUpdateRequest,
     ContactCreateRequest,
     CouponValidateRequest,
@@ -67,13 +89,33 @@ from schemas import (
     DriverCreateUpdateRequest,
     DriverPricingConfigUpdateRequest,
     DriverAssignRequest,
+    RegisterSendOtpRequest,
+    RegisterVerifyOtpRequest,
+    ResendOtpRequest,
+    ForgotPasswordSendOtpRequest,
+    ForgotPasswordResetRequest,
+    GoogleAuthRequest,
     parse_iso_dt,
     validate_date_range,
     calculate_server_pricing,
 )
 from seed import seed_initial_data, BASE_FEATURES, EXTRA_FEATURES
-from locations_data import SUPPORTED_LOCATIONS, get_locations_by_city, get_location_by_name
-from email_service import get_email_config_status, is_smtp_configured
+from locations_data import (
+    SUPPORTED_LOCATIONS,
+    SUPPORTED_LOCALITIES,
+    SERVICE_DISTRICT,
+    SERVICE_STATE,
+    get_locations_by_city,
+    get_locations_by_locality,
+    get_location_by_name,
+    is_supported_kanniyakumari_location,
+)
+from email_service import (
+    get_email_config_status,
+    is_smtp_configured,
+    send_email_message,
+    build_otp_email,
+)
 from reminder_service import (
     schedule_booking_reminders,
     cancel_booking_reminders,
@@ -135,6 +177,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Drivo Car Rental API", version="1.0.0", lifespan=lifespan)
 
 app.mount("/uploads", StaticFiles(directory=str(UPLOADS_ROOT)), name="uploads")
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOADS_ROOT)), name="api_uploads")
 
 app.add_middleware(
     CORSMiddleware,
@@ -156,6 +199,8 @@ def serialize_user(u: User) -> dict:
         "phone": u.phone or "",
         "license": u.license_number or "",
         "role": u.role,
+        "isVerified": bool(getattr(u, "is_verified", True)),
+        "authProvider": getattr(u, "auth_provider", "local") or "local",
         "rewardPoints": getattr(u, "reward_points", 0) or 0,
         "lifetimePoints": getattr(u, "lifetime_points", 0) or 0,
         "tier": getattr(u, "tier", "Silver") or "Silver",
@@ -184,10 +229,13 @@ def serialize_car(c: Car) -> dict:
     fallback_imgs = [c.image] if c.image else []
     images = _ensure_list(c.images, fallback_imgs)
     features = _ensure_list(c.features, [])
+    car_name = f"{c.brand} {c.model}".strip()
     return {
         "id": c.id,
+        "name": car_name,
         "brand": c.brand,
         "model": c.model,
+        "registrationNumber": getattr(c, "registration_number", "") or "",
         "year": c.year,
         "category": c.category,
         "fuel": c.fuel,
@@ -208,16 +256,31 @@ def serialize_car(c: Car) -> dict:
 
 def serialize_booking(b: Booking) -> dict:
     car = b.car
+    car_name = f"{car.brand} {car.model}".strip() if car else "Car"
     car_snapshot = {
         "id": b.car_id,
+        "name": car_name,
         "brand": car.brand if car else "Car",
         "model": car.model if car else "",
+        "registrationNumber": getattr(car, "registration_number", "") or "" if car else "",
         "year": car.year if car else 2024,
         "image": car.image if car else "",
         "category": car.category if car else "",
         "pricePerDay": car.price_per_day if car else 0,
         "location": car.location if car else "",
     }
+
+    # Extract payment ID reference
+    payment_id = None
+    if hasattr(b, "payments") and b.payments:
+        paid_p = next((p for p in b.payments if p.status == "Paid"), None)
+        if paid_p:
+            payment_id = paid_p.payment_id
+    if not payment_id and isinstance(b.pricing, dict):
+        payment_id = b.pricing.get("paymentId")
+
+    total_amount = b.pricing.get("total", 0) if isinstance(b.pricing, dict) else 0
+
     return {
         "id": b.id,
         "ref": b.ref,
@@ -236,6 +299,9 @@ def serialize_booking(b: Booking) -> dict:
         "status": b.status,
         "paymentStatus": b.payment_status,
         "paymentMethod": b.payment_method,
+        "paymentId": payment_id,
+        "amountPaid": total_amount if b.payment_status == "Paid" else 0,
+        "amountDue": 0 if b.payment_status == "Paid" else total_amount,
         "createdAt": b.created_at.isoformat() if b.created_at else None,
         "cancelledAt": b.cancelled_at.isoformat() if b.cancelled_at else None,
     }
@@ -670,13 +736,75 @@ def health_check():
 
 
 @app.get("/api/locations")
-def list_locations(city: Optional[str] = None):
+def list_locations(city: Optional[str] = None, db: Session = Depends(get_db)):
     """
-    Returns verified, supported pickup and return locations.
-    Optionally filter by city.
+    Returns verified, supported pickup and return locations strictly within Kanniyakumari District, Tamil Nadu.
+    Optionally filter by locality (e.g. Nagercoil, Kanyakumari, Marthandam).
     """
-    locs = get_locations_by_city(city)
-    return {"ok": True, "count": len(locs), "locations": locs}
+    db_locs = db.query(SupportedLocation).filter(SupportedLocation.is_active == True).all()
+    if db_locs:
+        locs = [
+            {
+                "id": l.id,
+                "name": l.name,
+                "city": l.locality,
+                "locality": l.locality,
+                "district": l.district,
+                "type": l.type,
+                "tag": l.tag,
+                "address": l.address,
+                "lat": l.lat,
+                "lng": l.lng,
+                "hours": l.hours,
+                "phone": l.phone,
+                "instructions": l.instructions,
+                "landmark": l.landmark,
+            }
+            for l in db_locs
+        ]
+        if city:
+            c_clean = city.strip().lower()
+            locs = [l for l in locs if l["locality"].lower() == c_clean or l["city"].lower() == c_clean]
+    else:
+        locs = get_locations_by_city(city)
+
+    return {
+        "ok": True,
+        "serviceArea": "Kanniyakumari District, Tamil Nadu",
+        "district": SERVICE_DISTRICT,
+        "state": SERVICE_STATE,
+        "message": "Currently serving Kanniyakumari district only.",
+        "supportedLocalities": SUPPORTED_LOCALITIES,
+        "count": len(locs),
+        "locations": locs,
+    }
+
+
+@app.get("/api/locations/check")
+def check_location(location: str = Query(...)):
+    """Validates if a requested location is supported within Kanniyakumari District."""
+    supported = is_supported_kanniyakumari_location(location)
+    return {
+        "supported": supported,
+        "location": location,
+        "district": SERVICE_DISTRICT if supported else None,
+        "message": (
+            "Location is within supported Kanniyakumari district service area."
+            if supported
+            else "Sorry, Drivo currently provides car rental services only within Kanniyakumari district."
+        ),
+    }
+
+
+# --- Auth Helpers ---
+def generate_6digit_otp() -> str:
+    """Generates a cryptographically secure 6-digit numeric OTP."""
+    return f"{secrets.randbelow(900000) + 100000}"
+
+
+def hash_otp_code(otp_code: str) -> str:
+    """Hashes the plain OTP code using SHA-256 for secure storage."""
+    return hashlib.sha256(otp_code.strip().encode("utf-8")).hexdigest()
 
 
 # --- Auth & Users ---
@@ -692,6 +820,8 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         license_number=(payload.license or "").strip().upper(),
         password_hash=hash_password(payload.password),
         role="customer",
+        is_verified=True,
+        auth_provider="local",
     )
     db.add(user)
     db.commit()
@@ -700,12 +830,460 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     return {"token": token, "user": serialize_user(user)}
 
 
+@app.post("/api/auth/register/send-otp")
+def register_send_otp(payload: RegisterSendOtpRequest, db: Session = Depends(get_db)):
+    """Validates registration fields and dispatches a cryptographically secure 6-digit OTP to user's email."""
+    email = payload.email.lower().strip()
+    existing = db.query(User).filter(User.email == email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="An account with this email already exists. Please log in.")
+
+    now = datetime.utcnow()
+    last_otp = (
+        db.query(EmailOTP)
+        .filter(EmailOTP.email == email, EmailOTP.purpose == "register", EmailOTP.is_used == False)
+        .order_by(EmailOTP.id.desc())
+        .first()
+    )
+
+    if last_otp and (now - last_otp.last_sent_at).total_seconds() < 60:
+        remaining = 60 - int((now - last_otp.last_sent_at).total_seconds())
+        raise HTTPException(status_code=429, detail=f"Please wait {remaining} seconds before requesting a new OTP.")
+
+    otp_code = generate_6digit_otp()
+    otp_hash = hash_otp_code(otp_code)
+    expires_at = now + timedelta(minutes=5)
+
+    # Invalidate previous unused registration OTPs for this email
+    db.query(EmailOTP).filter(
+        EmailOTP.email == email, EmailOTP.purpose == "register", EmailOTP.is_used == False
+    ).update({"is_used": True})
+
+    temp_data = {
+        "fullName": payload.fullName.strip(),
+        "phone": (payload.phone or "").strip(),
+        "license": (payload.license or "").strip().upper(),
+        "password_hash": hash_password(payload.password),
+    }
+
+    otp_record = EmailOTP(
+        email=email,
+        purpose="register",
+        otp_hash=otp_hash,
+        temp_data=temp_data,
+        expires_at=expires_at,
+        attempts=0,
+        resend_count=0,
+        last_sent_at=now,
+        is_used=False,
+    )
+    db.add(otp_record)
+    db.commit()
+
+    # Send verification email via SMTP
+    subject, text_body, html_body = build_otp_email(
+        email=email,
+        recipient_name=payload.fullName.strip(),
+        otp_code=otp_code,
+        purpose="register",
+    )
+    delivered, status_msg = send_email_message(
+        to_email=email,
+        recipient_name=payload.fullName.strip(),
+        subject=subject,
+        text_content=text_body,
+        html_content=html_body,
+    )
+
+    return {
+        "success": True,
+        "message": "A 6-digit verification code has been sent to your email.",
+        "email": email,
+        "cooldown": 60,
+        "expiresIn": 300,
+        "delivered": delivered,
+        "smtpConfigured": is_smtp_configured(),
+        "statusMessage": status_msg,
+    }
+
+
+@app.post("/api/auth/register/verify-otp")
+def register_verify_otp(payload: RegisterVerifyOtpRequest, db: Session = Depends(get_db)):
+    """Verifies the 6-digit OTP code, ensures max attempts and expiry, and creates the verified user account."""
+    email = payload.email.lower().strip()
+    otp_record = (
+        db.query(EmailOTP)
+        .filter(EmailOTP.email == email, EmailOTP.purpose == "register", EmailOTP.is_used == False)
+        .order_by(EmailOTP.id.desc())
+        .first()
+    )
+
+    if not otp_record:
+        raise HTTPException(
+            status_code=400,
+            detail="No active verification code found for this email. Please request a new code.",
+        )
+
+    now = datetime.utcnow()
+    if now > otp_record.expires_at:
+        raise HTTPException(
+            status_code=400,
+            detail="This verification code has expired (valid 5 minutes). Please click 'Resend Code'.",
+        )
+
+    if otp_record.attempts >= 5:
+        raise HTTPException(
+            status_code=400,
+            detail="Too many invalid attempts. For your security, this code has been revoked. Please request a new code.",
+        )
+
+    provided_hash = hash_otp_code(payload.otp)
+    if provided_hash != otp_record.otp_hash:
+        otp_record.attempts += 1
+        db.commit()
+        remaining_attempts = max(0, 5 - otp_record.attempts)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid verification code. {remaining_attempts} attempts remaining.",
+        )
+
+    # Valid OTP
+    otp_record.is_used = True
+    temp_data = otp_record.temp_data or {}
+    full_name = temp_data.get("fullName") or "Drivo Customer"
+    phone = temp_data.get("phone", "")
+    license_num = temp_data.get("license", "")
+    pw_hash = temp_data.get("password_hash")
+
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        user = User(
+            full_name=full_name,
+            email=email,
+            phone=phone,
+            license_number=license_num,
+            password_hash=pw_hash or hash_password(secrets.token_hex(8)),
+            role="customer",
+            is_verified=True,
+            auth_provider="local",
+        )
+        db.add(user)
+    else:
+        user.is_verified = True
+        if pw_hash:
+            user.password_hash = pw_hash
+
+    db.commit()
+    db.refresh(user)
+
+    token = create_access_token({"sub": str(user.id), "role": user.role})
+    return {
+        "success": True,
+        "message": "Account successfully verified and activated! Welcome to Drivo.",
+        "token": token,
+        "user": serialize_user(user),
+    }
+
+
+@app.post("/api/auth/register/resend-otp")
+def resend_otp(payload: ResendOtpRequest, db: Session = Depends(get_db)):
+    """Resends a new 6-digit OTP code enforcing a 60-second cooldown."""
+    email = payload.email.lower().strip()
+    purpose = payload.purpose or "register"
+
+    otp_record = (
+        db.query(EmailOTP)
+        .filter(EmailOTP.email == email, EmailOTP.purpose == purpose, EmailOTP.is_used == False)
+        .order_by(EmailOTP.id.desc())
+        .first()
+    )
+
+    now = datetime.utcnow()
+    if otp_record and (now - otp_record.last_sent_at).total_seconds() < 60:
+        remaining = 60 - int((now - otp_record.last_sent_at).total_seconds())
+        raise HTTPException(status_code=429, detail=f"Please wait {remaining} seconds before requesting a new OTP.")
+
+    if otp_record and otp_record.resend_count >= 5:
+        raise HTTPException(
+            status_code=429,
+            detail="Maximum resend attempts reached for this session. Please register again later.",
+        )
+
+    temp_data = otp_record.temp_data if otp_record else {}
+    if purpose == "register" and not temp_data:
+        raise HTTPException(
+            status_code=400,
+            detail="Registration session expired. Please fill in the registration form again.",
+        )
+
+    if otp_record:
+        otp_record.is_used = True
+
+    otp_code = generate_6digit_otp()
+    otp_hash = hash_otp_code(otp_code)
+    expires_at = now + timedelta(minutes=5)
+
+    new_record = EmailOTP(
+        email=email,
+        purpose=purpose,
+        otp_hash=otp_hash,
+        temp_data=temp_data,
+        expires_at=expires_at,
+        attempts=0,
+        resend_count=(otp_record.resend_count + 1) if otp_record else 1,
+        last_sent_at=now,
+        is_used=False,
+    )
+    db.add(new_record)
+    db.commit()
+
+    recipient_name = temp_data.get("fullName", "") if temp_data else ""
+    if not recipient_name:
+        user = db.query(User).filter(User.email == email).first()
+        recipient_name = user.full_name if user else "Customer"
+
+    subject, text_body, html_body = build_otp_email(
+        email=email,
+        recipient_name=recipient_name,
+        otp_code=otp_code,
+        purpose=purpose,
+    )
+    delivered, status_msg = send_email_message(
+        to_email=email,
+        recipient_name=recipient_name,
+        subject=subject,
+        text_content=text_body,
+        html_content=html_body,
+    )
+
+    return {
+        "success": True,
+        "message": "A fresh 6-digit OTP code has been sent to your email.",
+        "email": email,
+        "cooldown": 60,
+        "expiresIn": 300,
+        "delivered": delivered,
+        "smtpConfigured": is_smtp_configured(),
+        "statusMessage": status_msg,
+    }
+
+
+@app.post("/api/auth/forgot-password/send-otp")
+def forgot_password_send_otp(payload: ForgotPasswordSendOtpRequest, db: Session = Depends(get_db)):
+    """Sends a 6-digit OTP for resetting password."""
+    email = payload.email.lower().strip()
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="No registered account found with this email address.")
+
+    now = datetime.utcnow()
+    last_otp = (
+        db.query(EmailOTP)
+        .filter(EmailOTP.email == email, EmailOTP.purpose == "forgot_password", EmailOTP.is_used == False)
+        .order_by(EmailOTP.id.desc())
+        .first()
+    )
+
+    if last_otp and (now - last_otp.last_sent_at).total_seconds() < 60:
+        remaining = 60 - int((now - last_otp.last_sent_at).total_seconds())
+        raise HTTPException(status_code=429, detail=f"Please wait {remaining} seconds before requesting another code.")
+
+    # Invalidate previous unused reset OTPs
+    db.query(EmailOTP).filter(
+        EmailOTP.email == email, EmailOTP.purpose == "forgot_password", EmailOTP.is_used == False
+    ).update({"is_used": True})
+
+    otp_code = generate_6digit_otp()
+    otp_hash = hash_otp_code(otp_code)
+    expires_at = now + timedelta(minutes=5)
+
+    otp_record = EmailOTP(
+        email=email,
+        purpose="forgot_password",
+        otp_hash=otp_hash,
+        temp_data=None,
+        expires_at=expires_at,
+        attempts=0,
+        resend_count=0,
+        last_sent_at=now,
+        is_used=False,
+    )
+    db.add(otp_record)
+    db.commit()
+
+    subject, text_body, html_body = build_otp_email(
+        email=email,
+        recipient_name=user.full_name,
+        otp_code=otp_code,
+        purpose="forgot_password",
+    )
+    delivered, status_msg = send_email_message(
+        to_email=email,
+        recipient_name=user.full_name,
+        subject=subject,
+        text_content=text_body,
+        html_content=html_body,
+    )
+
+    return {
+        "success": True,
+        "message": "A password reset verification code has been dispatched to your email.",
+        "email": email,
+        "cooldown": 60,
+        "expiresIn": 300,
+        "delivered": delivered,
+        "smtpConfigured": is_smtp_configured(),
+        "statusMessage": status_msg,
+    }
+
+
+@app.post("/api/auth/forgot-password/verify-reset")
+def forgot_password_verify_reset(payload: ForgotPasswordResetRequest, db: Session = Depends(get_db)):
+    """Verifies reset OTP and updates user's password securely."""
+    email = payload.email.lower().strip()
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="No account found with this email.")
+
+    otp_record = (
+        db.query(EmailOTP)
+        .filter(EmailOTP.email == email, EmailOTP.purpose == "forgot_password", EmailOTP.is_used == False)
+        .order_by(EmailOTP.id.desc())
+        .first()
+    )
+
+    if not otp_record:
+        raise HTTPException(
+            status_code=400,
+            detail="No active password reset code found for this email. Please request a new code.",
+        )
+
+    now = datetime.utcnow()
+    if now > otp_record.expires_at:
+        raise HTTPException(
+            status_code=400,
+            detail="This reset code has expired (valid 5 minutes). Please request a new code.",
+        )
+
+    if otp_record.attempts >= 5:
+        raise HTTPException(
+            status_code=400,
+            detail="Too many invalid attempts. For security, please request a new reset code.",
+        )
+
+    provided_hash = hash_otp_code(payload.otp)
+    if provided_hash != otp_record.otp_hash:
+        otp_record.attempts += 1
+        db.commit()
+        remaining_attempts = max(0, 5 - otp_record.attempts)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid verification code. {remaining_attempts} attempts remaining.",
+        )
+
+    # Valid OTP - update password
+    otp_record.is_used = True
+    user.password_hash = hash_password(payload.newPassword)
+    user.is_verified = True
+    db.commit()
+
+    return {
+        "success": True,
+        "message": "Password reset successfully! You can now log in with your new credentials.",
+    }
+
+
+@app.post("/api/auth/google")
+def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
+    """Verifies Google Sign-In credential and authenticates or registers customer."""
+    token = payload.idToken or payload.credential
+    google_id = payload.googleId
+    email = payload.email
+    name = payload.name
+
+    google_client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
+
+    if token and GOOGLE_AUTH_AVAILABLE:
+        try:
+            req = google_requests.Request()
+            id_info = google_id_token.verify_oauth2_token(
+                token,
+                req,
+                google_client_id if google_client_id else None,
+            )
+            email = id_info.get("email")
+            name = id_info.get("name") or id_info.get("given_name") or "Google User"
+            google_id = id_info.get("sub")
+        except Exception as e:
+            if not email:
+                raise HTTPException(
+                    status_code=401,
+                    detail=f"Google authentication token verification failed: {str(e)}",
+                )
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Google authentication did not provide a valid email address.")
+
+    email = email.lower().strip()
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user:
+        user = User(
+            full_name=(name or "Google User").strip(),
+            email=email,
+            phone="",
+            license_number="",
+            password_hash=hash_password(secrets.token_hex(16)),
+            role="customer",
+            is_verified=True,
+            auth_provider="google",
+            google_id=google_id,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    else:
+        if not user.google_id and google_id:
+            user.google_id = google_id
+        user.is_verified = True
+        db.commit()
+        db.refresh(user)
+
+    access_token = create_access_token({"sub": str(user.id), "role": user.role})
+    return {
+        "success": True,
+        "token": access_token,
+        "user": serialize_user(user),
+    }
+
+
 @app.post("/api/auth/login")
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
     email = payload.email.lower().strip()
     user = db.query(User).filter(User.email == email).first()
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
+    if hasattr(user, "is_verified") and not user.is_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="Your account email is not yet verified. Please complete OTP verification to proceed.",
+        )
+    token = create_access_token({"sub": str(user.id), "role": user.role})
+    return {"token": token, "user": serialize_user(user)}
+
+
+@app.post("/api/admin/login")
+@app.post("/admin/login")
+def admin_login(payload: LoginRequest, db: Session = Depends(get_db)):
+    email = payload.email.lower().strip()
+    user = db.query(User).filter(User.email == email).first()
+    if not user or not verify_password(payload.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid administrator email or password.")
+    if user.role != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Access forbidden: Admin privileges are required to access the Drivo Admin Panel.",
+        )
     token = create_access_token({"sub": str(user.id), "role": user.role})
     return {"token": token, "user": serialize_user(user)}
 
@@ -853,11 +1431,24 @@ def safe_delete_car_image_file(image_path: Optional[str], db: Session, exclude_c
         pass
 
 
-@app.post("/api/admin/cars/upload-image")
-async def upload_car_image(
-    file: UploadFile = File(...),
-    admin: User = Depends(get_admin_user),
-):
+def validate_image_bytes(first_chunk: bytes) -> str:
+    """Inspects file magic bytes to verify content matches genuine JPG, PNG, or WEBP image."""
+    if len(first_chunk) < 8:
+        raise HTTPException(status_code=400, detail="The file is too small to be a valid image.")
+    if first_chunk.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if first_chunk.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if first_chunk.startswith(b"RIFF") and len(first_chunk) >= 12 and first_chunk[8:12] == b"WEBP":
+        return "image/webp"
+    raise HTTPException(
+        status_code=400,
+        detail="Uploaded file content does not match genuine JPG, PNG, or WEBP image headers.",
+    )
+
+
+async def process_image_upload(file: UploadFile) -> dict:
+    """Validates, securely processes, and saves an uploaded car image to disk."""
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail="No image file was provided.")
 
@@ -886,12 +1477,15 @@ async def upload_car_image(
         if total_bytes > MAX_IMAGE_SIZE_BYTES:
             raise HTTPException(
                 status_code=400,
-                detail=f"File exceeds maximum allowed size of 5 MB (received > 5 MB).",
+                detail="File exceeds maximum allowed size of 5 MB (received > 5 MB).",
             )
         chunks.append(chunk)
 
     if total_bytes == 0:
         raise HTTPException(status_code=400, detail="The uploaded image is empty (0 bytes).")
+
+    # Content signature inspection on first chunk
+    detected_mime = validate_image_bytes(chunks[0])
 
     unique_name = f"car_{int(time.time())}_{uuid.uuid4().hex[:10]}{orig_ext}"
     dest_path = CAR_UPLOADS_DIR / unique_name
@@ -905,22 +1499,42 @@ async def upload_car_image(
         "url": relative_url,
         "filename": unique_name,
         "size": total_bytes,
-        "contentType": content_type,
+        "contentType": detected_mime,
         "message": "Car image uploaded successfully.",
     }
 
 
-@app.post("/api/cars", status_code=status.HTTP_201_CREATED)
-def create_car(payload: CarCreateUpdateRequest, admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+@app.post("/api/admin/cars/upload-image")
+@app.post("/admin/cars/upload-image")
+async def upload_car_image(
+    file: UploadFile = File(...),
+    admin: User = Depends(get_admin_user),
+):
+    return await process_image_upload(file)
+
+
+def handle_create_car_record(payload: CarCreateUpdateRequest, db: Session) -> Car:
+    if not is_supported_kanniyakumari_location(payload.location):
+        raise HTTPException(
+            status_code=400,
+            detail="Sorry, Drivo currently provides car rental services only within Kanniyakumari district.",
+        )
     imgs = payload.images if payload.images else [payload.image]
     feats = payload.features if payload.features else BASE_FEATURES + EXTRA_FEATURES.get(payload.category, [])
     desc = payload.description or (
         f"The {payload.year} {payload.brand} {payload.model} is a {payload.fuel.lower()} "
-        f"{payload.category.lower()} with {payload.transmission.lower()} transmission and room for {payload.seats}."
+        f"{payload.category.lower()} with {payload.transmission.lower()} transmission and room for {payload.seats}. "
+        f"Available from {payload.location} Hub, Kanniyakumari District."
+    )
+    reg_no = (
+        payload.registrationNumber.strip().upper()
+        if payload.registrationNumber
+        else f"TN-74-E-{random.randint(1000, 9999)}"
     )
     car = Car(
         brand=payload.brand.strip(),
         model=payload.model.strip(),
+        registration_number=reg_no,
         year=payload.year,
         category=payload.category,
         fuel=payload.fuel,
@@ -940,11 +1554,105 @@ def create_car(payload: CarCreateUpdateRequest, admin: User = Depends(get_admin_
     db.add(car)
     db.commit()
     db.refresh(car)
+    return car
+
+
+@app.post("/api/admin/cars", status_code=status.HTTP_201_CREATED)
+@app.post("/admin/cars", status_code=status.HTTP_201_CREATED)
+@app.post("/api/cars", status_code=status.HTTP_201_CREATED)
+async def create_car_unified(
+    request: Request,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db),
+):
+    """Creates a car supporting both JSON bodies and direct multipart/form-data with attached image file."""
+    content_type = request.headers.get("content-type", "")
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        brand = str(form.get("brand") or "").strip()
+        model = str(form.get("model") or "").strip()
+        category = str(form.get("category") or "SUV").strip()
+        fuel = str(form.get("fuel") or "Petrol").strip()
+        transmission = str(form.get("transmission") or "Automatic").strip()
+        location = str(form.get("location") or "Nagercoil").strip()
+        reg_no = str(form.get("registrationNumber") or form.get("registration_number") or "").strip().upper()
+        description = str(form.get("description") or "").strip()
+
+        try:
+            year = int(form.get("year") or 2024)
+            seats = int(form.get("seats") or 5)
+            price_per_day = int(form.get("pricePerDay") or form.get("price_per_day") or 3000)
+            deposit = int(form.get("deposit") or 5000)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Numeric fields (year, seats, price, deposit) must be integers.")
+
+        available_val = form.get("available")
+        available = available_val not in (False, "false", "0", 0, "False")
+
+        file = form.get("file") or form.get("image") or form.get("image_file")
+        image_url = ""
+        if file and hasattr(file, "filename") and file.filename:
+            upload_res = await process_image_upload(file)
+            image_url = upload_res["url"]
+        else:
+            image_url = str(form.get("imageUrl") or form.get("image_url") or (form.get("image") if isinstance(form.get("image"), str) else "") or "").strip()
+
+        if not image_url:
+            image_url = "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1000&q=80"
+
+        payload = CarCreateUpdateRequest(
+            brand=brand,
+            model=model,
+            registrationNumber=reg_no,
+            year=year,
+            category=category,
+            fuel=fuel,
+            transmission=transmission,
+            seats=seats,
+            pricePerDay=price_per_day,
+            deposit=deposit,
+            location=location,
+            image=image_url,
+            images=[image_url],
+            available=available,
+            description=description,
+        )
+        car = handle_create_car_record(payload, db)
+        return {"car": serialize_car(car)}
+    else:
+        body = await request.json()
+        payload = CarCreateUpdateRequest(**body)
+        car = handle_create_car_record(payload, db)
+        return {"car": serialize_car(car)}
+
+
+@app.get("/api/admin/cars")
+@app.get("/admin/cars")
+def list_admin_cars(admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """Returns complete car fleet inventory for administrative operations."""
+    cars = db.query(Car).order_by(Car.id.desc()).all()
+    return {"cars": [serialize_car(c) for c in cars], "count": len(cars)}
+
+
+@app.get("/api/admin/cars/{car_id}")
+@app.get("/admin/cars/{car_id}")
+def get_admin_car(car_id: int, admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """Retrieves full vehicle specification by ID."""
+    car = db.query(Car).filter(Car.id == car_id).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found.")
     return {"car": serialize_car(car)}
 
 
 @app.patch("/api/cars/{car_id}/availability")
-def toggle_car_availability(car_id: int, available: bool = Query(...), admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+@app.patch("/api/admin/cars/{car_id}/availability")
+@app.patch("/admin/cars/{car_id}/availability")
+def toggle_car_availability(
+    car_id: int,
+    available: bool = Query(...),
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db),
+):
     car = db.query(Car).filter(Car.id == car_id).first()
     if not car:
         raise HTTPException(status_code=404, detail="Car not found.")
@@ -954,8 +1662,12 @@ def toggle_car_availability(car_id: int, available: bool = Query(...), admin: Us
     return {"car": serialize_car(car)}
 
 
-@app.put("/api/cars/{car_id}")
-def update_car(car_id: int, payload: CarCreateUpdateRequest, admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+def handle_update_car_record(car_id: int, payload: CarCreateUpdateRequest, db: Session) -> Car:
+    if not is_supported_kanniyakumari_location(payload.location):
+        raise HTTPException(
+            status_code=400,
+            detail="Sorry, Drivo currently provides car rental services only within Kanniyakumari district.",
+        )
     car = db.query(Car).filter(Car.id == car_id).first()
     if not car:
         raise HTTPException(status_code=404, detail="Car not found.")
@@ -965,6 +1677,8 @@ def update_car(car_id: int, payload: CarCreateUpdateRequest, admin: User = Depen
     desc = payload.description or car.description
     car.brand = payload.brand.strip()
     car.model = payload.model.strip()
+    if payload.registrationNumber:
+        car.registration_number = payload.registrationNumber.strip().upper()
     car.year = payload.year
     car.category = payload.category
     car.fuel = payload.fuel
@@ -982,17 +1696,115 @@ def update_car(car_id: int, payload: CarCreateUpdateRequest, admin: User = Depen
     db.refresh(car)
     if old_image != car.image:
         safe_delete_car_image_file(old_image, db, exclude_car_id=car.id)
-    return {"car": serialize_car(car)}
+    return car
 
 
-@app.delete("/api/cars/{car_id}")
-def delete_car(car_id: int, admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+@app.put("/api/admin/cars/{car_id}")
+@app.put("/admin/cars/{car_id}")
+@app.put("/api/cars/{car_id}")
+async def update_car_unified(
+    car_id: int,
+    request: Request,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db),
+):
+    """Updates vehicle details supporting both JSON and direct multipart image replacement."""
     car = db.query(Car).filter(Car.id == car_id).first()
     if not car:
         raise HTTPException(status_code=404, detail="Car not found.")
+
+    content_type = request.headers.get("content-type", "")
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        brand = str(form.get("brand") or car.brand).strip()
+        model = str(form.get("model") or car.model).strip()
+        category = str(form.get("category") or car.category).strip()
+        fuel = str(form.get("fuel") or car.fuel).strip()
+        transmission = str(form.get("transmission") or car.transmission).strip()
+        location = str(form.get("location") or car.location).strip()
+        reg_no = str(form.get("registrationNumber") or form.get("registration_number") or car.registration_number or "").strip().upper()
+        description = str(form.get("description") or car.description).strip()
+
+        try:
+            year = int(form.get("year") or car.year)
+            seats = int(form.get("seats") or car.seats)
+            price_per_day = int(form.get("pricePerDay") or form.get("price_per_day") or car.price_per_day)
+            deposit = int(form.get("deposit") or car.deposit)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Numeric fields must be integers.")
+
+        available_val = form.get("available")
+        available = (
+            car.available
+            if available_val is None
+            else available_val not in (False, "false", "0", 0, "False")
+        )
+
+        file = form.get("file") or form.get("image") or form.get("image_file")
+        image_url = ""
+        if file and hasattr(file, "filename") and file.filename:
+            upload_res = await process_image_upload(file)
+            image_url = upload_res["url"]
+        else:
+            image_url = str(form.get("imageUrl") or form.get("image_url") or (form.get("image") if isinstance(form.get("image"), str) else "") or car.image).strip()
+
+        payload = CarCreateUpdateRequest(
+            brand=brand,
+            model=model,
+            registrationNumber=reg_no,
+            year=year,
+            category=category,
+            fuel=fuel,
+            transmission=transmission,
+            seats=seats,
+            pricePerDay=price_per_day,
+            deposit=deposit,
+            location=location,
+            image=image_url or car.image,
+            images=[image_url or car.image],
+            available=available,
+            description=description,
+        )
+        updated_car = handle_update_car_record(car_id, payload, db)
+        return {"car": serialize_car(updated_car)}
+    else:
+        body = await request.json()
+        payload = CarCreateUpdateRequest(**body)
+        updated_car = handle_update_car_record(car_id, payload, db)
+        return {"car": serialize_car(updated_car)}
+
+
+@app.delete("/api/admin/cars/{car_id}")
+@app.delete("/admin/cars/{car_id}")
+@app.delete("/api/cars/{car_id}")
+def delete_car_unified(
+    car_id: int,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db),
+):
+    car = db.query(Car).filter(Car.id == car_id).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found.")
+
     active_b = db.query(Booking).filter(Booking.car_id == car_id, Booking.status.in_(ACTIVE_STATUSES)).first()
     if active_b:
-        raise HTTPException(status_code=400, detail=f"Cannot delete car with active booking ({active_b.ref}). Mark as unavailable instead.")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete car with active reservation ({active_b.ref}). Please deactivate or mark as unavailable instead.",
+        )
+
+    # Check for historical bookings to preserve historical data
+    historical_b = db.query(Booking).filter(Booking.car_id == car_id).first()
+    if historical_b:
+        car.available = False
+        db.commit()
+        return {
+            "ok": True,
+            "deactivated": True,
+            "message": f"{car.brand} {car.model} has historical booking records. It has been deactivated and marked unavailable across the fleet.",
+            "car": serialize_car(car),
+        }
+
     old_image = car.image
     db.delete(car)
     db.commit()
@@ -1116,24 +1928,47 @@ def get_booking_by_ref(ref: str, user: Optional[User] = Depends(get_optional_use
 @app.post("/api/bookings", status_code=status.HTTP_201_CREATED)
 def create_booking(
     payload: BookingCreateRequest,
-    user: Optional[User] = Depends(get_optional_user),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # 1. Validate date range logical order and duration
+    # 1. Enforce Kanniyakumari District service area restriction
+    if not is_supported_kanniyakumari_location(payload.pickup):
+        raise HTTPException(
+            status_code=400,
+            detail="Sorry, Drivo currently provides car rental services only within Kanniyakumari district.",
+        )
+    if not is_supported_kanniyakumari_location(payload.dropoff):
+        raise HTTPException(
+            status_code=400,
+            detail="Sorry, Drivo currently provides car rental services only within Kanniyakumari district.",
+        )
+
+    # 2. Validate date range logical order, future schedule, and duration
     try:
-        validate_date_range(payload.start, payload.end, check_past=False)
+        validate_date_range(payload.start, payload.end, check_past=True)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
     try:
-        # 2. Acquire pessimistic row-level lock on the Car record to prevent concurrent double-booking races
+        # 3. Acquire pessimistic row-level lock on the Car record to prevent concurrent double-booking races
         car = db.query(Car).filter(Car.id == payload.carId).with_for_update().first()
         if not car:
             raise HTTPException(status_code=404, detail="Selected car does not exist.")
         if not car.available:
             raise HTTPException(status_code=400, detail=f"{car.brand} {car.model} is currently marked unavailable.")
 
-        # 3. Re-verify availability inside the locked transaction
+        # 4. Verify car pickup location availability within Kanniyakumari District
+        pickup_clean = payload.pickup.strip().lower()
+        car_loc_clean = car.location.strip().lower()
+        if car_loc_clean not in pickup_clean and pickup_clean not in car_loc_clean:
+            loc_meta = get_location_by_name(payload.pickup)
+            if loc_meta and loc_meta.get("locality", "").lower() != car_loc_clean:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"{car.brand} {car.model} is stationed at {car.location} Hub and cannot be picked up from {payload.pickup}. Please choose a pickup location in {car.location} or choose another vehicle.",
+                )
+
+        # 5. Re-verify availability inside the locked transaction
         conflict = find_car_conflict(db, car.id, payload.start, payload.end)
         if conflict:
             raise HTTPException(
@@ -1190,17 +2025,17 @@ def create_booking(
         # 6. Instantiate new booking record
         booking = Booking(
             ref=generate_booking_ref(db),
-            user_id=user.id if user else None,
+            user_id=user.id,
             car_id=car.id,
             pickup=payload.pickup.strip(),
             dropoff=payload.dropoff.strip(),
             start_time=payload.start,
             end_time=payload.end,
             customer={
-                "fullName": payload.customer.fullName,
-                "email": payload.customer.email.lower(),
-                "phone": payload.customer.phone,
-                "license": payload.customer.license,
+                "fullName": (payload.customer.fullName if (payload.customer and payload.customer.fullName) else user.full_name) or "Customer",
+                "email": user.email.lower(),
+                "phone": (payload.customer.phone if (payload.customer and payload.customer.phone) else (user.phone or "")) or "",
+                "license": (payload.customer.license if (payload.customer and payload.customer.license) else (user.license or "")) or "",
             },
             extras=payload.extras,
             pricing=pricing,
@@ -1259,11 +2094,11 @@ def create_booking(
 
 
 @app.post("/api/bookings/{ref}/cancel")
-def cancel_booking(ref: str, user: Optional[User] = Depends(get_optional_user), db: Session = Depends(get_db)):
+def cancel_booking(ref: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     booking = db.query(Booking).filter(Booking.ref == ref).first()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found.")
-    if user and user.role != "admin" and booking.user_id and booking.user_id != user.id:
+    if user.role != "admin" and booking.user_id != user.id:
         raise HTTPException(status_code=403, detail="You can only cancel your own bookings.")
     if booking.status not in ACTIVE_STATUSES:
         raise HTTPException(status_code=400, detail="Booking is already cancelled or completed.")
@@ -1306,13 +2141,307 @@ def cancel_booking(ref: str, user: Optional[User] = Depends(get_optional_user), 
 
 
 
-@app.post("/api/bookings/{ref}/payment")
-def update_booking_payment(ref: str, payload: PaymentUpdateRequest, db: Session = Depends(get_db)):
+# --- Payment Gateway Integration (Razorpay) ---
+
+@app.get("/api/payments/config")
+def get_payment_configuration():
+    """
+    Returns public payment gateway configuration (e.g. keyId, currency).
+    Never exposes secret gateway credentials.
+    """
+    return get_payment_config()
+
+
+@app.post("/api/payments/create-order")
+def create_payment_order(
+    payload: RazorpayCreateOrderRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    booking = db.query(Booking).filter(Booking.ref == payload.bookingRef).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found.")
+
+    # Ownership verification: booking belongs to current user or admin
+    is_owner = (
+        user.role == "admin"
+        or booking.user_id == user.id
+        or (isinstance(booking.customer, dict) and booking.customer.get("email", "").lower() == user.email.lower())
+    )
+    if not is_owner:
+        raise HTTPException(status_code=403, detail="You do not have permission to pay for this booking.")
+
+    if booking.status == "Cancelled":
+        raise HTTPException(status_code=400, detail="Cannot pay for a cancelled booking.")
+
+    if booking.payment_status == "Paid":
+        raise HTTPException(status_code=400, detail="This booking has already been paid.")
+
+    total_amount = booking.pricing.get("total", 0) if isinstance(booking.pricing, dict) else 0
+    if total_amount <= 0:
+        raise HTTPException(status_code=400, detail="Invalid booking amount.")
+
+    if not is_razorpay_configured():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "Razorpay test credentials are not configured on the backend. "
+                "Please configure RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in server/.env."
+            ),
+        )
+
+    order = create_gateway_order(
+        amount_inr=total_amount,
+        booking_ref=booking.ref,
+        customer_info=booking.customer,
+    )
+
+    # Persist pending payment attempt in database
+    payment_record = Payment(
+        booking_id=booking.id,
+        booking_ref=booking.ref,
+        user_id=user.id,
+        gateway="Razorpay",
+        order_id=order.get("id"),
+        amount=total_amount,
+        currency="INR",
+        status="Pending",
+    )
+    db.add(payment_record)
+    db.commit()
+
+    return {
+        "ok": True,
+        "orderId": order.get("id"),
+        "amount": order.get("amount"),  # in paise
+        "currency": "INR",
+        "keyId": get_razorpay_key_id(),
+        "bookingRef": booking.ref,
+    }
+
+
+@app.post("/api/payments/verify")
+def verify_payment(
+    payload: RazorpayVerifyPaymentRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Lock booking row to prevent race conditions and duplicate payments
+    booking = db.query(Booking).filter(Booking.ref == payload.bookingRef).with_for_update().first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found.")
+
+    is_owner = (
+        user.role == "admin"
+        or booking.user_id == user.id
+        or (isinstance(booking.customer, dict) and booking.customer.get("email", "").lower() == user.email.lower())
+    )
+    if not is_owner:
+        raise HTTPException(status_code=403, detail="You do not have permission to verify payment for this booking.")
+
+    if booking.status == "Cancelled":
+        raise HTTPException(status_code=400, detail="Cannot pay for a cancelled booking.")
+
+    if booking.payment_status == "Paid":
+        raise HTTPException(status_code=400, detail="This booking has already been paid.")
+
+    total_amount = booking.pricing.get("total", 0) if isinstance(booking.pricing, dict) else 0
+
+    # Backend HMAC-SHA256 signature verification
+    is_valid = verify_gateway_signature(
+        order_id=payload.razorpayOrderId,
+        payment_id=payload.razorpayPaymentId,
+        signature=payload.razorpaySignature,
+    )
+
+    if not is_valid:
+        # Record failed payment audit entry
+        failed_payment = Payment(
+            booking_id=booking.id,
+            booking_ref=booking.ref,
+            user_id=user.id,
+            gateway="Razorpay",
+            order_id=payload.razorpayOrderId,
+            payment_id=payload.razorpayPaymentId,
+            signature=payload.razorpaySignature,
+            amount=total_amount,
+            currency="INR",
+            status="Failed",
+            error_code="SIGNATURE_VERIFICATION_FAILED",
+            error_description="Official backend HMAC-SHA256 verification failed. Payment signature is invalid.",
+        )
+        db.add(failed_payment)
+        booking.payment_status = "Failed"
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Payment verification failed: invalid signature.",
+        )
+
+    # Verification successful: update booking status and record payment
+    booking.payment_status = "Paid"
+    booking.payment_method = payload.paymentMethod or "Razorpay"
+
+    if isinstance(booking.pricing, dict):
+        updated_pricing = dict(booking.pricing)
+        updated_pricing["paymentId"] = payload.razorpayPaymentId
+        updated_pricing["paidAt"] = datetime.utcnow().isoformat()
+        booking.pricing = updated_pricing
+
+    # Find matching pending payment record or create new paid record
+    existing_p = db.query(Payment).filter(
+        Payment.booking_id == booking.id,
+        Payment.order_id == payload.razorpayOrderId,
+    ).first()
+
+    if existing_p:
+        existing_p.payment_id = payload.razorpayPaymentId
+        existing_p.signature = payload.razorpaySignature
+        existing_p.status = "Paid"
+        existing_p.method = payload.paymentMethod or "Razorpay"
+        existing_p.updated_at = datetime.utcnow()
+    else:
+        new_p = Payment(
+            booking_id=booking.id,
+            booking_ref=booking.ref,
+            user_id=user.id,
+            gateway="Razorpay",
+            order_id=payload.razorpayOrderId,
+            payment_id=payload.razorpayPaymentId,
+            signature=payload.razorpaySignature,
+            amount=total_amount,
+            currency="INR",
+            status="Paid",
+            method=payload.paymentMethod or "Razorpay",
+        )
+        db.add(new_p)
+
+    # Dispatch notification to user
+    notif = Notification(
+        user_id=user.id,
+        title="Payment Confirmed",
+        message=f"Payment of INR {total_amount} for booking {booking.ref} was verified successfully. Ref: {payload.razorpayPaymentId}.",
+        type="booking",
+    )
+    db.add(notif)
+
+    db.commit()
+    db.refresh(booking)
+
+    return {
+        "ok": True,
+        "booking": serialize_booking(booking),
+        "paymentId": payload.razorpayPaymentId,
+        "message": "Payment verified and recorded successfully.",
+    }
+
+
+@app.post("/api/payments/failure")
+def log_payment_failure(
+    payload: RazorpayFailureRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    booking = db.query(Booking).filter(Booking.ref == payload.bookingRef).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found.")
+
+    is_owner = (
+        user.role == "admin"
+        or booking.user_id == user.id
+        or (isinstance(booking.customer, dict) and booking.customer.get("email", "").lower() == user.email.lower())
+    )
+    if not is_owner:
+        raise HTTPException(status_code=403, detail="Forbidden.")
+
+    booking.payment_status = "Failed"
+    total_amount = booking.pricing.get("total", 0) if isinstance(booking.pricing, dict) else 0
+
+    failed_rec = Payment(
+        booking_id=booking.id,
+        booking_ref=booking.ref,
+        user_id=user.id,
+        gateway="Razorpay",
+        order_id=payload.razorpayOrderId,
+        amount=total_amount,
+        currency="INR",
+        status="Failed",
+        error_code=payload.errorCode or "GATEWAY_ERROR",
+        error_description=payload.errorDescription or "Payment declined by customer or bank.",
+    )
+    db.add(failed_rec)
+    db.commit()
+    return {"ok": True, "message": "Payment failure logged."}
+
+
+@app.get("/api/payments/booking/{ref}")
+def get_booking_payments(
+    ref: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     booking = db.query(Booking).filter(Booking.ref == ref).first()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found.")
+
+    is_owner = (
+        user.role == "admin"
+        or booking.user_id == user.id
+        or (isinstance(booking.customer, dict) and booking.customer.get("email", "").lower() == user.email.lower())
+    )
+    if not is_owner:
+        raise HTTPException(status_code=403, detail="Forbidden.")
+
+    payments = (
+        db.query(Payment)
+        .filter(Payment.booking_id == booking.id)
+        .order_by(Payment.created_at.desc())
+        .all()
+    )
+    return {
+        "payments": [
+            {
+                "id": p.id,
+                "orderId": p.order_id,
+                "paymentId": p.payment_id,
+                "amount": p.amount,
+                "currency": p.currency,
+                "status": p.status,
+                "gateway": p.gateway,
+                "method": p.method,
+                "errorCode": p.error_code,
+                "errorDescription": p.error_description,
+                "createdAt": p.created_at.isoformat() if p.created_at else None,
+            }
+            for p in payments
+        ]
+    }
+
+
+@app.post("/api/bookings/{ref}/payment")
+def update_booking_payment(
+    ref: str,
+    payload: PaymentUpdateRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    booking = db.query(Booking).filter(Booking.ref == ref).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found.")
+
+    is_owner = (
+        user.role == "admin"
+        or booking.user_id == user.id
+        or (isinstance(booking.customer, dict) and booking.customer.get("email", "").lower() == user.email.lower())
+    )
+    if not is_owner:
+        raise HTTPException(status_code=403, detail="Forbidden.")
+
     if booking.status == "Cancelled":
         raise HTTPException(status_code=400, detail="Cannot pay for a cancelled booking.")
+
+    if booking.payment_status == "Paid":
+        raise HTTPException(status_code=400, detail="This booking has already been paid.")
 
     booking.payment_method = payload.paymentMethod
     booking.payment_status = payload.paymentStatus
@@ -1731,9 +2860,11 @@ def create_review(
 
 # --- Admin Dashboard & Fleet Management ---
 @app.get("/api/admin/stats")
+@app.get("/admin/stats")
 def get_admin_stats(admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
     total_cars = db.query(Car).count()
     available_cars = db.query(Car).filter(Car.available == True).count()
+    unavailable_cars = db.query(Car).filter(Car.available == False).count()
     total_bookings = db.query(Booking).count()
     active_bookings = db.query(Booking).filter(Booking.status == "Confirmed").count()
     completed_bookings = db.query(Booking).filter(Booking.status == "Completed").count()
@@ -1743,6 +2874,11 @@ def get_admin_stats(admin: User = Depends(get_admin_user), db: Session = Depends
         Booking.status != "Cancelled"
     ).count()
     total_users = db.query(User).count()
+    total_customers = db.query(User).filter(User.role == "customer").count()
+    recent_bookings = [
+        serialize_booking(b)
+        for b in db.query(Booking).order_by(Booking.created_at.desc()).limit(10).all()
+    ]
 
     all_bookings = db.query(Booking).all()
     revenue_total = 0
@@ -1754,25 +2890,38 @@ def get_admin_stats(admin: User = Depends(get_admin_user), db: Session = Depends
             if b.payment_status == "Paid":
                 paid_revenue += total_amt
 
+    # Compute verified successful payments from payments table
+    verified_payments_sum = (
+        db.query(func.coalesce(func.sum(Payment.amount), 0))
+        .filter(Payment.status == "Paid")
+        .scalar()
+    )
+    verified_total = int(verified_payments_sum) if verified_payments_sum and verified_payments_sum > 0 else paid_revenue
+
     return {
+        "totalUsers": total_users,
+        "totalCustomers": total_customers if total_customers > 0 else total_users,
         "totalCars": total_cars,
         "availableCars": available_cars,
+        "unavailableCars": unavailable_cars,
         "totalBookings": total_bookings,
-        "activeBookings": active_bookings,
+        "pendingBookings": pending_bookings,
         "confirmedBookings": active_bookings,
         "completedBookings": completed_bookings,
         "cancelledBookings": cancelled_bookings,
-        "pendingBookings": pending_bookings,
-        "totalUsers": total_users,
-        "totalRevenue": revenue_total,
+        "activeBookings": active_bookings,
+        "recentBookings": recent_bookings,
+        "verifiedPaymentsTotal": verified_total,
+        "totalRevenue": verified_total,
+        "paidRevenue": verified_total,
+        "collectedRevenue": verified_total,
         "grossBookingValue": revenue_total,
-        "paidRevenue": paid_revenue,
-        "collectedRevenue": paid_revenue,
-        "pendingRevenue": max(0, revenue_total - paid_revenue),
+        "pendingRevenue": max(0, revenue_total - verified_total),
     }
 
 
 @app.get("/api/admin/analytics")
+@app.get("/admin/analytics")
 def get_admin_analytics(
     range_type: str = Query("all", alias="range"),
     start_date: Optional[str] = Query(None, alias="startDate"),
@@ -2005,12 +3154,23 @@ def get_admin_analytics(
 
 
 @app.get("/api/admin/bookings")
+@app.get("/admin/bookings")
 def list_admin_bookings(admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
     bookings = db.query(Booking).order_by(Booking.created_at.desc()).all()
     return {"bookings": [serialize_booking(b) for b in bookings]}
 
 
+@app.get("/api/admin/bookings/{booking_id}")
+@app.get("/admin/bookings/{booking_id}")
+def get_admin_booking_detail(booking_id: int, admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    booking = db.query(Booking).filter(Booking.id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found.")
+    return {"booking": serialize_booking(booking)}
+
+
 @app.patch("/api/admin/bookings/{booking_id}/status")
+@app.patch("/admin/bookings/{booking_id}/status")
 def update_booking_status_admin(
     booking_id: int,
     payload: BookingStatusUpdateRequest,
@@ -2022,10 +3182,23 @@ def update_booking_status_admin(
         raise HTTPException(status_code=404, detail="Booking not found.")
 
     old_status = booking.status
-    booking.status = payload.status
+
+    # Disallow manually marking unpaid bookings as paid
+    if payload.paymentStatus == "Paid" and booking.payment_status != "Paid":
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot manually mark an unpaid booking as Paid. Payment must be verified through the payment gateway.",
+        )
+
+    if payload.status:
+        if payload.status not in ("Confirmed", "Completed", "Cancelled", "Pending"):
+            raise HTTPException(status_code=400, detail=f"Invalid booking status '{payload.status}'.")
+        booking.status = payload.status
+
     if payload.paymentStatus:
         booking.payment_status = payload.paymentStatus
-    if payload.status == "Cancelled":
+
+    if booking.status == "Cancelled":
         booking.cancelled_at = datetime.utcnow()
         if booking.payment_status == "Paid":
             booking.payment_status = "Refunded"
@@ -2034,7 +3207,7 @@ def update_booking_status_admin(
             cancel_booking_reminders(db, booking)
         except Exception:
             pass
-    elif payload.status == "Completed" and booking.payment_status == "Paid":
+    elif booking.status == "Completed" and booking.payment_status == "Paid":
         award_booking_rewards(db, booking)
 
     if booking.user_id:
@@ -2050,6 +3223,442 @@ def update_booking_status_admin(
     db.commit()
     db.refresh(booking)
     return {"booking": serialize_booking(booking)}
+
+
+@app.get("/api/admin/customers")
+@app.get("/admin/customers")
+def list_admin_customers(admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    customers = db.query(User).filter(User.role == "customer").order_by(User.created_at.desc()).all()
+    result = []
+    for c in customers:
+        user_bookings = db.query(Booking).filter(Booking.user_id == c.id).order_by(Booking.created_at.desc()).all()
+        total_spent = sum(
+            (b.pricing.get("total", 0) if isinstance(b.pricing, dict) else 0)
+            for b in user_bookings
+            if b.status in ("Confirmed", "Completed")
+        )
+        result.append({
+            "id": c.id,
+            "fullName": c.full_name,
+            "email": c.email,
+            "phone": c.phone or "",
+            "license": c.license_number or "",
+            "role": c.role,
+            "tier": getattr(c, "tier", "Silver") or "Silver",
+            "rewardPoints": getattr(c, "reward_points", 0) or 0,
+            "createdAt": c.created_at.isoformat() if c.created_at else None,
+            "totalBookings": len(user_bookings),
+            "totalSpent": total_spent,
+            "bookings": [serialize_booking(b) for b in user_bookings],
+        })
+    return {"customers": result}
+
+
+@app.get("/api/admin/customers/{customer_id}")
+@app.get("/admin/customers/{customer_id}")
+def get_admin_customer_detail(customer_id: int, admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    c = db.query(User).filter(User.id == customer_id).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Customer not found.")
+    user_bookings = db.query(Booking).filter(Booking.user_id == c.id).order_by(Booking.created_at.desc()).all()
+    total_spent = sum(
+        (b.pricing.get("total", 0) if isinstance(b.pricing, dict) else 0)
+        for b in user_bookings
+        if b.status in ("Confirmed", "Completed")
+    )
+    return {
+        "customer": {
+            "id": c.id,
+            "fullName": c.full_name,
+            "email": c.email,
+            "phone": c.phone or "",
+            "license": c.license_number or "",
+            "role": c.role,
+            "tier": getattr(c, "tier", "Silver") or "Silver",
+            "rewardPoints": getattr(c, "reward_points", 0) or 0,
+            "createdAt": c.created_at.isoformat() if c.created_at else None,
+            "totalBookings": len(user_bookings),
+            "totalSpent": total_spent,
+            "bookings": [serialize_booking(b) for b in user_bookings],
+        }
+    }
+
+
+# ==========================================================
+# --- Admin Payment Management Endpoints ---
+# ==========================================================
+
+def serialize_payment(p: Payment, db: Session = None) -> dict:
+    booking = p.booking
+    customer_info = {}
+    if booking and isinstance(booking.customer, dict):
+        customer_info = {
+            "fullName": booking.customer.get("fullName", "Verified Customer"),
+            "email": booking.customer.get("email", ""),
+            "phone": booking.customer.get("phone", ""),
+        }
+    elif p.user:
+        customer_info = {
+            "fullName": p.user.full_name,
+            "email": p.user.email,
+            "phone": p.user.phone or "",
+        }
+
+    car_info = {}
+    if booking and booking.car:
+        car_info = {
+            "id": booking.car.id,
+            "brand": booking.car.brand,
+            "model": booking.car.model,
+            "registrationNumber": getattr(booking.car, "registration_number", "") or "",
+        }
+
+    return {
+        "id": p.id,
+        "paymentId": p.payment_id or f"PAY-{p.id:06d}",
+        "orderId": p.order_id or "",
+        "bookingId": p.booking_id,
+        "bookingRef": p.booking_ref,
+        "amount": p.amount,
+        "currency": p.currency or "INR",
+        "status": p.status,  # 'Paid', 'Pending', 'Failed'
+        "gateway": p.gateway or "Razorpay",
+        "method": p.method or "Online Payment",
+        "errorCode": p.error_code or "",
+        "errorDescription": p.error_description or "",
+        "customer": customer_info,
+        "car": car_info,
+        "createdAt": p.created_at.isoformat() if p.created_at else None,
+        "updatedAt": p.updated_at.isoformat() if p.updated_at else None,
+    }
+
+
+@app.get("/api/admin/payments")
+@app.get("/admin/payments")
+def list_admin_payments(
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Payment).order_by(Payment.created_at.desc())
+    if status and status.lower() != "all":
+        query = query.filter(Payment.status == status)
+    payments = query.all()
+
+    serialized = [serialize_payment(p, db) for p in payments]
+    if search and search.strip():
+        q = search.strip().lower()
+        serialized = [
+            p for p in serialized
+            if q in p["bookingRef"].lower()
+            or q in (p["paymentId"] or "").lower()
+            or q in (p["customer"].get("fullName") or "").lower()
+            or q in (p["customer"].get("email") or "").lower()
+        ]
+
+    total_verified = sum(p["amount"] for p in serialized if p["status"] == "Paid")
+    failed_count = sum(1 for p in serialized if p["status"] == "Failed")
+    pending_count = sum(1 for p in serialized if p["status"] == "Pending")
+    paid_count = sum(1 for p in serialized if p["status"] == "Paid")
+
+    return {
+        "payments": serialized,
+        "metrics": {
+            "totalCount": len(serialized),
+            "totalVerifiedAmount": total_verified,
+            "paidCount": paid_count,
+            "failedCount": failed_count,
+            "pendingCount": pending_count,
+        },
+        "totalCount": len(serialized),
+        "totalVerifiedAmount": total_verified,
+        "paidCount": paid_count,
+        "failedCount": failed_count,
+        "pendingCount": pending_count,
+    }
+
+
+@app.get("/api/admin/payments/{payment_id}")
+@app.get("/admin/payments/{payment_id}")
+def get_admin_payment_detail(payment_id: int, admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    payment = db.query(Payment).filter(Payment.id == payment_id).first()
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment transaction not found.")
+    return {"payment": serialize_payment(payment, db)}
+
+
+# ==========================================================
+# --- Admin Reviews & Ratings Management Endpoints ---
+# ==========================================================
+
+@app.get("/api/admin/reviews")
+@app.get("/admin/reviews")
+def list_admin_reviews(
+    rating: Optional[int] = None,
+    search: Optional[str] = None,
+    admin: User = Depends(get_admin_user),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Review).order_by(Review.created_at.desc())
+    if rating:
+        query = query.filter(Review.rating == rating)
+    reviews = query.all()
+
+    result = []
+    total_stars = 0
+    rating_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+
+    for r in reviews:
+        car = r.car
+        user = r.user
+        booking = r.booking
+        total_stars += r.rating
+        if r.rating in rating_counts:
+            rating_counts[r.rating] += 1
+
+        result.append({
+            "id": r.id,
+            "rating": r.rating,
+            "title": r.title or "",
+            "comment": r.comment,
+            "carId": r.car_id,
+            "car": {
+                "id": car.id,
+                "brand": car.brand,
+                "model": car.model,
+                "image": car.image,
+                "registrationNumber": getattr(car, "registration_number", "") or "",
+            } if car else None,
+            "userId": r.user_id,
+            "user": {
+                "id": user.id,
+                "fullName": user.full_name,
+                "email": user.email,
+            } if user else None,
+            "bookingId": r.booking_id,
+            "bookingRef": booking.ref if booking else None,
+            "createdAt": r.created_at.isoformat() if r.created_at else None,
+        })
+
+    if search and search.strip():
+        q = search.strip().lower()
+        result = [
+            r for r in result
+            if q in (r["title"] or "").lower()
+            or q in (r["comment"] or "").lower()
+            or q in (r["car"]["brand"] if r.get("car") else "").lower()
+            or q in (r["car"]["model"] if r.get("car") else "").lower()
+            or q in (r["user"]["fullName"] if r.get("user") else "").lower()
+        ]
+
+    avg_rating = round(total_stars / len(reviews), 2) if reviews else 5.0
+
+    return {
+        "reviews": result,
+        "metrics": {
+            "totalReviews": len(reviews),
+            "averageRating": avg_rating,
+            "distribution": rating_counts,
+        },
+        "totalReviews": len(reviews),
+        "averageRating": avg_rating,
+        "ratingDistribution": rating_counts,
+    }
+
+
+@app.delete("/api/admin/reviews/{review_id}")
+@app.delete("/admin/reviews/{review_id}")
+def delete_admin_review(review_id: int, admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    review = db.query(Review).filter(Review.id == review_id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found.")
+    car_id = review.car_id
+    db.delete(review)
+    db.commit()
+
+    if car_id:
+        remaining = db.query(Review).filter(Review.car_id == car_id).all()
+        car = db.query(Car).filter(Car.id == car_id).first()
+        if car:
+            car.rating = round(sum(r.rating for r in remaining) / len(remaining), 1) if remaining else 4.5
+            db.commit()
+
+    return {"ok": True, "message": "Review deleted successfully."}
+
+
+@app.post("/api/admin/reviews/seed-demo")
+@app.post("/admin/reviews/seed-demo")
+def seed_demo_reviews(admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    existing_count = db.query(Review).count()
+    if existing_count > 0:
+        return {"ok": True, "message": f"Database already contains {existing_count} customer reviews.", "count": existing_count}
+
+    completed_bookings = db.query(Booking).filter(Booking.status.in_(("Confirmed", "Completed"))).limit(6).all()
+    sample_texts = [
+        (5, "Exceptional Luxury Experience!", "The car was impeccably clean, smooth to drive around Kanniyakumari, and delivery at Nagercoil station was right on time!"),
+        (5, "Perfect Family Trip to Kanyakumari Beach", "Spacious seating, cold AC, and great fuel mileage. Booking through Drivo was effortless."),
+        (4, "Great Performance & Clean Interior", "Very prompt service at the pickup hub. Well-maintained vehicle. Will definitely book again!"),
+        (5, "Hassle-free Self Drive Rental", "Transparent pricing, no hidden costs. Truly the premier car rental platform in Kanyakumari district."),
+        (5, "Smooth Highway Cruise to Marthandam", "The automatic transmission was effortless. Pickup inspection was digital and quick."),
+    ]
+
+    added = 0
+    for idx, b in enumerate(completed_bookings):
+        if idx >= len(sample_texts):
+            break
+        star, title, comment = sample_texts[idx]
+        user_id = b.user_id or admin.id
+        rev = Review(
+            user_id=user_id,
+            car_id=b.car_id,
+            booking_id=b.id,
+            rating=star,
+            title=title,
+            comment=comment,
+        )
+        db.add(rev)
+        added += 1
+
+    db.commit()
+    return {"ok": True, "message": f"Seeded {added} verified customer reviews.", "count": added}
+
+
+# ==========================================================
+# --- Admin Reports & CSV Export Endpoints ---
+# ==========================================================
+
+@app.get("/api/admin/reports/export/bookings.csv")
+@app.get("/admin/reports/export/bookings.csv")
+def export_bookings_csv(admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    bookings = db.query(Booking).order_by(Booking.created_at.desc()).all()
+    lines = ["Booking Ref,Customer Name,Customer Email,Customer Phone,Car ID,Car Name,Pickup Station,Dropoff Station,Start Time,End Time,Days,Total Amount (INR),Payment Status,Booking Status,Created Date"]
+    for b in bookings:
+        car = b.car
+        car_name = f"{car.brand} {car.model}" if car else "Vehicle"
+        cust = b.customer if isinstance(b.customer, dict) else {}
+        pricing = b.pricing if isinstance(b.pricing, dict) else {}
+        c_name = str(cust.get("fullName", "")).replace(",", " ").replace('"', "'")
+        c_email = str(cust.get("email", ""))
+        c_phone = str(cust.get("phone", ""))
+        days = pricing.get("days", 1)
+        total = pricing.get("total", 0)
+        p_status = b.payment_status or "Pending"
+        status = b.status or "Confirmed"
+        c_date = b.created_at.strftime("%Y-%m-%d %H:%M") if b.created_at else ""
+
+        lines.append(f'"{b.ref}","{c_name}","{c_email}","{c_phone}",{b.car_id},"{car_name}","{b.pickup}","{b.dropoff}","{b.start_time}","{b.end_time}",{days},{total},"{p_status}","{status}","{c_date}"')
+
+    csv_data = "\n".join(lines)
+    filename = f"drivo_bookings_{datetime.utcnow().strftime('%Y%m%d_%H%M')}.csv"
+    return Response(
+        content=csv_data,
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+
+@app.get("/api/admin/reports/export/revenue.csv")
+@app.get("/admin/reports/export/revenue.csv")
+def export_revenue_csv(admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    payments = db.query(Payment).order_by(Payment.created_at.desc()).all()
+    lines = ["Payment ID,Booking Ref,Gateway,Amount (INR),Currency,Status,Payment Method,Error Details,Created Date"]
+    for p in payments:
+        p_id = p.payment_id or f"PAY-{p.id}"
+        err = (p.error_description or "").replace(",", " ").replace('"', "'")
+        c_date = p.created_at.strftime("%Y-%m-%d %H:%M") if p.created_at else ""
+        method_name = p.method or "Online"
+        lines.append(f'"{p_id}","{p.booking_ref}","{p.gateway}",{p.amount},"{p.currency}","{p.status}","{method_name}","{err}","{c_date}"')
+
+    csv_data = "\n".join(lines)
+    filename = f"drivo_revenue_payments_{datetime.utcnow().strftime('%Y%m%d_%H%M')}.csv"
+    return Response(
+        content=csv_data,
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+
+# ==========================================================
+# --- Admin Platform Settings Endpoints ---
+# ==========================================================
+
+@app.get("/api/admin/settings")
+@app.get("/admin/settings")
+def get_admin_settings(admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    loyalty = get_loyalty_config(db)
+    payment_cfg = get_payment_config()
+
+    return {
+        "serviceArea": {
+            "name": "Kanniyakumari District Car Rental Network",
+            "state": "Tamil Nadu",
+            "country": "India",
+            "operatingHubs": [
+                "Nagercoil Junction Railway Station",
+                "Nagercoil Vadasery Central Hub",
+                "Kanyakumari Cape Point Terminal",
+                "Marthandam Highway Hub",
+                "Kuzhithurai Railway Hub",
+                "Colachel Port Hub",
+                "Thuckalay Bus Stand Terminal",
+            ],
+            "activeStations": [
+                "Nagercoil", "Kanyakumari", "Marthandam", "Kuzhithurai",
+                "Colachel", "Thuckalay", "Padmanabhapuram", "Karungal",
+                "Kulasekharam", "Suchindram", "Eraniel", "Boothapandi",
+                "Thiruvattar", "Killiyoor"
+            ],
+            "supportPhone": "+91 4652 240 231",
+            "supportEmail": "support@drivo.com",
+            "emergencyRoadside": "+91 9489 123 456",
+            "operatingHours": "24 Hours / 7 Days",
+        },
+        "payment": {
+            "gateway": payment_cfg.get("gateway", "Razorpay"),
+            "isConfigured": payment_cfg.get("isConfigured", False),
+            "mode": payment_cfg.get("mode", "test"),
+            "keyId": payment_cfg.get("keyId") or "Not configured (Set RAZORPAY_KEY_ID in server/.env)",
+            "currency": "INR",
+            "currencySymbol": "₹",
+            "taxRatePercent": 18,
+            "standardDeposit": 5000,
+            "luxuryDeposit": 15000,
+        },
+        "paymentGateway": {
+            "provider": payment_cfg.get("gateway", "Razorpay"),
+            "configured": payment_cfg.get("isConfigured", False),
+            "mode": "Production Live" if payment_cfg.get("isConfigured") else "Test / Simulation",
+            "keyIdMasked": payment_cfg.get("keyId") or "rzp_test_simulated",
+            "instructions": "Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in server/.env",
+        },
+        "rentalPolicy": {
+            "minDriverAge": 21,
+            "requiredDocuments": ["Valid Indian Driving License (DL)", "Aadhaar Card / Government Photo ID"],
+            "fuelPolicy": "Same-to-Same (Return at handover fuel level)",
+            "speedLimitKmH": 100,
+            "cancellationWindowHours": 24,
+            "refundPolicy": "Full refund when cancelled >= 24 hours prior to scheduled pickup",
+        },
+        "rentalPolicies": {
+            "minDriverAge": 21,
+            "requiredDocuments": ["Valid Indian Driving License (DL)", "Aadhaar Card / Government Photo ID"],
+            "fuelPolicy": "Same-to-Same",
+            "speedLimitKmH": 80,
+        },
+        "loyalty": serialize_loyalty_config(loyalty),
+        "loyaltyProgram": serialize_loyalty_config(loyalty),
+        "adminAccount": {
+            "email": admin.email,
+            "fullName": admin.full_name,
+            "role": admin.role,
+        },
+        "adminProfile": {
+            "email": admin.email,
+            "fullName": admin.full_name,
+            "role": admin.role,
+        }
+    }
 
 
 # ==========================================================
@@ -2703,6 +4312,18 @@ def create_wedding_decoration_booking(
     db: Session = Depends(get_db),
 ):
     """Submits a wedding car decoration booking request with authoritative price calculation."""
+    # Service area check
+    if payload.serviceCity and not is_supported_kanniyakumari_location(payload.serviceCity):
+        raise HTTPException(
+            status_code=400,
+            detail="Sorry, Drivo currently provides car rental services only within Kanniyakumari district.",
+        )
+    if payload.pickupLocation and not is_supported_kanniyakumari_location(payload.pickupLocation):
+        raise HTTPException(
+            status_code=400,
+            detail="Sorry, Drivo currently provides car rental services only within Kanniyakumari district.",
+        )
+
     pkg = db.query(DecorationPackage).filter(DecorationPackage.id == payload.packageId).first()
     if not pkg:
         raise HTTPException(status_code=404, detail="Selected decoration package does not exist.")

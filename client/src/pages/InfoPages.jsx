@@ -12,16 +12,16 @@ export function About() {
           Next-Generation Autonomous & Self-Drive Luxury Mobility
         </h1>
         <p className="mt-4 text-base sm:text-lg leading-relaxed text-slate-600">
-          Drivo bridges the gap between precision digital engineering and premium automotive luxury across eight key hubs in India. Every vehicle in our catalogue is instrumented for safety, transparent pricing, and instant contactless dispatch.
+          Drivo delivers premium self-drive car rentals and executive mobility exclusively across Kanniyakumari district, Tamil Nadu. Every vehicle in our fleet is verified for safety, hygiene, transparent pricing, and instant dispatch from our verified regional hubs.
         </p>
       </section>
 
       <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { icon: ShieldCheck, title: 'Precision Telemetry', text: 'Rigorous 40-point hardware and hygiene audit before every single customer dispatch.' },
-          { icon: MapPin, title: '8 Strategic Hubs', text: `Integrated stations across ${locations.join(', ')} with terminal concierges.` },
-          { icon: Award, title: 'Cryptographic Transparency', text: '100% upfront pricing: verified daily rate, 18% GST, and refundable security hold.' },
-          { icon: Users, title: '24/7 Digital Concierge', text: 'Immediate roadside support and flight-synchronized vehicle handovers.' },
+          { icon: ShieldCheck, title: 'Precision Telemetry', text: 'Rigorous 40-point mechanical, safety, and hygiene audit before every single customer dispatch.' },
+          { icon: MapPin, title: '10 Regional Hubs', text: `Convenient pickup and return points across ${locations.slice(0, 5).join(', ')}, and surrounding areas.` },
+          { icon: Award, title: 'Transparent Tariffs', text: '100% upfront pricing: verified daily rate, clear taxes, and fully refundable security deposit.' },
+          { icon: Users, title: '24/7 Local Concierge', text: 'Immediate roadside support and dedicated concierge assistance across Kanniyakumari district.' },
         ].map(({ icon: Icon, title, text }) => (
           <div key={title} className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm transition hover:border-slate-300">
             <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-50 border border-blue-900/10 text-[#1E3A8A]">
@@ -115,7 +115,7 @@ export function PolicyPage({ type }) {
       updated: 'October 2026',
       sections: [
         ['1. Information We Collect', 'We collect your name, email address, phone number, and driving licence number solely to process your vehicle bookings and verify driver eligibility.'],
-        ['2. Data Security', 'Account passwords are encrypted using bcrypt hashing on our backend database. Payment flows in this project use a clearly labelled mock gateway and never store real card details.'],
+        ['2. Data Security', 'Account passwords are protected using bcrypt cryptographic hashing. Online payments are secured end-to-end via PCI-DSS compliant industry standard payment gateways.'],
         ['3. Your Choices', 'You can update your profile details or clear saved favorites at any time from your account dashboard.'],
       ],
     },

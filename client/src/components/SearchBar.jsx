@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Calendar, Car } from 'lucide-react';
+import { Search, MapPin, Calendar, Car, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { locations as defaultLocations, categories as defaultCategories } from '../data/homeContent.js';
 import { validateSearch } from '../utils/validation.js';
 import { toLocalInput } from '../utils/pricing.js';
 import { useCars } from '../context/CarContext.jsx';
+import { SERVICE_NOTICE, UNSUPPORTED_LOCATION_ERROR, isSupportedLocation } from '../utils/locations.js';
 
 export default function SearchBar() {
   const navigate = useNavigate();
@@ -15,8 +16,9 @@ export default function SearchBar() {
   const [errors, setErrors] = useState({});
 
   const availableLocations = useMemo(() => {
-    const fromCars = cars.map((c) => c.location).filter(Boolean);
-    return [...new Set([...fromCars, ...defaultLocations])];
+    const fromCars = cars.map((c) => c.location).filter((loc) => Boolean(loc) && isSupportedLocation(loc));
+    const combined = [...new Set([...fromCars, ...defaultLocations])];
+    return combined.filter((l) => isSupportedLocation(l));
   }, [cars]);
 
   const set = (k) => (e) => {
@@ -36,7 +38,11 @@ export default function SearchBar() {
     const e = validateSearch(form);
     setErrors(e);
     if (Object.keys(e).length) {
-      toast.error('Please select location and dates');
+      if (e.pickup === UNSUPPORTED_LOCATION_ERROR || e.dropoff === UNSUPPORTED_LOCATION_ERROR) {
+        toast.error(UNSUPPORTED_LOCATION_ERROR);
+      } else {
+        toast.error('Please select location and dates');
+      }
       return;
     }
     const cleanParams = Object.fromEntries(Object.entries(form).filter(([, v]) => v));
@@ -44,37 +50,49 @@ export default function SearchBar() {
   };
 
   return (
-    <form
-      onSubmit={onSubmit}
-      noValidate
-      className="rounded-2xl border border-slate-100 bg-white p-4 sm:p-5 shadow-2xl shadow-slate-900/10 text-slate-800"
-    >
-      <div className="grid gap-4 lg:grid-cols-4 lg:items-center">
-        {/* 1. Pick-up Location */}
-        <div className="relative flex items-center gap-3 px-3 py-1 lg:border-r lg:border-slate-100">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-50 text-[#0B1528] shrink-0">
-            <MapPin size={18} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <label htmlFor="sb-pickup" className="block text-[11px] font-semibold text-slate-400">
-              Pick-up Location
-            </label>
-            <select
-              id="sb-pickup"
-              value={form.pickup}
-              onChange={set('pickup')}
-              className="w-full bg-transparent text-xs sm:text-sm font-bold text-[#0B1528] focus:outline-none cursor-pointer"
-            >
-              <option value="">Select location</option>
-              {availableLocations.map((l) => (
-                <option key={l} value={l}>
-                  {l}
-                </option>
-              ))}
-            </select>
-            {errors.pickup && <p className="text-[10px] text-red-500 font-semibold">{errors.pickup}</p>}
-          </div>
+    <div className="flex flex-col gap-2">
+      {/* Kanniyakumari Service Area Banner */}
+      <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-blue-50/90 border border-blue-100 text-xs font-semibold text-blue-900 shadow-sm">
+        <div className="flex items-center gap-1.5">
+          <MapPin size={13} className="text-blue-700 shrink-0" />
+          <span>{SERVICE_NOTICE}</span>
         </div>
+        <span className="hidden sm:inline-block text-[11px] font-bold text-blue-700 bg-white/80 px-2 py-0.5 rounded-full border border-blue-200/60">
+          TN-74 &middot; Verified Local Fleet
+        </span>
+      </div>
+
+      <form
+        onSubmit={onSubmit}
+        noValidate
+        className="rounded-2xl border border-slate-100 bg-white p-4 sm:p-5 shadow-2xl shadow-slate-900/10 text-slate-800"
+      >
+        <div className="grid gap-4 lg:grid-cols-4 lg:items-center">
+          {/* 1. Pick-up Location */}
+          <div className="relative flex items-center gap-3 px-3 py-1 lg:border-r lg:border-slate-100">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-slate-50 text-[#0B1528] shrink-0">
+              <MapPin size={18} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <label htmlFor="sb-pickup" className="block text-[11px] font-semibold text-slate-400">
+                Pick-up Hub (Kanniyakumari Dist.)
+              </label>
+              <select
+                id="sb-pickup"
+                value={form.pickup}
+                onChange={set('pickup')}
+                className="w-full bg-transparent text-xs sm:text-sm font-bold text-[#0B1528] focus:outline-none cursor-pointer"
+              >
+                <option value="">Select pickup location</option>
+                {availableLocations.map((l) => (
+                  <option key={l} value={l}>
+                    {l} Hub
+                  </option>
+                ))}
+              </select>
+              {errors.pickup && <p className="text-[10px] text-red-500 font-semibold mt-0.5">{errors.pickup}</p>}
+            </div>
+          </div>
 
         {/* 2. Pick-up Date */}
         <div className="relative flex items-center gap-3 px-3 py-1 lg:border-r lg:border-slate-100">
@@ -154,5 +172,6 @@ export default function SearchBar() {
         </div>
       </div>
     </form>
-  );
+  </div>
+);
 }

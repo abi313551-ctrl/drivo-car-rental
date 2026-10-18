@@ -27,6 +27,7 @@ import {
 import toast from 'react-hot-toast';
 import { useCars } from '../context/CarContext.jsx';
 import { useBookings } from '../context/BookingContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import CarImage from '../components/CarImage.jsx';
 import CarCard from '../components/CarCard.jsx';
 import { getReviews } from '../data/reviews.js';
@@ -58,6 +59,7 @@ const RatingStars = ({ value }) => (
 function CarDetailsView({ car }) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const { isAuthenticated } = useAuth();
   const { cars, isFavorite, toggleFavorite, isInCompare, toggleCompare, compareIds } = useCars();
   const compared = isInCompare(car.id);
   const { findConflict } = useBookings();
@@ -146,7 +148,24 @@ function CarDetailsView({ car }) {
       toast.error('This vehicle is already booked for the selected dates. Please choose alternative dates.');
       return;
     }
-    navigate(`/booking?${new URLSearchParams({ car: car.id, pickup, dropoff: ret, start: range.start, end: range.end })}`);
+    const bookingQuery = new URLSearchParams({
+      car: car.id,
+      pickup,
+      dropoff: ret,
+      start: range.start,
+      end: range.end,
+    }).toString();
+    const bookingPath = `/booking?${bookingQuery}`;
+
+    if (!isAuthenticated) {
+      toast('Please log in or register to complete your reservation.', { icon: '🔐' });
+      navigate(`/login?redirect=${encodeURIComponent(bookingPath)}`, {
+        state: { from: bookingPath },
+      });
+      return;
+    }
+
+    navigate(bookingPath);
   };
 
   const handleShare = async () => {

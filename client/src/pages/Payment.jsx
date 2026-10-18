@@ -1,312 +1,610 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, Smartphone, Building2, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import {
+  ShieldCheck,
+  CreditCard,
+  Lock,
+  Loader2,
+  CheckCircle2,
+  AlertTriangle,
+  Calendar,
+  Clock,
+  MapPin,
+  FileText,
+  User,
+  ArrowRight,
+  ExternalLink,
+  Info,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext.jsx';
 import { useBookings } from '../context/BookingContext.jsx';
-import BookingSummary from '../components/BookingSummary.jsx';
+import CarImage from '../components/CarImage.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 import { formatINR } from '../utils/pricing.js';
-
-const METHODS = [
-  { id: 'Card', label: 'Credit / Debit Card', icon: CreditCard, desc: 'Visa, Mastercard, RuPay' },
-  { id: 'UPI', label: 'UPI Instant Pay', icon: Smartphone, desc: 'GPay, PhonePe, Paytm, BHIM' },
-  { id: 'NetBanking', label: 'Net Banking', icon: Building2, desc: 'All Major Indian Banks' },
-];
+import {
+  apiRequest,
+  getPaymentConfig,
+  createPaymentOrder,
+  verifyPaymentSignature,
+  logPaymentFailure,
+  downloadInvoicePdf,
+} from '../services/api.js';
+import { loadRazorpayScript } from '../utils/razorpay.js';
 
 export default function Payment() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const ref = params.get('ref');
-  const { getBooking, updatePayment } = useBookings();
-  const booking = getBooking(ref);
 
-  const [method, setMethod] = useState('Card');
-  const [card, setCard] = useState({ number: '', name: '', expiry: '', cvv: '' });
-  const [upiId, setUpiId] = useState('');
-  const [bank, setBank] = useState('HDFC Bank');
-  const [errors, setErrors] = useState({});
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { refreshBookings } = useBookings();
+
+  const [booking, setBooking] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
+  const [paymentConfig, setPaymentConfig] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
-  if (!booking) {
+  // Fetch booking details directly from backend to ensure authoritative data
+  useEffect(() => {
+    if (!ref) {
+      setLoading(false);
+      return;
+    }
+
+    let isCurrent = true;
+    setLoading(true);
+    setFetchError('');
+
+    Promise.all([
+      apiRequest(`/bookings/${ref}`).catch((err) => ({ error: err })),
+      getPaymentConfig().catch(() => ({ isConfigured: false })),
+    ]).then(([bookingRes, configRes]) => {
+      if (!isCurrent) return;
+
+      if (bookingRes?.error) {
+        setFetchError(bookingRes.error.message || 'Failed to load booking details.');
+        setBooking(null);
+      } else if (bookingRes?.booking) {
+        setBooking(bookingRes.booking);
+        if (bookingRes.booking.paymentStatus === 'Paid') {
+          setPaymentSuccess(true);
+        }
+      }
+
+      setPaymentConfig(configRes);
+      setLoading(false);
+    });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [ref]);
+
+  const handleDownloadPdf = async () => {
+    if (!booking?.ref) return;
+    setDownloadingPdf(true);
+    try {
+      await downloadInvoicePdf(booking.ref);
+      toast.success('Official Tax Invoice downloaded');
+    } catch (err) {
+      toast.error(err.message || 'Failed to download tax invoice');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
+  // Official Razorpay Checkout Flow
+  const handleProceedToPayment = async () => {
+    if (!booking || processing) return;
+
+    if (!isAuthenticated) {
+      toast.error('Please sign in to proceed with payment.');
+      navigate(`/login?from=/payment?ref=${booking.ref}`);
+      return;
+    }
+
+    if (booking.status === 'Cancelled') {
+      toast.error('Cannot pay for a cancelled booking.');
+      return;
+    }
+
+    if (booking.paymentStatus === 'Paid') {
+      toast.success('This reservation has already been paid.');
+      return;
+    }
+
+    if (!paymentConfig?.isConfigured) {
+      toast.error('Razorpay test credentials are not configured on the backend.');
+      return;
+    }
+
+    setProcessing(true);
+
+    try {
+      // 1. Create official Razorpay Order on FastAPI backend
+      const orderData = await createPaymentOrder(booking.ref);
+      if (!orderData?.orderId) {
+        throw new Error('Failed to generate payment order from backend.');
+      }
+
+      // 2. Load official Razorpay Checkout SDK
+      const sdkLoaded = await loadRazorpayScript();
+      if (!sdkLoaded || !window.Razorpay) {
+        throw new Error('Failed to load Razorpay Checkout SDK. Please check your internet connection.');
+      }
+
+      // 3. Configure Razorpay Checkout options
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount, // in paise
+        currency: orderData.currency || 'INR',
+        name: 'DRIVO Car Rental',
+        description: `Rental Reservation ${booking.ref}`,
+        image: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=200&auto=format&fit=crop&q=80',
+        order_id: orderData.orderId,
+        prefill: {
+          name: booking.customer?.fullName || user?.fullName || '',
+          email: booking.customer?.email || user?.email || '',
+          contact: booking.customer?.phone || user?.phone || '',
+        },
+        notes: {
+          booking_ref: booking.ref,
+        },
+        theme: {
+          color: '#0A142F',
+        },
+        handler: async (response) => {
+          // 4. Send official Razorpay signature payload to backend for HMAC verification
+          try {
+            const verifyRes = await verifyPaymentSignature({
+              bookingRef: booking.ref,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+              paymentMethod: 'Razorpay',
+            });
+
+            if (verifyRes.ok) {
+              setBooking(verifyRes.booking);
+              setPaymentSuccess(true);
+              toast.success('Payment verified successfully!');
+              refreshBookings();
+            } else {
+              toast.error('Payment verification failed on the server.');
+            }
+          } catch (verifyErr) {
+            toast.error(verifyErr.message || 'Payment signature verification failed.');
+            setBooking((prev) => (prev ? { ...prev, paymentStatus: 'Failed' } : null));
+          } finally {
+            setProcessing(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setProcessing(false);
+            toast('Payment window closed. Your booking remains pending.', { icon: 'ℹ️' });
+          },
+        },
+      };
+
+      const rzpInstance = new window.Razorpay(options);
+
+      rzpInstance.on('payment.failed', async (failResponse) => {
+        setProcessing(false);
+        const errDetails = failResponse.error || {};
+        toast.error(`Payment failed: ${errDetails.description || 'Transaction declined.'}`);
+        try {
+          await logPaymentFailure({
+            bookingRef: booking.ref,
+            razorpayOrderId: orderData.orderId,
+            errorCode: errDetails.code,
+            errorDescription: errDetails.description,
+          });
+          setBooking((prev) => (prev ? { ...prev, paymentStatus: 'Failed' } : null));
+        } catch {
+          // Ignore failure logging network error
+        }
+      });
+
+      rzpInstance.open();
+    } catch (err) {
+      setProcessing(false);
+      toast.error(err.message || 'Failed to initiate payment.');
+    }
+  };
+
+  if (loading || authLoading) {
     return (
-      <section className="container-x grid min-h-[60vh] place-items-center py-20 text-center text-[#0F172A]">
-        <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-black text-[#0A142F]">Booking Reference Unresolved</h1>
+      <div className="bg-[#F8F9FA] min-h-[70vh] grid place-items-center text-[#0F172A]">
+        <div className="text-center">
+          <Loader2 size={34} className="mx-auto animate-spin text-[#0A142F]" />
+          <p className="mt-3 text-xs font-semibold text-slate-500">Loading checkout session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!ref || fetchError || !booking) {
+    return (
+      <section className="bg-[#F8F9FA] min-h-[70vh] flex items-center justify-center py-16 text-[#0F172A]">
+        <div className="container-x w-full max-w-lg text-center rounded-3xl border border-slate-200/90 bg-white p-8 sm:p-10 shadow-sm">
+          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-rose-50 text-rose-600 mx-auto">
+            <AlertTriangle size={28} />
+          </div>
+          <h1 className="mt-4 font-display text-2xl font-black text-[#0A142F]">
+            {fetchError ? 'Unable to Retrieve Reservation' : 'Booking Reference Missing'}
+          </h1>
           <p className="mt-2 text-xs sm:text-sm text-slate-500">
-            Please select an active reservation from your dashboard to complete dispatch payment.
+            {fetchError || 'Please select an active reservation from your bookings to proceed with payment.'}
           </p>
-          <div className="mt-6 flex justify-center gap-3">
-            <Link to="/my-bookings" className="btn-primary text-xs">My Bookings</Link>
-            <Link to="/cars" className="btn-outline text-xs">Explore Fleet</Link>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              to="/my-bookings"
+              className="rounded-xl bg-[#0A142F] hover:bg-[#1E293B] text-white px-6 py-3 text-xs font-bold uppercase tracking-wider transition shadow-sm"
+            >
+              My Bookings
+            </Link>
+            <Link
+              to="/cars"
+              className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-6 py-3 text-xs font-bold uppercase tracking-wider transition"
+            >
+              Explore Fleet
+            </Link>
           </div>
         </div>
       </section>
     );
   }
 
-  const validate = () => {
-    const e = {};
-    if (method === 'Card') {
-      const digits = card.number.replace(/\s+/g, '');
-      if (!/^\d{16}$/.test(digits)) e.number = 'Enter a valid 16-digit test card number';
-      if (!card.name.trim() || card.name.trim().length < 3) e.name = 'Enter cardholder name';
-      if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(card.expiry.trim())) e.expiry = 'MM/YY format required';
-      if (!/^\d{3,4}$/.test(card.cvv.trim())) e.cvv = 'Enter 3 or 4 digit CVV';
-    } else if (method === 'UPI') {
-      if (!/^[\w.-]+@[\w.-]+$/.test(upiId.trim())) e.upiId = 'Enter a valid UPI ID (e.g. driver@upi)';
-    }
-    return e;
-  };
+  const pricing = booking.pricing || {};
+  const car = booking.car || {};
+  const isPaid = booking.paymentStatus === 'Paid' || paymentSuccess;
+  const isCancelled = booking.status === 'Cancelled';
 
-  const handlePay = async (simulateFailure = false) => {
-    if (!simulateFailure) {
-      const e = validate();
-      setErrors(e);
-      if (Object.keys(e).length) {
-        toast.error('Please resolve the highlighted payment fields');
-        return;
-      }
-    }
-
-    setProcessing(true);
-    try {
-      const status = simulateFailure ? 'Failed' : 'Paid';
-      await updatePayment(booking.ref, { paymentMethod: method, paymentStatus: status });
-      if (simulateFailure) {
-        toast.error('Mock payment failure recorded');
-      } else {
-        toast.success('Mock payment verified successfully!');
-        navigate(`/booking/confirmation/${booking.ref}`);
-      }
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const fillTestCard = () => {
-    setMethod('Card');
-    setCard({
-      number: '4242 4242 4242 4242',
-      name: booking.customer?.fullName || 'Priya Raman',
-      expiry: '08/28',
-      cvv: '424',
-    });
-    setErrors({});
-  };
+  // Format dates
+  const fmtDate = (s) =>
+    s && !Number.isNaN(new Date(s).getTime())
+      ? new Date(s).toLocaleString('en-IN', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : s;
 
   return (
     <div className="bg-[#F8F9FA] min-h-screen text-[#0F172A] py-10 sm:py-14">
       <div className="container-x">
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1 text-[11px] font-bold text-amber-900">
-              <ShieldAlert size={13} className="text-amber-700" /> SECURE SANDBOX GATEWAY — NO ACTUAL CHARGES INCURRED
-            </span>
-            <h1 className="font-display text-3xl sm:text-4xl font-black text-[#0A142F] tracking-tight mt-3">
-              Finalize Reservation Tariff
-            </h1>
-            <p className="mt-1 text-xs text-slate-500 flex items-center gap-2 font-medium">
-              <span>Reference: <strong className="text-[#0A142F]">{booking.ref}</strong></span>
-              <span>·</span>
-              <span>Status: <StatusBadge status={booking.paymentStatus} /></span>
-            </p>
+        {/* Breadcrumb & Navigation */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+            <Link to="/cars" className="hover:text-[#0A142F] transition">Fleet</Link>
+            <span>/</span>
+            <Link to="/my-bookings" className="hover:text-[#0A142F] transition">My Bookings</Link>
+            <span>/</span>
+            <span className="text-[#0A142F] font-bold">Checkout &amp; Payment</span>
           </div>
-          <Link to={`/booking/confirmation/${booking.ref}`} className="rounded-xl border border-slate-300 bg-white hover:bg-slate-50 px-5 py-2.5 text-xs font-bold text-slate-700 shadow-2xs">
-            Return to Summary
-          </Link>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-mono font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-lg shadow-2xs">
+              Ref: {booking.ref}
+            </span>
+          </div>
         </div>
 
-        {booking.paymentStatus === 'Paid' ? (
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 text-center shadow-sm max-w-xl mx-auto">
-            <CheckCircle2 size={48} className="mx-auto text-emerald-600" />
-            <h2 className="mt-4 font-display text-2xl font-bold text-[#0A142F]">Reservation Paid &amp; Confirmed</h2>
-            <p className="mt-1 text-xs sm:text-sm text-slate-600">
-              Settled {formatINR(booking.pricing?.total)} via {booking.paymentMethod || 'Mock Gateway'}.
+        {/* Header Title */}
+        <div className="mb-8">
+          <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 block mb-1">
+            SECURE CHECKOUT &amp; TARIFF SETTLEMENT
+          </span>
+          <h1 className="font-display text-2xl sm:text-4xl font-black text-[#0A142F] tracking-tight">
+            Review Order &amp; Pay
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-slate-500">
+            Authoritative tariff calculated on the Drivo backend. Verified with 256-bit bank encryption.
+          </p>
+        </div>
+
+        {/* Success Banner if Paid */}
+        {isPaid ? (
+          <div className="rounded-3xl border border-emerald-200 bg-white p-8 sm:p-12 text-center shadow-sm max-w-2xl mx-auto my-6 animate-entrance-1">
+            <div className="grid h-16 w-16 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 mx-auto mb-4">
+              <CheckCircle2 size={36} />
+            </div>
+            <h2 className="font-display text-2xl sm:text-3xl font-black text-[#0A142F]">
+              Payment Verified &amp; Confirmed!
+            </h2>
+            <p className="mt-2 text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
+              Your payment of <strong className="text-[#0A142F]">{formatINR(pricing.total)}</strong> has been verified and registered with transaction reference{' '}
+              <span className="font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                {booking.paymentId || 'Verified Online'}
+              </span>.
             </p>
-            <div className="mt-6 flex justify-center gap-3">
-              <Link to="/my-bookings" className="btn-primary text-xs">View My Bookings</Link>
-              <Link to={`/booking/confirmation/${booking.ref}`} className="btn-outline text-xs">Confirmation Details</Link>
+
+            <div className="mt-6 flex flex-wrap justify-center items-center gap-3">
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={downloadingPdf}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#0A142F] hover:bg-[#1E293B] text-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition shadow-sm cursor-pointer disabled:opacity-50"
+              >
+                <FileText size={14} />
+                <span>{downloadingPdf ? 'Downloading...' : 'Download Official Tax Invoice'}</span>
+              </button>
+              <Link
+                to="/my-bookings"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition shadow-2xs"
+              >
+                <span>Go to My Bookings</span>
+                <ArrowRight size={14} />
+              </Link>
             </div>
           </div>
         ) : (
-          <div className="grid gap-8 lg:grid-cols-3">
-            <div className="space-y-6 lg:col-span-2">
-              <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-sm">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+          /* 2-Column Responsive Checkout Layout */
+          <div className="grid gap-8 lg:grid-cols-[1fr_420px] xl:grid-cols-[1fr_450px] items-start">
+            {/* Left Column: Vehicle & Rental Details */}
+            <div className="space-y-6">
+              {/* Card 1: Selected Car Details */}
+              <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-sm">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
                   <h2 className="font-display text-xs font-bold uppercase tracking-wider text-[#0A142F]">
-                    Select Payment Rail
+                    1. Reserved Fleet Vehicle
                   </h2>
-                  <button
-                    type="button"
-                    onClick={fillTestCard}
-                    className="text-xs font-bold text-blue-900 hover:underline cursor-pointer"
-                  >
-                    ⚡ Auto-fill Test Card
-                  </button>
+                  <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-md">
+                    ID #{booking.carId}
+                  </span>
                 </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  {METHODS.map(({ id, label, icon: Icon, desc }) => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => { setMethod(id); setErrors({}); }}
-                      className={`flex flex-col items-start rounded-2xl border p-4 text-left transition-all cursor-pointer ${
-                        method === id
-                          ? 'border-[#0A142F] bg-blue-50/25 shadow-xs'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
-                      }`}
-                    >
-                      <Icon size={18} className={method === id ? 'text-[#0A142F]' : 'text-slate-400'} />
-                      <span className="mt-2.5 font-display font-bold text-xs text-[#0A142F]">{label}</span>
-                      <span className="text-[10px] text-slate-500 mt-0.5">{desc}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="mt-6 border-t border-slate-100 pt-6">
-                  {method === 'Card' && (
-                    <div className="space-y-4">
-                      <div>
-                        <label htmlFor="card-num" className="mb-1 block text-xs font-bold text-slate-700">
-                          Sandbox Card Number (16 Digits)
-                        </label>
-                        <input
-                          id="card-num"
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs font-mono font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none"
-                          placeholder="4242 4242 4242 4242"
-                          maxLength={19}
-                          value={card.number}
-                          onChange={(e) => setCard((c) => ({ ...c, number: e.target.value }))}
-                        />
-                        {errors.number && <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.number}</p>}
-                      </div>
-
-                      <div>
-                        <label htmlFor="card-name" className="mb-1 block text-xs font-bold text-slate-700">
-                          Cardholder Name
-                        </label>
-                        <input
-                          id="card-name"
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none"
-                          placeholder="Priya Raman"
-                          value={card.name}
-                          onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))}
-                        />
-                        {errors.name && <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.name}</p>}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label htmlFor="card-exp" className="mb-1 block text-xs font-bold text-slate-700">
-                            Expiry (MM/YY)
-                          </label>
-                          <input
-                            id="card-exp"
-                            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs font-mono font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none"
-                            placeholder="08/28"
-                            maxLength={5}
-                            value={card.expiry}
-                            onChange={(e) => setCard((c) => ({ ...c, expiry: e.target.value }))}
-                          />
-                          {errors.expiry && <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.expiry}</p>}
-                        </div>
-
-                        <div>
-                          <label htmlFor="card-cvv" className="mb-1 block text-xs font-bold text-slate-700">
-                            CVV
-                          </label>
-                          <input
-                            id="card-cvv"
-                            type="password"
-                            maxLength={4}
-                            className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs font-mono font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none"
-                            placeholder="424"
-                            value={card.cvv}
-                            onChange={(e) => setCard((c) => ({ ...c, cvv: e.target.value }))}
-                          />
-                          {errors.cvv && <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.cvv}</p>}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {method === 'UPI' && (
-                    <div className="space-y-4">
-                      <div>
-                        <label htmlFor="upi-id" className="mb-1 block text-xs font-bold text-slate-700">
-                          Virtual Payment Address (UPI ID)
-                        </label>
-                        <input
-                          id="upi-id"
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs font-mono font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none"
-                          placeholder="driver@okhdfcbank"
-                          value={upiId}
-                          onChange={(e) => setUpiId(e.target.value)}
-                        />
-                        {errors.upiId && <p className="mt-1 text-xs text-rose-600 font-semibold">{errors.upiId}</p>}
-                      </div>
-                      <p className="text-xs text-slate-500">
-                        A test mandate request will be simulated and approved instantly.
-                      </p>
-                    </div>
-                  )}
-
-                  {method === 'NetBanking' && (
-                    <div className="space-y-4">
-                      <div>
-                        <label htmlFor="nb-bank" className="mb-1 block text-xs font-bold text-slate-700">
-                          Select Banking Partner
-                        </label>
-                        <select
-                          id="nb-bank"
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-xs font-semibold text-[#0F172A] focus:border-[#0A142F] focus:bg-white focus:outline-none cursor-pointer"
-                          value={bank}
-                          onChange={(e) => setBank(e.target.value)}
-                        >
-                          <option value="HDFC Bank">HDFC Bank</option>
-                          <option value="ICICI Bank">ICICI Bank</option>
-                          <option value="State Bank of India">State Bank of India</option>
-                          <option value="Axis Bank">Axis Bank</option>
-                          <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
-                        </select>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mt-8 flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-100">
-                    <button
-                      type="button"
-                      disabled={processing}
-                      onClick={() => handlePay(false)}
-                      className="flex-1 rounded-xl bg-[#0A142F] hover:bg-[#1E293B] text-white py-3.5 text-xs font-bold tracking-wider uppercase transition shadow-sm cursor-pointer disabled:opacity-40"
-                    >
-                      {processing ? 'Processing Settlement...' : `Authorize ${formatINR(booking.pricing?.total)}`}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={processing}
-                      onClick={() => handlePay(true)}
-                      className="rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 px-5 py-3 text-xs font-bold transition cursor-pointer"
-                    >
-                      Simulate Failure
-                    </button>
+                <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
+                  <div className="relative aspect-[16/10] w-full sm:w-56 overflow-hidden rounded-2xl bg-slate-100 border border-slate-200/80 shrink-0">
+                    <CarImage
+                      src={car.image}
+                      alt={`${car.brand} ${car.model}`}
+                      className="h-full w-full object-cover"
+                    />
+                    <span className="absolute top-2.5 left-2.5 rounded-full bg-white/95 px-2.5 py-0.5 text-[10px] font-bold text-slate-700 shadow-sm backdrop-blur-md">
+                      {car.category || 'Luxury'}
+                    </span>
                   </div>
+
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-display text-xl sm:text-2xl font-black text-[#0A142F]">
+                      {car.brand} {car.model}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Model Year {car.year || 2024} · {car.transmission || 'Automatic'} · {car.fuel || 'Petrol'}
+                    </p>
+
+                    <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold text-slate-600">
+                      <span className="rounded-lg bg-slate-100 px-2.5 py-1">
+                        Daily Rate: {formatINR(pricing.pricePerDay || car.pricePerDay)}/day
+                      </span>
+                      <span className="rounded-lg bg-slate-100 px-2.5 py-1">
+                        Deposit: {formatINR(pricing.deposit || car.deposit)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Itinerary & Schedule Details */}
+              <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-sm">
+                <h2 className="font-display text-xs font-bold uppercase tracking-wider text-[#0A142F] border-b border-slate-100 pb-4 mb-5">
+                  2. Schedule &amp; Station Details
+                </h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs text-slate-700">
+                  <div className="rounded-2xl bg-slate-50 p-4 border border-slate-100">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
+                      Pickup Hub &amp; Schedule
+                    </span>
+                    <div className="flex items-center gap-1.5 font-bold text-[#0A142F] mt-1">
+                      <MapPin size={14} className="text-[#0A142F] shrink-0" />
+                      <span>{booking.pickup}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-slate-500 mt-1.5 text-[11px]">
+                      <Clock size={13} className="shrink-0" />
+                      <span>{fmtDate(booking.start)}</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl bg-slate-50 p-4 border border-slate-100">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
+                      Return Hub &amp; Schedule
+                    </span>
+                    <div className="flex items-center gap-1.5 font-bold text-[#0A142F] mt-1">
+                      <MapPin size={14} className="text-[#0A142F] shrink-0" />
+                      <span>{booking.dropoff || booking.pickup}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-slate-500 mt-1.5 text-[11px]">
+                      <Clock size={13} className="shrink-0" />
+                      <span>{fmtDate(booking.end)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Verified Customer Snapshot */}
+                <div className="mt-5 rounded-2xl bg-slate-50/70 p-4 border border-slate-100 text-xs">
+                  <div className="flex items-center gap-2 mb-2 font-bold text-[#0A142F]">
+                    <User size={14} />
+                    <span>Registered Driver Information</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-600">
+                    <div>
+                      <span className="text-slate-400 block">Driver Name</span>
+                      <strong className="text-slate-800">{booking.customer?.fullName || 'Verified Driver'}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block">Contact Phone</span>
+                      <strong className="text-slate-800">{booking.customer?.phone || '—'}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block">Driving License</span>
+                      <strong className="text-slate-800 font-mono">{booking.customer?.license || 'On File'}</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gateway Security Badge */}
+              <div className="rounded-2xl bg-slate-100/70 p-4 border border-slate-200/80 flex items-center gap-3.5 text-xs text-slate-600">
+                <div className="grid h-10 w-10 place-items-center rounded-xl bg-white text-[#0A142F] shrink-0 shadow-2xs">
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <p className="font-bold text-[#0A142F]">
+                    Razorpay Official Checkout Integration
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Your card numbers, CVVs, and UPI PINs are processed directly inside Razorpay's PCI-DSS Level 1 compliant secure vault. Drivo never collects or stores raw banking credentials.
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="lg:sticky lg:top-24 lg:self-start">
-              <BookingSummary
-                car={booking.car}
-                start={booking.start}
-                end={booking.end}
-                pickup={booking.pickup}
-                dropoff={booking.dropoff}
-                extras={booking.extras}
-                pricing={booking.pricing}
-                title="Tariff Breakdown"
-              />
+            {/* Right Column: Authoritative Price Breakdown & Pay CTA */}
+            <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-sm sticky top-24">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+                <h2 className="font-display text-xs font-bold uppercase tracking-wider text-[#0A142F]">
+                  Order Tariff Breakdown
+                </h2>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-900">
+                  Backend Verified
+                </span>
+              </div>
+
+              {/* Itemized Pricing Rows */}
+              <div className="space-y-3 text-xs text-slate-600">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">
+                    Rental Base ({pricing.days || 1} {pricing.days === 1 ? 'day' : 'days'} × {formatINR(pricing.pricePerDay || car.pricePerDay)})
+                  </span>
+                  <span className="font-bold text-slate-900">
+                    {formatINR(pricing.rentalBase || (pricing.days || 1) * (pricing.pricePerDay || 0))}
+                  </span>
+                </div>
+
+                {pricing.extrasTotal > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500">Protection &amp; Add-ons</span>
+                    <span className="font-bold text-slate-900">{formatINR(pricing.extrasTotal)}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">GST Government Tax (18%)</span>
+                  <span className="font-bold text-slate-900">{formatINR(pricing.gst)}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Refundable Security Deposit</span>
+                  <span className="font-bold text-slate-900">{formatINR(pricing.deposit)}</span>
+                </div>
+
+                {pricing.discount > 0 && (
+                  <div className="flex justify-between items-center text-emerald-600">
+                    <span>Coupon Discount</span>
+                    <span className="font-bold">-{formatINR(pricing.discount)}</span>
+                  </div>
+                )}
+
+                {pricing.pointsDiscount > 0 && (
+                  <div className="flex justify-between items-center text-blue-600">
+                    <span>Loyalty Points Discount</span>
+                    <span className="font-bold">-{formatINR(pricing.pointsDiscount)}</span>
+                  </div>
+                )}
+
+                <div className="border-t border-slate-100 pt-4 mt-2">
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-[#0A142F] uppercase tracking-wider block">
+                        Final Amount Payable
+                      </span>
+                      <span className="text-[10px] text-slate-400">All taxes &amp; refundable deposit included</span>
+                    </div>
+                    <span className="font-display text-2xl font-black text-[#0A142F]">
+                      {formatINR(pricing.total)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status or Action Container */}
+              <div className="mt-6 pt-5 border-t border-slate-100">
+                {isCancelled ? (
+                  <div className="rounded-2xl bg-rose-50 p-4 border border-rose-200 text-rose-700 text-center text-xs">
+                    <AlertTriangle size={20} className="mx-auto mb-1 text-rose-600" />
+                    <p className="font-bold">Reservation Cancelled</p>
+                    <p className="text-[11px] mt-0.5">This booking has been cancelled and cannot accept payment.</p>
+                  </div>
+                ) : !paymentConfig?.isConfigured ? (
+                  <div className="rounded-2xl bg-amber-50/80 p-4 border border-amber-200/90 text-amber-900 text-xs space-y-2">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                      <AlertTriangle size={15} className="text-amber-700 shrink-0" />
+                      <span>Razorpay Test Gateway Setup Required</span>
+                    </div>
+                    <p className="text-[11px] text-amber-800 leading-relaxed">
+                      To initiate live test payments, configure your free Razorpay Test Keys in <code className="bg-amber-100/90 px-1 py-0.5 rounded font-mono font-bold text-amber-950">server/.env</code>:
+                    </p>
+                    <div className="rounded-lg bg-amber-950/10 p-2 font-mono text-[10px] text-amber-950">
+                      RAZORPAY_KEY_ID=rzp_test_...<br />
+                      RAZORPAY_KEY_SECRET=...
+                    </div>
+                    <p className="text-[10px] text-amber-700">
+                      Sign up for free test keys at{' '}
+                      <a
+                        href="https://dashboard.razorpay.com"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-bold underline inline-flex items-center gap-0.5 hover:text-amber-950"
+                      >
+                        dashboard.razorpay.com <ExternalLink size={10} />
+                      </a>
+                    </p>
+                    <button
+                      type="button"
+                      disabled
+                      className="w-full mt-2 rounded-xl bg-slate-200 text-slate-400 py-3 text-xs font-bold uppercase tracking-wider cursor-not-allowed"
+                    >
+                      Gateway Keys Required
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={handleProceedToPayment}
+                      disabled={processing}
+                      className="w-full rounded-2xl bg-[#0A142F] hover:bg-[#1E293B] text-white py-3.5 px-6 text-xs font-bold uppercase tracking-wider transition shadow-sm active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      {processing ? (
+                        <>
+                          <Loader2 size={15} className="animate-spin text-white" />
+                          <span>Contacting Gateway...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Lock size={14} className="text-emerald-400" />
+                          <span>Proceed to Payment ({formatINR(pricing.total)})</span>
+                        </>
+                      )}
+                    </button>
+
+                    <div className="mt-3 flex items-center justify-center gap-2 text-[10px] text-slate-400">
+                      <CreditCard size={12} />
+                      <span>Accepts UPI, RuPay, Visa, Mastercard, NetBanking</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -71,12 +71,7 @@ export function BookingProvider({ children }) {
       setBookings(next);
       return { ok: true, booking: data.booking };
     } catch (err) {
-      if (err.status && err.status >= 400 && err.status < 500) {
-        return { ok: false, error: err.message };
-      }
-      // Fallback to local booking if server is unreachable
-      setBookings([localCheck.booking, ...fresh]);
-      return localCheck;
+      return { ok: false, error: err.message || 'Failed to complete booking on server.' };
     }
   }, []);
 

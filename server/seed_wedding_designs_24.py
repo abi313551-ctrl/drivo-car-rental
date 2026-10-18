@@ -459,7 +459,7 @@ def seed_designs():
                 db.add(pkg)
                 print(f"Added ID {d['id']}: {d['name']}")
         db.commit()
-        print("✓ Successfully synchronized all 24 car flower decoration designs in MySQL!")
+        print("[OK] Successfully synchronized all 24 car flower decoration designs in MySQL!")
     except Exception as e:
         db.rollback()
         print("Error during seed:", e)

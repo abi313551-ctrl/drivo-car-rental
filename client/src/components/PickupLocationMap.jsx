@@ -58,11 +58,11 @@ function createPinIcon(isSelected, type = 'city') {
 }
 
 export default function PickupLocationMap({
-  city = 'Coimbatore',
+  city = 'Nagercoil',
   selectedLocationName,
   onSelectLocation,
-  title = 'Pickup & Handover Station',
-  subtitle = 'Choose a verified Drivo station on the map or select from the list below.',
+  title = 'Kanniyakumari District Handover Station',
+  subtitle = 'Choose a verified Drivo station across Kanniyakumari district.',
   compact = false,
 }) {
   const mapContainerRef = useRef(null);

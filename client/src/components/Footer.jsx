@@ -6,6 +6,7 @@ const cols = [
     title: 'Platform',
     items: [
       ['/cars', 'Explore Fleet'],
+      ['/wedding-cars', 'Wedding Car Decor'],
       ['/compare', 'Compare Vehicles'],
       ['/booking', 'Direct Booking'],
       ['/my-bookings', 'Manage Bookings'],
@@ -17,6 +18,7 @@ const cols = [
       ['/about', 'About Us'],
       ['/contact', 'Contact Us'],
       ['/faq', 'Frequently Asked Questions'],
+      ['/admin/login', 'Admin Portal 🛡️'],
     ],
   },
   {

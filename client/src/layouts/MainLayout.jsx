@@ -8,6 +8,16 @@ export default function MainLayout() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
 
+  const isAdminRoute = pathname.startsWith('/admin');
+
+  if (isAdminRoute) {
+    return (
+      <main id="main" className="min-h-screen bg-[#F8FAFC]">
+        <Outlet />
+      </main>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-[#F8F9FA] text-[#0F172A]">
       <a

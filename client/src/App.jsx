@@ -13,9 +13,12 @@ import Payment from './pages/Payment.jsx';
 import MyBookings from './pages/MyBookings.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import Profile from './pages/Profile.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
+import AdminLogin from './pages/AdminLogin.jsx';
 import Contact from './pages/Contact.jsx';
+import WeddingDecorations from './pages/WeddingDecorations.jsx';
 import { About, FAQ, PolicyPage } from './pages/InfoPages.jsx';
 
 export default function App() {
@@ -29,14 +32,19 @@ export default function App() {
           <Route path="/cars/:id" element={<CarDetails />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/favorites" element={<Favorites />} />
+          <Route path="/wedding-cars" element={<WeddingDecorations />} />
+          <Route path="/wedding-decorations" element={<WeddingDecorations />} />
           <Route path="/booking" element={<Booking />} />
           <Route path="/booking/confirmation/:ref" element={<BookingConfirmation />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/my-bookings" element={<MyBookings />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />

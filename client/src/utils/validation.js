@@ -1,3 +1,5 @@
+import { isSupportedLocation, UNSUPPORTED_LOCATION_ERROR } from './locations.js';
+
 // Pure validation helpers (no React) so they can be reused and tested.
 export function validateRange(startStr, endStr, now = new Date()) {
   const e = {};
@@ -18,9 +20,26 @@ export function validateRange(startStr, endStr, now = new Date()) {
 
 export function validateSearch(form, now = new Date()) {
   const e = validateRange(form.start, form.end, now);
-  if (!form.pickup) e.pickup = 'Choose a pickup location';
-  if (!form.dropoff) e.dropoff = 'Choose a return location';
+  if (!form.pickup) {
+    e.pickup = 'Choose a pickup location';
+  } else if (!isSupportedLocation(form.pickup)) {
+    e.pickup = UNSUPPORTED_LOCATION_ERROR;
+  }
+
+  if (!form.dropoff) {
+    e.dropoff = 'Choose a return location';
+  } else if (!isSupportedLocation(form.dropoff)) {
+    e.dropoff = UNSUPPORTED_LOCATION_ERROR;
+  }
   return e;
+}
+
+export function validateLocation(loc) {
+  if (!loc) return 'Location is required';
+  if (!isSupportedLocation(loc)) {
+    return UNSUPPORTED_LOCATION_ERROR;
+  }
+  return null;
 }
 
 export function validateBookingRange(start, end, now = new Date()) {

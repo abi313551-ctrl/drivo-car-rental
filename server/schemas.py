@@ -1,8 +1,8 @@
 import math
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 GST_RATE = 0.18
 DAY_MS = 24 * 60 * 60 * 1000
@@ -36,6 +36,9 @@ def validate_date_range(start_str: str, end_str: str, check_past: bool = True) -
         end_dt = parse_iso_dt(end_str)
     except Exception:
         raise ValueError("Enter a valid return date and time")
+
+    if check_past and start_dt < datetime.utcnow() - timedelta(minutes=30):
+        raise ValueError("Pickup date and time cannot be in the past")
 
     if end_dt <= start_dt:
         raise ValueError("Return date and time must be later than pickup date and time")
@@ -189,6 +192,51 @@ class ProfileUpdateRequest(BaseModel):
         return cleaned
 
 
+class RegisterSendOtpRequest(BaseModel):
+    fullName: str = Field(..., min_length=3, max_length=80)
+    email: EmailStr
+    phone: Optional[str] = ""
+    license: Optional[str] = ""
+    password: str = Field(..., min_length=6, max_length=100)
+
+    @field_validator("fullName")
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        v = v.strip()
+        if not re.match(r"^[A-Za-z][A-Za-z .'\-]{2,79}$", v):
+            raise ValueError("Full name must contain letters and be at least 3 characters")
+        return v
+
+
+class RegisterVerifyOtpRequest(BaseModel):
+    email: EmailStr
+    otp: str = Field(..., min_length=6, max_length=6)
+
+
+class ResendOtpRequest(BaseModel):
+    email: EmailStr
+    purpose: str = Field(default="register")  # register or forgot_password
+
+
+class ForgotPasswordSendOtpRequest(BaseModel):
+    email: EmailStr
+
+
+class ForgotPasswordResetRequest(BaseModel):
+    email: EmailStr
+    otp: str = Field(..., min_length=6, max_length=6)
+    newPassword: str = Field(..., min_length=6, max_length=100)
+
+
+class GoogleAuthRequest(BaseModel):
+    idToken: Optional[str] = None
+    credential: Optional[str] = None
+    email: Optional[str] = None
+    name: Optional[str] = None
+    googleId: Optional[str] = None
+
+
+
 class CustomerSchema(BaseModel):
     fullName: str
     email: EmailStr
@@ -237,22 +285,63 @@ class PaymentUpdateRequest(BaseModel):
     paymentStatus: str = Field(default="Paid")
 
 
+class RazorpayCreateOrderRequest(BaseModel):
+    bookingRef: str = Field(..., min_length=5, max_length=40)
+
+
+class RazorpayVerifyPaymentRequest(BaseModel):
+    bookingRef: str = Field(..., min_length=5, max_length=40)
+    razorpayOrderId: str = Field(..., min_length=5, max_length=100)
+    razorpayPaymentId: str = Field(..., min_length=5, max_length=100)
+    razorpaySignature: str = Field(..., min_length=5, max_length=255)
+    paymentMethod: Optional[str] = "Razorpay"
+
+
+class RazorpayFailureRequest(BaseModel):
+    bookingRef: str = Field(..., min_length=5, max_length=40)
+    razorpayOrderId: Optional[str] = None
+    errorCode: Optional[str] = None
+    errorDescription: Optional[str] = None
+
+
 class CarCreateUpdateRequest(BaseModel):
-    brand: str = Field(..., min_length=2, max_length=60)
-    model: str = Field(..., min_length=1, max_length=80)
-    year: int = Field(..., ge=2015, le=2027)
-    category: str = Field(..., min_length=2, max_length=40)
-    fuel: str = Field(..., min_length=2, max_length=30)
-    transmission: str = Field(..., min_length=2, max_length=30)
-    seats: int = Field(..., ge=2, le=12)
-    pricePerDay: int = Field(..., ge=500, le=100000)
+    name: Optional[str] = None
+    carName: Optional[str] = None
+    brand: str = Field(default="", max_length=60)
+    model: str = Field(default="", max_length=80)
+    registrationNumber: Optional[str] = Field(default="", max_length=40)
+    year: int = Field(default=2025, ge=2015, le=2027)
+    category: str = Field(default="SUV", min_length=2, max_length=40)
+    fuel: str = Field(default="Petrol", min_length=2, max_length=30)
+    transmission: str = Field(default="Automatic", min_length=2, max_length=30)
+    seats: int = Field(default=5, ge=2, le=12)
+    pricePerDay: int = Field(default=3000, ge=500, le=100000)
     deposit: int = Field(default=5000, ge=0, le=200000)
-    location: str = Field(..., min_length=2, max_length=60)
+    location: str = Field(default="Nagercoil", min_length=2, max_length=60)
     image: str = Field(..., min_length=5)
     images: Optional[List[str]] = None
     available: bool = True
     features: Optional[List[str]] = None
     description: Optional[str] = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_car_fields(cls, data):
+        if isinstance(data, dict):
+            car_name = data.get("name") or data.get("carName") or data.get("car_name")
+            brand = data.get("brand")
+            model = data.get("model")
+            if (not brand or not model) and car_name:
+                parts = str(car_name).strip().split(" ", 1)
+                if not brand:
+                    data["brand"] = parts[0]
+                if not model:
+                    data["model"] = parts[1] if len(parts) > 1 else parts[0]
+            if not data.get("brand"):
+                data["brand"] = "Drivo"
+            if not data.get("model"):
+                data["model"] = "Vehicle"
+        return data
 
 
 class ContactCreateRequest(BaseModel):

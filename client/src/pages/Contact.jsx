@@ -60,8 +60,8 @@ export default function Contact() {
           {[
             { icon: Phone, title: 'Dedicated Helpdesk', detail: '+91 98765 43210', sub: 'Mon–Sun, 24/7 Concierge Hotline' },
             { icon: Mail, title: 'Dispatch Inquiries', detail: 'concierge@drivo.com', sub: 'Average response under 15 minutes' },
-            { icon: MapPin, title: 'Headquarters Hub', detail: 'Aero Hub, RS Puram', sub: 'Coimbatore, Tamil Nadu 641002' },
-            { icon: Clock, title: 'Emergency Roadside', detail: 'Zero-Latency Dispatch', sub: 'GPS-synchronized across 8 metro hubs' },
+            { icon: MapPin, title: 'Headquarters Hub', detail: 'WCC Road, Nagercoil', sub: 'Kanniyakumari District, Tamil Nadu 629001' },
+            { icon: Clock, title: 'Emergency Roadside', detail: 'Rapid Local Dispatch', sub: 'GPS-synchronized across 10 Kanniyakumari hubs' },
           ].map(({ icon: Icon, title, detail, sub }) => (
             <div key={title} className="flex items-start gap-4 rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-blue-50 border border-blue-900/10 text-[#1E3A8A]">

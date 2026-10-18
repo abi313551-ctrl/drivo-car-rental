@@ -142,12 +142,18 @@ export default function Home() {
         {/* Hero Left Content (Deep Navy Typography & Clear CTAs) */}
         <div className="container-x relative z-20 pt-16 pb-28 sm:pt-24 sm:pb-36 flex flex-col justify-center">
           <div className="max-w-2xl text-left">
-            {/* Top Subtitle Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 backdrop-blur-md px-3.5 py-1 text-xs font-bold tracking-widest text-[#0A142F] shadow-sm mb-5">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="uppercase text-[11px] font-extrabold tracking-[0.2em] text-[#0A142F]">
-                PREMIUM CAR RENTAL
-              </span>
+            {/* Top Subtitle Badges */}
+            <div className="flex flex-wrap items-center gap-2 mb-5">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 backdrop-blur-md px-3.5 py-1 text-xs font-bold tracking-widest text-[#0A142F] shadow-sm">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="uppercase text-[11px] font-extrabold tracking-[0.2em] text-[#0A142F]">
+                  PREMIUM CAR RENTAL
+                </span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-200/80 bg-blue-50/90 backdrop-blur-md px-3.5 py-1 text-[11px] font-bold text-blue-900 shadow-sm">
+                <MapPin size={13} className="text-blue-700" />
+                <span>Serving Kanniyakumari District</span>
+              </div>
             </div>
 
             {/* Main Headline */}
@@ -158,7 +164,7 @@ export default function Home() {
 
             {/* Subtitle */}
             <p className="mt-6 text-base sm:text-lg lg:text-xl font-normal text-slate-700 leading-relaxed max-w-lg">
-              Your journey deserves something extraordinary.
+              Self-drive & executive car rentals exclusively across Kanniyakumari district, Tamil Nadu.
             </p>
 
             {/* Action Buttons */}
@@ -502,7 +508,6 @@ export default function Home() {
                 poster={HERO_POSTER}
               >
                 <source src={HERO_VIDEO} type="video/mp4" />
-                <source src={HERO_FALLBACK_VIDEO} type="video/mp4" />
               </video>
             </div>
           </div>

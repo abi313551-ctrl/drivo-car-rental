@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
-import { Heart, Star, Fuel, Settings2, Users, ArrowLeftRight, CheckCircle2 } from 'lucide-react';
+import { Heart, Star, Fuel, Settings2, Users, ArrowLeftRight, CheckCircle2, MapPin } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { formatINR } from '../utils/pricing.js';
 import { useCars } from '../context/CarContext.jsx';
 import { useBookings } from '../context/BookingContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import CarImage from './CarImage.jsx';
 
 // `query` is an optional "?pickup=..&start=.." string carried from search to details/booking.
 export default function CarCard({ car, query = '' }) {
+  const { isAuthenticated } = useAuth();
   const { isFavorite, toggleFavorite, isInCompare, toggleCompare } = useCars();
   const { isBookedNow, findConflict } = useBookings();
   const fav = isFavorite(car.id);
@@ -102,14 +105,22 @@ export default function CarCard({ car, query = '' }) {
                 {car.brand} {car.model}
               </h3>
             </Link>
-            <p className="mt-0.5 text-xs text-slate-500">
-              {car.location} · {car.year}
+            <p className="mt-0.5 text-xs text-slate-500 flex items-center gap-1.5">
+              <span className="font-semibold text-blue-900">{car.location} Hub</span>
+              <span>&middot;</span>
+              <span>{car.year}</span>
             </p>
           </div>
           <span className="flex items-center gap-1 text-xs font-bold text-[#0B1528] bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-md shrink-0">
             <Star size={12} className="fill-amber-400 text-amber-400" />
             {car.rating}
           </span>
+        </div>
+
+        {/* Exclusive Hub Tag */}
+        <div className="mt-2 text-[10px] font-semibold text-slate-500 bg-slate-50/80 px-2 py-1 rounded-md border border-slate-150 flex items-center gap-1.5">
+          <MapPin size={10} className="text-blue-700 shrink-0" />
+          <span className="truncate">Available exclusively at {car.location} (Kanniyakumari Dist.)</span>
         </div>
 
         {/* Specifications Matrix Row (Gearbox, Seats, Fuel) */}
@@ -128,39 +139,46 @@ export default function CarCard({ car, query = '' }) {
           </span>
         </div>
 
-        {/* Pricing & Booking Row (Reference Image) */}
-        <div className="mt-4 flex items-center justify-between pt-1">
+        {/* Pricing & Booking Row */}
+        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
           <div>
-            <p className="font-display text-lg font-black text-[#0B1528]">
+            <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Daily Rate</p>
+            <p className="font-display text-lg font-black text-[#0B1528] leading-tight">
               {formatINR(car.pricePerDay)}
               <span className="text-xs font-normal text-slate-500 font-sans"> /day</span>
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Link
               to={`/cars/${car.id}${query}`}
-              className="text-xs font-semibold text-slate-500 hover:text-[#0B1528] px-2 py-1 transition"
+              className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-[#0A142F] hover:border-slate-300 transition-all cursor-pointer"
             >
-              Details
+              View Details
             </Link>
             {isAvailable ? (
               <Link
-                to={`/booking?car=${car.id}${bookQuery}`}
-                className="rounded-full bg-[#0B1528] hover:bg-[#1E293B] text-white px-4 py-2 text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center gap-1"
+                to={isAuthenticated ? `/booking?car=${car.id}${bookQuery}` : `/login?redirect=${encodeURIComponent(`/booking?car=${car.id}${bookQuery}`)}`}
+                state={{ from: `/booking?car=${car.id}${bookQuery}` }}
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    toast('Please log in or register to complete your reservation.', { icon: '🔐' });
+                  }
+                }}
+                className="inline-flex items-center justify-center rounded-xl bg-[#0A142F] hover:bg-[#1E293B] text-white px-3.5 py-2 text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
               >
-                Book Now &rarr;
+                Book Now
               </Link>
             ) : isPeriodConflict ? (
               <span
-                className="rounded-full bg-slate-200 text-slate-500 px-3.5 py-1.5 text-xs font-semibold cursor-not-allowed"
+                className="inline-flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 px-3 py-2 text-xs font-semibold cursor-not-allowed"
                 title="Car is already booked for these dates"
               >
                 Reserved
               </span>
             ) : (
               <span
-                className="rounded-full bg-slate-200 text-slate-500 px-3.5 py-1.5 text-xs font-semibold cursor-not-allowed"
+                className="inline-flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 px-3 py-2 text-xs font-semibold cursor-not-allowed"
               >
                 Unavailable
               </span>

@@ -14,6 +14,9 @@ class User(Base):
     license_number = Column(String(30), nullable=True)
     password_hash = Column(String(255), nullable=False)
     role = Column(String(20), default="customer", nullable=False)
+    is_verified = Column(Boolean, default=True, nullable=False)
+    auth_provider = Column(String(30), default="local", nullable=False)
+    google_id = Column(String(100), unique=True, index=True, nullable=True)
     reward_points = Column(Integer, default=0, nullable=False)
     lifetime_points = Column(Integer, default=0, nullable=False)
     tier = Column(String(20), default="Silver", nullable=False)  # Silver, Gold, Platinum
@@ -33,6 +36,7 @@ class Car(Base):
     id = Column(Integer, primary_key=True, index=True)
     brand = Column(String(60), nullable=False)
     model = Column(String(80), nullable=False)
+    registration_number = Column(String(40), nullable=True)
     year = Column(Integer, nullable=False)
     category = Column(String(40), nullable=False, index=True)
     fuel = Column(String(30), nullable=False)
@@ -100,6 +104,31 @@ class Booking(Base):
 
     user = relationship("User", back_populates="bookings")
     car = relationship("Car", back_populates="bookings")
+    payments = relationship("Payment", back_populates="booking", cascade="all, delete-orphan", order_by="Payment.created_at.desc()")
+
+
+class Payment(Base):
+    __tablename__ = "payments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    booking_id = Column(Integer, ForeignKey("bookings.id", ondelete="CASCADE"), nullable=False, index=True)
+    booking_ref = Column(String(32), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    gateway = Column(String(30), default="Razorpay", nullable=False)
+    order_id = Column(String(100), nullable=True, index=True)
+    payment_id = Column(String(100), nullable=True, index=True)
+    signature = Column(String(255), nullable=True)
+    amount = Column(Integer, nullable=False)
+    currency = Column(String(10), default="INR", nullable=False)
+    status = Column(String(30), default="Pending", nullable=False)  # 'Pending', 'Paid', 'Failed'
+    method = Column(String(40), nullable=True)
+    error_code = Column(String(100), nullable=True)
+    error_description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    booking = relationship("Booking", back_populates="payments")
+    user = relationship("User")
 
 
 class ContactMessage(Base):
@@ -356,5 +385,41 @@ class WeddingDecorationBooking(Base):
     car = relationship("Car")
     user = relationship("User")
     driver = relationship("Driver")
+
+
+class SupportedLocation(Base):
+    __tablename__ = "supported_locations"
+
+    id = Column(String(50), primary_key=True, index=True)
+    name = Column(String(100), nullable=False, unique=True, index=True)
+    district = Column(String(60), default="Kanniyakumari", nullable=False, index=True)
+    locality = Column(String(60), nullable=False, index=True)
+    type = Column(String(40), default="hub", nullable=False)
+    tag = Column(String(60), nullable=True)
+    address = Column(String(255), nullable=False)
+    lat = Column(Float, nullable=False)
+    lng = Column(Float, nullable=False)
+    hours = Column(String(60), default="24 Hours / 7 Days", nullable=False)
+    phone = Column(String(30), default="+91 4652 240 231", nullable=False)
+    instructions = Column(Text, nullable=True)
+    landmark = Column(String(150), nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class EmailOTP(Base):
+    __tablename__ = "email_otps"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(120), nullable=False, index=True)
+    purpose = Column(String(30), nullable=False, index=True)  # register, forgot_password
+    otp_hash = Column(String(128), nullable=False)
+    temp_data = Column(JSON, nullable=True)  # JSON holding pending registration details
+    expires_at = Column(DateTime, nullable=False, index=True)
+    attempts = Column(Integer, default=0, nullable=False)
+    resend_count = Column(Integer, default=0, nullable=False)
+    last_sent_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    is_used = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 

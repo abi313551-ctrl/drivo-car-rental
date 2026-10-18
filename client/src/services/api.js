@@ -119,3 +119,55 @@ export async function downloadInvoicePdf(bookingRef) {
   document.body.removeChild(a);
   window.URL.revokeObjectURL(url);
 }
+
+export async function getPaymentConfig() {
+  return apiRequest('/payments/config', { method: 'GET' });
+}
+
+export async function createPaymentOrder(bookingRef) {
+  return apiRequest('/payments/create-order', {
+    method: 'POST',
+    body: { bookingRef },
+  });
+}
+
+export async function verifyPaymentSignature(payload) {
+  return apiRequest('/payments/verify', {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function logPaymentFailure(payload) {
+  return apiRequest('/payments/failure', {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function getBookingPayments(bookingRef) {
+  return apiRequest(`/payments/booking/${bookingRef}`, { method: 'GET' });
+}
+
+export async function getDecorationPackages() {
+  return apiRequest('/decorations/packages', { method: 'GET' });
+}
+
+export async function calculateDecorationPrice(payload) {
+  return apiRequest('/decorations/calculate-price', {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function createDecorationBooking(payload) {
+  return apiRequest('/decorations/bookings', {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function getMyDecorationBookings() {
+  return apiRequest('/decorations/bookings/my', { method: 'GET' });
+}
+

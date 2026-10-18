@@ -71,7 +71,7 @@ export default function BookingSummary({ car, start, end, pickup, dropoff, extra
                 </div>
                 <div className="flex justify-between py-1">
                   <span>Base Tariff</span>
-                  <span className="font-bold text-[#0A142F]">{formatINR(pricing.basePrice)}</span>
+                  <span className="font-bold text-[#0A142F]">{formatINR(pricing.base ?? pricing.basePrice)}</span>
                 </div>
 
                 {/* Extras itemized breakdown */}

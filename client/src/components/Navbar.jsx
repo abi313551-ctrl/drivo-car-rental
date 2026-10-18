@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Search, Heart, User, LogOut, ArrowLeftRight, Shield, Menu, X } from 'lucide-react';
+import { Search, Heart, User, LogOut, ArrowLeftRight, Shield, Menu, X, MapPin } from 'lucide-react';
 import { useCars } from '../context/CarContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const links = [
   { to: '/', label: 'Home', end: true },
   { to: '/cars', label: 'Cars' },
+  { to: '/wedding-cars', label: 'Wedding Cars' },
   { to: '/about', label: 'About Us' },
   { to: '/contact', label: 'Contact Us' },
   { to: '/faq', label: 'FAQ' },
@@ -80,6 +81,10 @@ export default function Navbar() {
               DRIVE YOUR WORLD
             </span>
           </div>
+          <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200/70 px-2.5 py-0.5 text-[10px] font-bold text-blue-900 tracking-wide ml-1">
+            <MapPin size={10} className="text-blue-700" />
+            <span>Kanniyakumari Dist.</span>
+          </span>
         </Link>
 
         {/* Center Desktop Navigation */}
@@ -144,7 +149,15 @@ export default function Navbar() {
           )}
 
           {!isAuthenticated ? (
-            <div className="flex items-center gap-3 ml-2">
+            <div className="flex items-center gap-2.5 ml-2">
+              <Link
+                to="/admin/login"
+                className="hidden lg:flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-[#0B1528] transition px-2 py-1.5 rounded-lg hover:bg-slate-50"
+                title="Admin Command Center"
+              >
+                <Shield size={14} className="text-blue-600" />
+                <span>Admin</span>
+              </Link>
               <Link
                 to="/login"
                 className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-[#0B1528] transition px-2 py-1.5"
@@ -187,8 +200,10 @@ export default function Navbar() {
                     <div className="py-1">
                       {[
                         ...(user?.role === 'admin' ? [['/admin', 'Admin Command Center 🛡️', true]] : []),
+                        ['/profile', 'My Profile'],
+                        ['/my-bookings', 'My Bookings'],
                         ['/cars', 'Explore Fleet'],
-                        ['/dashboard', 'My Account & Bookings'],
+                        ['/dashboard', 'Account Overview'],
                         ['/compare', 'Compare Vehicles'],
                         ['/favorites', 'Saved Favorites'],
                       ].map(([to, label, isAdmin]) => (
@@ -268,6 +283,16 @@ export default function Navbar() {
                 <Shield size={14} /> Admin Command Center
               </NavLink>
             )}
+            {isAuthenticated && (
+              <>
+                <NavLink to="/profile" className="rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50">
+                  My Profile
+                </NavLink>
+                <NavLink to="/my-bookings" className="rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50">
+                  My Bookings
+                </NavLink>
+              </>
+            )}
             <div className="mt-4 flex gap-2 pt-3 border-t border-slate-100">
               {!isAuthenticated ? (
                 <>
@@ -276,6 +301,9 @@ export default function Navbar() {
                   </Link>
                   <Link to="/register" className="rounded-full bg-[#0B1528] text-white text-xs font-bold flex-1 py-2.5 text-center">
                     Sign up
+                  </Link>
+                  <Link to="/admin/login" className="rounded-full border border-blue-200 bg-blue-50/50 text-xs font-bold px-3 py-2.5 text-center text-blue-800 flex items-center justify-center gap-1" title="Admin Portal">
+                    <Shield size={12} /> Admin
                   </Link>
                 </>
               ) : (

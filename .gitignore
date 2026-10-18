@@ -26,3 +26,12 @@ yarn-error.log*
 # OS metadata
 .DS_Store
 Thumbs.db
+# Secrets
+.env.*
+!.env.example
+server/.env
+client/.env
+client/.env.local
+
+# Runtime uploads
+server/uploads/

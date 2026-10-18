@@ -362,3 +362,64 @@ If you have any questions, please contact our support team at support@drivo.exam
     """
     html = render_email_layout(subject, preheader, body_html)
     return subject, text, html
+
+
+def build_otp_email(email: str, recipient_name: str, otp_code: str, purpose: str = "register") -> Tuple[str, str, str]:
+    """
+    Builds subject, plaintext and HTML content for verification OTP (registration or forgot password).
+    """
+    is_registration = purpose == "register"
+    subject = "Verify Your Drivo Account - One-Time Password" if is_registration else "Reset Your Drivo Password - One-Time Password"
+    preheader = f"Your verification code is {otp_code}. Valid for 5 minutes."
+
+    greeting = f"Hello {recipient_name}," if recipient_name else "Hello,"
+    purpose_desc = (
+        "Thank you for joining <strong>Drivo Car Rentals</strong> (Kanniyakumari District's premier car rental service). To verify your email address and activate your account, please enter the one-time code below:"
+        if is_registration else
+        "We received a request to reset your <strong>Drivo Car Rentals</strong> account password. Enter the one-time code below to complete the password reset:"
+    )
+
+    text = f"""{greeting}
+
+{purpose_desc}
+
+Your One-Time Password (OTP): {otp_code}
+
+This code is valid for 5 minutes. If you did not request this code, please safely disregard this email.
+
+Warm regards,
+The Drivo Team
+Kanniyakumari District, Tamil Nadu
+"""
+
+    badge_text = "Account Verification" if is_registration else "Password Reset"
+    badge_style = "background-color:#eff6ff; color:#1d4ed8;" if is_registration else "background-color:#fef3c7; color:#92400e;"
+
+    body_html = f"""
+      <div class="badge" style="{badge_style}">{badge_text}</div>
+      <h2 style="margin:0 0 12px 0; font-size:22px; color:#0f172a; font-weight:800;">
+        {"Verify Your Email" if is_registration else "Reset Your Password"}
+      </h2>
+      <p style="color:#475569; font-size:14px; line-height:1.6; margin:0 0 20px 0;">
+        {greeting}<br/>
+        {purpose_desc}
+      </p>
+
+      <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 14px; padding: 24px; text-align: center; margin: 24px 0;">
+        <span style="font-size: 12px; font-weight: 600; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase;">One-Time Verification Code</span>
+        <div style="font-size: 38px; font-weight: 900; letter-spacing: 10px; color: #38bdf8; margin: 12px 0 6px 0; font-family: monospace;">
+          {otp_code}
+        </div>
+        <span style="font-size: 12px; color: #cbd5e1;">Code expires in <strong>5 minutes</strong> &bull; Do not share with anyone</span>
+      </div>
+
+      <div class="checklist" style="background-color:#f8fafc; border-left-color:#38bdf8; color:#334155; margin-top:20px;">
+        <strong>Security Notice:</strong>
+        <p style="margin:4px 0 0 0; font-size:13px; line-height:1.5;">
+          Drivo representatives will never ask you for your verification code over the phone or email. If you did not initiate this request, you can safely ignore this email.
+        </p>
+      </div>
+    """
+    html = render_email_layout(subject, preheader, body_html)
+    return subject, text, html
+

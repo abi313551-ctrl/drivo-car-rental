@@ -1,380 +1,393 @@
 /**
  * Drivo Supported Pickup & Return Stations
- * Verified locations, physical addresses, GPS coordinates, operating hours, and handover instructions.
+ * Exclusively Serving Kanniyakumari District, Tamil Nadu, India.
  */
 
+export const SERVICE_DISTRICT = 'Kanniyakumari';
+export const SERVICE_STATE = 'Tamil Nadu';
+export const SERVICE_NOTICE = 'Currently serving Kanniyakumari district only.';
+export const UNSUPPORTED_LOCATION_ERROR = 'Sorry, Drivo currently provides car rental services only within Kanniyakumari district.';
+
+export const KANNIYAKUMARI_LOCALITIES = [
+  'Nagercoil',
+  'Kanyakumari',
+  'Marthandam',
+  'Thuckalay',
+  'Kuzhithurai',
+  'Colachel',
+  'Padmanabhapuram',
+  'Karungal',
+  'Kulasekharam',
+  'Suchindram',
+  'Boothapandi',
+  'Eraniel',
+];
+
+const OUTSIDE_LOCATIONS = new Set([
+  'chennai', 'coimbatore', 'bengaluru', 'bangalore', 'mumbai', 'delhi', 'hyderabad',
+  'kochi', 'cochin', 'madurai', 'tirunelveli', 'trivandrum', 'thiruvananthapuram',
+  'salem', 'trichy', 'tiruchirappalli', 'pune', 'kolkata', 'goa', 'mysore', 'mysuru'
+]);
+
 export const CITY_COORDINATES = {
-  Coimbatore: { lat: 11.0168, lng: 76.9558, zoom: 12 },
-  Chennai: { lat: 13.0827, lng: 80.2707, zoom: 11 },
-  Bengaluru: { lat: 12.9716, lng: 77.5946, zoom: 11 },
-  Kochi: { lat: 9.9312, lng: 76.2673, zoom: 11 },
-  Hyderabad: { lat: 17.3850, lng: 78.4867, zoom: 11 },
-  Mumbai: { lat: 19.0760, lng: 72.8777, zoom: 11 },
-  Delhi: { lat: 28.6139, lng: 77.2090, zoom: 11 },
+  Kanniyakumari: { lat: 8.1833, lng: 77.4119, zoom: 11 },
   Nagercoil: { lat: 8.1833, lng: 77.4119, zoom: 12 },
+  Kanyakumari: { lat: 8.0810, lng: 77.5510, zoom: 13 },
+  Marthandam: { lat: 8.3040, lng: 77.2205, zoom: 12 },
+  Thuckalay: { lat: 8.2505, lng: 77.3240, zoom: 12 },
+  Kuzhithurai: { lat: 8.3180, lng: 77.1950, zoom: 12 },
+  Colachel: { lat: 8.1780, lng: 77.2560, zoom: 12 },
+  Padmanabhapuram: { lat: 8.2510, lng: 77.3275, zoom: 13 },
+  Karungal: { lat: 8.2320, lng: 77.2340, zoom: 12 },
+  Kulasekharam: { lat: 8.3610, lng: 77.2940, zoom: 12 },
+  Suchindram: { lat: 8.1560, lng: 77.4650, zoom: 13 },
+  Boothapandi: { lat: 8.2610, lng: 77.4560, zoom: 12 },
+  Eraniel: { lat: 8.2050, lng: 77.3070, zoom: 12 },
 };
 
 export const SUPPORTED_LOCATIONS = [
-  // --- Coimbatore ---
-  {
-    id: 'cjb-airport',
-    name: 'Coimbatore Airport',
-    city: 'Coimbatore',
-    type: 'airport',
-    tag: 'Airport Terminal',
-    address: 'Civil Aerodrome Post, Peelamedu, Coimbatore, Tamil Nadu - 641014',
-    lat: 11.0298,
-    lng: 77.0434,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 422 259 2155',
-    instructions: 'Drivo Welcome Desk located at Terminal 1 Arrival Hall exit. Vehicle parked in Bay 4 with 24/7 key handover.',
-    landmark: 'Opposite Domestic Baggage Claim Gate B',
-  },
-  {
-    id: 'cjb-city',
-    name: 'Coimbatore City Center',
-    city: 'Coimbatore',
-    type: 'city',
-    tag: 'Flagship Center',
-    address: '104, West Club Road, RS Puram, Coimbatore, Tamil Nadu - 641002',
-    lat: 11.0088,
-    lng: 76.9525,
-    hours: '06:00 AM – 11:00 PM',
-    phone: '+91 98765 43210',
-    instructions: 'Drivo Flagship Center. Customer lounge on Ground Floor with reserved parking and digital inspection desk.',
-    landmark: 'Near Diwan Bahadur Road Junction',
-  },
-  {
-    id: 'cjb-railway',
-    name: 'Coimbatore Railway Station',
-    city: 'Coimbatore',
-    type: 'railway',
-    tag: 'Railway Station',
-    address: 'State Bank Road, Gopalapuram, Coimbatore, Tamil Nadu - 641018',
-    lat: 10.9979,
-    lng: 76.9669,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 422 230 0134',
-    instructions: 'Meet our representative at the Main Concourse Commercial Valet Parking Bay near Clock Tower.',
-    landmark: 'Platform 1 Main Concourse Parking',
-  },
-
-  // --- Chennai ---
-  {
-    id: 'maa-airport',
-    name: 'Chennai Airport',
-    city: 'Chennai',
-    type: 'airport',
-    tag: 'Airport Terminal',
-    address: 'Grand Southern Trunk Road, Meenambakkam, Chennai, Tamil Nadu - 600027',
-    lat: 12.9941,
-    lng: 80.1709,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 44 2256 0551',
-    instructions: 'Terminal 2 Domestic Arrivals, Column 14. Dedicated Drivo valet kiosk with fast biometric ID check.',
-    landmark: 'Multi-Level Car Park West Pillar 14',
-  },
-  {
-    id: 'maa-city',
-    name: 'Chennai City Center',
-    city: 'Chennai',
-    type: 'city',
-    tag: 'Downtown Station',
-    address: 'North Usman Road, T. Nagar, Chennai, Tamil Nadu - 600017',
-    lat: 13.0418,
-    lng: 80.2341,
-    hours: '06:30 AM – 10:30 PM',
-    phone: '+91 44 2815 3901',
-    instructions: 'Drivo T. Nagar Hub. Basement parking Level B1. Express contactless key collection available.',
-    landmark: 'Near Panagal Park Metro Exit',
-  },
-  {
-    id: 'maa-railway',
-    name: 'Chennai Railway Station',
-    city: 'Chennai',
-    type: 'railway',
-    tag: 'Railway Station',
-    address: 'Kannappar Thidal, Periyamet, Chennai, Tamil Nadu - 600003',
-    lat: 13.0827,
-    lng: 80.2707,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 44 2535 3525',
-    instructions: 'Chennai Central Station Forecourt, Premium Car Parking Zone near Gate 2.',
-    landmark: 'Gate 2 Pre-paid Taxi & Rental Bay',
-  },
-
-  // --- Bengaluru ---
-  {
-    id: 'blr-airport',
-    name: 'Bengaluru Airport',
-    city: 'Bengaluru',
-    type: 'airport',
-    tag: 'Airport Terminal',
-    address: 'KIAL Road, Devanahalli, Bengaluru, Karnataka - 560300',
-    lat: 13.1986,
-    lng: 77.7066,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 80 6678 2425',
-    instructions: 'Terminal 1 P4 Parking Zone, Pillar B3. 24/7 dedicated handover lane with clean sanitised vehicles.',
-    landmark: 'P4 Parking Commercial Lane Pillar B3',
-  },
-  {
-    id: 'blr-city',
-    name: 'Bengaluru City Center',
-    city: 'Bengaluru',
-    type: 'city',
-    tag: 'Tech Hub Center',
-    address: '100 Feet Road, HAL 2nd Stage, Indiranagar, Bengaluru, Karnataka - 560038',
-    lat: 12.9716,
-    lng: 77.6412,
-    hours: '06:00 AM – 11:30 PM',
-    phone: '+91 80 2521 8844',
-    instructions: 'Drivo Tech Hub Station, Indiranagar. Fast paperwork verification and seamless EV fast charging bays.',
-    landmark: 'Near Indiranagar Club & 12th Main',
-  },
-  {
-    id: 'blr-railway',
-    name: 'Bengaluru Railway Station',
-    city: 'Bengaluru',
-    type: 'railway',
-    tag: 'Railway Station',
-    address: 'Krantivira Sangolli Rayanna (Majestic), Gubbi Thotadappa Rd, Bengaluru - 560023',
-    lat: 12.9781,
-    lng: 77.5695,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 80 2287 1441',
-    instructions: 'Platform 1 Exit Gate Commercial Pick-Up Bay. Contact executive upon arriving at Majestic.',
-    landmark: 'Majestic Metro Interchange Walkway',
-  },
-
-  // --- Kochi ---
-  {
-    id: 'cok-airport',
-    name: 'Kochi Airport',
-    city: 'Kochi',
-    type: 'airport',
-    tag: 'Airport Terminal',
-    address: 'Airport Road, Nedumbassery, Kochi, Kerala - 683111',
-    lat: 10.1518,
-    lng: 76.3930,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 484 261 0115',
-    instructions: 'Arrival Canopy Pillar 12. Drivo Airport Representative with name board and keys ready.',
-    landmark: 'Canopy Walkway Pillar 12',
-  },
-  {
-    id: 'cok-city',
-    name: 'Kochi City Center',
-    city: 'Kochi',
-    type: 'city',
-    tag: 'Coastal Hub',
-    address: 'Mahatma Gandhi Road, Shenoys, Kochi, Kerala - 682035',
-    lat: 9.9722,
-    lng: 76.2801,
-    hours: '07:00 AM – 10:00 PM',
-    phone: '+91 484 237 8102',
-    instructions: 'Drivo Coastal Hub, MG Road. Easy parking access with detailed local tourist & route guides.',
-    landmark: 'Near Shenoys Junction Metro Station',
-  },
-  {
-    id: 'cok-railway',
-    name: 'Kochi Railway Station',
-    city: 'Kochi',
-    type: 'railway',
-    tag: 'Railway Station',
-    address: 'South Railway Station Road, Karshaka Rd, Ernakulam, Kochi, Kerala - 682016',
-    lat: 9.9678,
-    lng: 76.2917,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 484 237 6131',
-    instructions: 'Ernakulam Junction West Entrance Commercial Vehicle Stand. 24/7 dispatch desk.',
-    landmark: 'West Entrance Auto & Rental Bay',
-  },
-
-  // --- Hyderabad ---
-  {
-    id: 'hyd-airport',
-    name: 'Hyderabad Airport',
-    city: 'Hyderabad',
-    type: 'airport',
-    tag: 'Airport Terminal',
-    address: 'Shamshabad, Hyderabad, Telangana - 500409',
-    lat: 17.2403,
-    lng: 78.4294,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 40 6654 6370',
-    instructions: 'Level E Car Park Zone B. Key kiosk with fast digital check-in and luggage assistance.',
-    landmark: 'Car Park Level E Zone B Pillar 8',
-  },
-  {
-    id: 'hyd-city',
-    name: 'Hyderabad City Center',
-    city: 'Hyderabad',
-    type: 'city',
-    tag: 'Cyber Station',
-    address: 'Hitec City Main Rd, Patrika Nagar, Madhapur, Hyderabad, Telangana - 500081',
-    lat: 17.4504,
-    lng: 78.3808,
-    hours: '06:00 AM – 11:00 PM',
-    phone: '+91 40 2311 9080',
-    instructions: 'Drivo Cyber Station, Opposite Cyber Towers. Premium executive fleet pickup lounge.',
-    landmark: 'Opposite Cyber Towers Main Gate',
-  },
-  {
-    id: 'hyd-railway',
-    name: 'Hyderabad Railway Station',
-    city: 'Hyderabad',
-    type: 'railway',
-    tag: 'Railway Station',
-    address: 'Station Road, Railway Colony, Secunderabad, Telangana - 500003',
-    lat: 17.4344,
-    lng: 78.5015,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 40 2780 4455',
-    instructions: 'Main Concourse Car Parking Area near Platform 1 VIP Gate. 24/7 staff support.',
-    landmark: 'Platform 1 VIP Concourse Gate',
-  },
-
-  // --- Mumbai ---
-  {
-    id: 'bom-airport',
-    name: 'Mumbai Airport',
-    city: 'Mumbai',
-    type: 'airport',
-    tag: 'Airport Terminal',
-    address: 'Terminal 2, Sahar Road, Andheri East, Mumbai, Maharashtra - 400099',
-    lat: 19.0902,
-    lng: 72.8628,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 22 6685 1010',
-    instructions: 'Terminal 2 Multi-Level Car Parking Level P7, Section B. 24/7 concierge pickup service.',
-    landmark: 'MLCP Level P7 Section B Pillar 22',
-  },
-  {
-    id: 'bom-city',
-    name: 'Mumbai City Center',
-    city: 'Mumbai',
-    type: 'city',
-    tag: 'Financial Hub',
-    address: 'G Block, Bandra Kurla Complex, Bandra East, Mumbai, Maharashtra - 400051',
-    lat: 19.0664,
-    lng: 72.8687,
-    hours: '06:00 AM – 11:00 PM',
-    phone: '+91 22 2650 9920',
-    instructions: 'Drivo BKC Hub, One BKC Ground Concourse. Dedicated executive vehicle dispatch.',
-    landmark: 'Opposite Bharat Diamond Bourse',
-  },
-  {
-    id: 'bom-railway',
-    name: 'Mumbai Railway Station',
-    city: 'Mumbai',
-    type: 'railway',
-    tag: 'Railway Station',
-    address: 'Chhatrapati Shivaji Maharaj Terminus, Fort, Mumbai, Maharashtra - 400001',
-    lat: 18.9401,
-    lng: 72.8352,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 22 2262 0155',
-    instructions: 'CSMT Station Taxi & Valet Bay, GPO side exit. Executive waiting at vehicle bay.',
-    landmark: 'GPO Side Station Exit Bay 3',
-  },
-
-  // --- Delhi ---
-  {
-    id: 'del-airport',
-    name: 'Delhi Airport',
-    city: 'Delhi',
-    type: 'airport',
-    tag: 'Airport Terminal',
-    address: 'Terminal 3, Indira Gandhi International Airport, New Delhi - 110037',
-    lat: 28.5562,
-    lng: 77.1000,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 11 4965 2000',
-    instructions: 'T3 Multi-Level Parking Level 2, Column F. 24/7 key handover desk with express paperwork.',
-    landmark: 'T3 Multi-Level Car Park Floor 2',
-  },
-  {
-    id: 'del-city',
-    name: 'Delhi City Center',
-    city: 'Delhi',
-    type: 'city',
-    tag: 'Capital Hub',
-    address: 'Inner Circle, Block C, Connaught Place, New Delhi - 110001',
-    lat: 28.6328,
-    lng: 77.2197,
-    hours: '06:00 AM – 11:00 PM',
-    phone: '+91 11 2341 8760',
-    instructions: 'Drivo Capital Hub, Connaught Place. Central location with secure multi-level parking.',
-    landmark: 'Block C Inner Circle Metro Gate 4',
-  },
-  {
-    id: 'del-railway',
-    name: 'Delhi Railway Station',
-    city: 'Delhi',
-    type: 'railway',
-    tag: 'Railway Station',
-    address: 'Bhavbhuti Marg, Ratan Lal Market, Paharganj, New Delhi - 110055',
-    lat: 28.6430,
-    lng: 77.2195,
-    hours: '24 Hours / 7 Days',
-    phone: '+91 11 2334 3333',
-    instructions: 'New Delhi Railway Station (NDLS), Ajmeri Gate Side Premium Parking Lot.',
-    landmark: 'Ajmeri Gate Main Parking Concourse',
-  },
-
   // --- Nagercoil ---
   {
-    id: 'ncj-railway',
-    name: 'Nagercoil Railway Station',
+    id: 'ncj-junction',
+    name: 'Nagercoil Junction Railway Station',
     city: 'Nagercoil',
+    locality: 'Nagercoil',
+    district: 'Kanniyakumari',
     type: 'railway',
     tag: 'Railway Station',
-    address: 'Railway Feeder Road, Kottar, Nagercoil, Tamil Nadu - 629002',
+    address: 'Railway Feeder Road, Kottar, Nagercoil, Kanniyakumari District, Tamil Nadu - 629002',
     lat: 8.1754,
     lng: 77.4395,
     hours: '24 Hours / 7 Days',
     phone: '+91 4652 240 231',
-    instructions: 'Nagercoil Junction Forecourt Vehicle Stand. Representative waiting with vehicle keys.',
-    landmark: 'Main Entrance Vehicle Forecourt',
+    instructions: 'Drivo Welcome Kiosk located at Main Concourse Commercial Valet Bay. Fast biometric check and vehicle handover.',
+    landmark: 'Opposite Kottar Police Station / Main Concourse Entry',
   },
   {
-    id: 'ncj-city',
-    name: 'Nagercoil City Center',
+    id: 'ncj-vadasery',
+    name: 'Nagercoil Vadasery Central Hub',
     city: 'Nagercoil',
+    locality: 'Nagercoil',
+    district: 'Kanniyakumari',
     type: 'city',
-    tag: 'District Hub',
-    address: 'Court Road, Vadasery, Nagercoil, Tamil Nadu - 629001',
+    tag: 'Flagship District Hub',
+    address: 'Christopher Bus Stand Road, Vadasery, Nagercoil, Kanniyakumari District, Tamil Nadu - 629001',
     lat: 8.1925,
     lng: 77.4287,
-    hours: '06:30 AM – 10:00 PM',
+    hours: '06:00 AM – 11:00 PM',
     phone: '+91 4652 232 450',
-    instructions: 'Drivo Kanyakumari District Hub, Vadasery. Complete fleet inspection and briefing.',
-    landmark: 'Near Vadasery Central Clock Tower',
+    instructions: 'Drivo Central District Hub. Ground floor reception lounge with digital vehicle condition inspection bay.',
+    landmark: 'Near Vadasery Central Clock Tower & Christopher Bus Stand',
   },
   {
-    id: 'ncj-airport',
-    name: 'Nagercoil Airport',
+    id: 'ncj-collectorate',
+    name: 'Nagercoil Collectorate Hub',
     city: 'Nagercoil',
-    type: 'airport',
-    tag: 'Airport Terminal Link',
-    address: 'Airport Road, Chacka, Thiruvananthapuram - 695008 (Direct Link for Nagercoil Region)',
-    lat: 8.4821,
-    lng: 76.9200,
+    locality: 'Nagercoil',
+    district: 'Kanniyakumari',
+    type: 'city',
+    tag: 'Executive Hub',
+    address: 'Court Road, Collectorate Junction, Nagercoil, Kanniyakumari District, Tamil Nadu - 629001',
+    lat: 8.1812,
+    lng: 77.4215,
+    hours: '07:00 AM – 10:00 PM',
+    phone: '+91 4652 230 112',
+    instructions: 'Executive customer parking zone near District Court entrance.',
+    landmark: 'Near District Court Complex & Collectorate Gate',
+  },
+
+  // --- Kanyakumari ---
+  {
+    id: 'kny-beach',
+    name: 'Kanyakumari Beach Hub',
+    city: 'Kanyakumari',
+    locality: 'Kanyakumari',
+    district: 'Kanniyakumari',
+    type: 'city',
+    tag: 'Cape Coastal Hub',
+    address: 'Main Beach Road, Near Sunset Point, Kanyakumari, Tamil Nadu - 629702',
+    lat: 8.0810,
+    lng: 77.5510,
     hours: '24 Hours / 7 Days',
-    phone: '+91 471 250 0283',
-    instructions: 'TRV Domestic Terminal 1 Pickup Area. Dedicated express transfer connection to Nagercoil.',
-    landmark: 'Terminal 1 Dedicated Express Transit Bay',
+    phone: '+91 4652 246 380',
+    instructions: 'Coastal handover kiosk. Reserved ocean-view parking bay with express tourist car delivery.',
+    landmark: '500m from Vivekananda Rock Memorial Ferry Wharf',
+  },
+  {
+    id: 'kny-railway',
+    name: 'Kanyakumari Railway Station',
+    city: 'Kanyakumari',
+    locality: 'Kanyakumari',
+    district: 'Kanniyakumari',
+    type: 'railway',
+    tag: 'Railway Terminal',
+    address: 'Station Road, Cape Comorin, Kanyakumari, Tamil Nadu - 629702',
+    lat: 8.0875,
+    lng: 77.5452,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 4652 246 224',
+    instructions: 'Platform 1 Exit Forecourt. Representative waiting with digital vehicle inspection checklist.',
+    landmark: 'Main Entrance Commercial Vehicle Parking',
+  },
+
+  // --- Marthandam ---
+  {
+    id: 'mar-flyover',
+    name: 'Marthandam Flyover Hub',
+    city: 'Marthandam',
+    locality: 'Marthandam',
+    district: 'Kanniyakumari',
+    type: 'city',
+    tag: 'Highway Transit Station',
+    address: 'NH 66 Main Road, Near Marthandam Flyover, Marthandam, Kanniyakumari District, Tamil Nadu - 629165',
+    lat: 8.3040,
+    lng: 77.2205,
+    hours: '06:00 AM – 11:00 PM',
+    phone: '+91 4651 270 310',
+    instructions: 'Drivo West District Transit Station. 24/7 key drop-box and vehicle inspection bay.',
+    landmark: 'Below Marthandam Flyover Pillar 24, Near Bus Stand',
+  },
+  {
+    id: 'mar-bus-stand',
+    name: 'Marthandam Bus Terminal',
+    city: 'Marthandam',
+    locality: 'Marthandam',
+    district: 'Kanniyakumari',
+    type: 'city',
+    tag: 'Bus Terminal Link',
+    address: 'New Bus Stand Road, Marthandam, Kanniyakumari District, Tamil Nadu - 629165',
+    lat: 8.3065,
+    lng: 77.2230,
+    hours: '06:30 AM – 10:30 PM',
+    phone: '+91 4651 270 550',
+    instructions: 'Dedicated commercial parking lane adjacent to passenger entrance.',
+    landmark: 'Beside New Bus Stand Entry Arch',
+  },
+
+  // --- Thuckalay ---
+  {
+    id: 'tky-center',
+    name: 'Thuckalay Town Center',
+    city: 'Thuckalay',
+    locality: 'Thuckalay',
+    district: 'Kanniyakumari',
+    type: 'city',
+    tag: 'Heritage Route Station',
+    address: 'Trivandrum-Nagercoil Highway, Thuckalay, Kanniyakumari District, Tamil Nadu - 629175',
+    lat: 8.2505,
+    lng: 77.3240,
+    hours: '06:30 AM – 10:30 PM',
+    phone: '+91 4651 252 890',
+    instructions: 'Thuckalay Central Desk. Quick highway handover with vehicle pre-conditioned.',
+    landmark: 'Near Thuckalay Old Bus Stand & Taluk Hospital',
+  },
+
+  // --- Kuzhithurai ---
+  {
+    id: 'kuz-railway',
+    name: 'Kuzhithurai Railway Station',
+    city: 'Kuzhithurai',
+    locality: 'Kuzhithurai',
+    district: 'Kanniyakumari',
+    type: 'railway',
+    tag: 'Railway Station',
+    address: 'Station Road, Kuzhithurai, Kanniyakumari District, Tamil Nadu - 629163',
+    lat: 8.3180,
+    lng: 77.1950,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 4651 260 210',
+    instructions: 'Meet Drivo representative at Kuzhithurai Railway Station portico entrance.',
+    landmark: 'Kuzhithurai Junction Parking Bay',
+  },
+  {
+    id: 'kuz-town',
+    name: 'Kuzhithurai Municipal Center',
+    city: 'Kuzhithurai',
+    locality: 'Kuzhithurai',
+    district: 'Kanniyakumari',
+    type: 'city',
+    tag: 'Municipal Hub',
+    address: 'Municipality Road, Kuzhithurai, Kanniyakumari District, Tamil Nadu - 629163',
+    lat: 8.3205,
+    lng: 77.1990,
+    hours: '07:00 AM – 09:30 PM',
+    phone: '+91 4651 260 440',
+    instructions: 'Central municipal car stand with customer verification counter.',
+    landmark: 'Opposite Kuzhithurai Post Office',
+  },
+
+  // --- Colachel ---
+  {
+    id: 'col-port',
+    name: 'Colachel Port Hub',
+    city: 'Colachel',
+    locality: 'Colachel',
+    district: 'Kanniyakumari',
+    type: 'city',
+    tag: 'Coastal Harbor Hub',
+    address: 'Port Road, Colachel, Kanniyakumari District, Tamil Nadu - 629251',
+    lat: 8.1780,
+    lng: 77.2560,
+    hours: '07:00 AM – 09:00 PM',
+    phone: '+91 4651 227 410',
+    instructions: 'Coastal hub serving western seaside belt and beach road travelers.',
+    landmark: 'Near Colachel Fishing Harbour Gate & Police Station',
+  },
+
+  // --- Padmanabhapuram ---
+  {
+    id: 'pdm-palace',
+    name: 'Padmanabhapuram Palace Hub',
+    city: 'Padmanabhapuram',
+    locality: 'Padmanabhapuram',
+    district: 'Kanniyakumari',
+    type: 'city',
+    tag: 'Heritage Hub',
+    address: 'Palace Road, Padmanabhapuram, Kanniyakumari District, Tamil Nadu - 629175',
+    lat: 8.2510,
+    lng: 77.3275,
+    hours: '08:00 AM – 07:00 PM',
+    phone: '+91 4651 250 144',
+    instructions: 'Palace tourist circuit dispatch. Reserved heritage parking bay.',
+    landmark: 'Opposite Padmanabhapuram Palace Tourist Parking',
+  },
+
+  // --- Karungal ---
+  {
+    id: 'kgl-town',
+    name: 'Karungal Town Hub',
+    city: 'Karungal',
+    locality: 'Karungal',
+    district: 'Kanniyakumari',
+    type: 'city',
+    tag: 'Midland Town Hub',
+    address: 'Main Junction, Karungal, Kanniyakumari District, Tamil Nadu - 629157',
+    lat: 8.2320,
+    lng: 77.2340,
+    hours: '07:00 AM – 09:30 PM',
+    phone: '+91 4651 268 550',
+    instructions: 'Midland junction dispatch point with full vehicle handover amenities.',
+    landmark: 'Karungal Four Roads Junction',
+  },
+
+  // --- Kulasekharam ---
+  {
+    id: 'kul-hub',
+    name: 'Kulasekharam Hub',
+    city: 'Kulasekharam',
+    locality: 'Kulasekharam',
+    district: 'Kanniyakumari',
+    type: 'city',
+    tag: 'Highland Foothills Hub',
+    address: 'Pechiparai Road, Kulasekharam, Kanniyakumari District, Tamil Nadu - 629161',
+    lat: 8.3610,
+    lng: 77.2940,
+    hours: '07:00 AM – 09:00 PM',
+    phone: '+91 4651 278 120',
+    instructions: 'Foothills dispatch station for hill routes, Pechiparai dam, and eco-resorts.',
+    landmark: 'Near Kulasekharam Market Junction',
+  },
+
+  // --- Suchindram ---
+  {
+    id: 'sch-hub',
+    name: 'Suchindram Temple Hub',
+    city: 'Suchindram',
+    locality: 'Suchindram',
+    district: 'Kanniyakumari',
+    type: 'city',
+    tag: 'Heritage Circuit Hub',
+    address: 'Temple Car Street, Suchindram, Kanniyakumari District, Tamil Nadu - 629704',
+    lat: 8.1560,
+    lng: 77.4650,
+    hours: '06:00 AM – 10:00 PM',
+    phone: '+91 4652 241 190',
+    instructions: 'Southern highway transfer station near Thanumalayan Temple.',
+    landmark: 'Near Thanumalayan Temple North Car Street',
+  },
+
+  // --- Boothapandi ---
+  {
+    id: 'btp-hub',
+    name: 'Boothapandi Town Hub',
+    city: 'Boothapandi',
+    locality: 'Boothapandi',
+    district: 'Kanniyakumari',
+    type: 'city',
+    tag: 'Eastern Valley Hub',
+    address: 'Thovalai Main Road, Boothapandi, Kanniyakumari District, Tamil Nadu - 629852',
+    lat: 8.2610,
+    lng: 77.4560,
+    hours: '07:00 AM – 09:00 PM',
+    phone: '+91 4652 281 330',
+    instructions: 'Thovalai taluk valley dispatch point.',
+    landmark: 'Near Thovalai Taluk Office & Bus Stop',
+  },
+
+  // --- Eraniel ---
+  {
+    id: 'ern-railway',
+    name: 'Eraniel Railway Station Hub',
+    city: 'Eraniel',
+    locality: 'Eraniel',
+    district: 'Kanniyakumari',
+    type: 'railway',
+    tag: 'Railway Station',
+    address: 'Railway Station Road, Eraniel, Kanniyakumari District, Tamil Nadu - 629802',
+    lat: 8.2050,
+    lng: 77.3070,
+    hours: '24 Hours / 7 Days',
+    phone: '+91 4651 235 600',
+    instructions: 'Direct station parking lot handover for train passengers.',
+    landmark: 'Eraniel Railway Station Gate',
   },
 ];
 
 /**
- * Returns supported pickup locations for a city, or all if no city given.
+ * Validates if location is strictly within Kanniyakumari District.
+ */
+export function isSupportedLocation(nameOrLocality) {
+  if (!nameOrLocality || typeof nameOrLocality !== 'string') return false;
+  const clean = nameOrLocality.trim().toLowerCase();
+  if (!clean) return false;
+
+  for (const out of OUTSIDE_LOCATIONS) {
+    if (clean.includes(out)) return false;
+  }
+
+  for (const loc of KANNIYAKUMARI_LOCALITIES) {
+    const lLower = loc.toLowerCase();
+    if (lLower === clean || clean.includes(lLower) || lLower.includes(clean)) return true;
+  }
+
+  for (const s of SUPPORTED_LOCATIONS) {
+    const sName = s.name.toLowerCase();
+    if (sName === clean || clean.includes(sName) || sName.includes(clean)) return true;
+    if (s.id.toLowerCase() === clean) return true;
+  }
+
+  if (clean.includes('kanniyakumari') || clean.includes('kanyakumari')) return true;
+  return false;
+}
+
+/**
+ * Returns error string if unsupported location, or null if valid.
+ */
+export function validateServiceLocation(nameOrLocality) {
+  if (!isSupportedLocation(nameOrLocality)) {
+    return UNSUPPORTED_LOCATION_ERROR;
+  }
+  return null;
+}
+
+/**
+ * Returns supported pickup locations for a locality, or all if no locality given.
  */
 export function getLocationsForCity(city) {
   if (!city) return SUPPORTED_LOCATIONS;
+  const cClean = city.trim().toLowerCase();
   const filtered = SUPPORTED_LOCATIONS.filter(
-    (l) => l.city.toLowerCase() === city.toLowerCase()
+    (l) => l.city.toLowerCase() === cClean || l.locality.toLowerCase() === cClean
   );
   return filtered.length > 0 ? filtered : SUPPORTED_LOCATIONS;
 }
@@ -385,8 +398,9 @@ export function getLocationsForCity(city) {
 export function getLocationByName(name) {
   if (!name) return null;
   const clean = name.trim().toLowerCase();
+
   // 1. Exact match
-  const exact = SUPPORTED_LOCATIONS.find((l) => l.name.toLowerCase() === clean);
+  const exact = SUPPORTED_LOCATIONS.find((l) => l.name.toLowerCase() === clean || l.id.toLowerCase() === clean);
   if (exact) return exact;
 
   // 2. Substring match
@@ -395,28 +409,23 @@ export function getLocationByName(name) {
   );
   if (sub) return sub;
 
-  // 3. City + Type token matching
-  const words = new Set(clean.replace(/[-()]/g, ' ').split(/\s+/).filter(Boolean));
-  for (const l of SUPPORTED_LOCATIONS) {
-    const locWords = new Set(l.name.toLowerCase().replace(/[-()]/g, ' ').split(/\s+/).filter(Boolean));
-    if (words.has(l.city.toLowerCase())) {
-      if (
-        (words.has('airport') && locWords.has('airport')) ||
-        ((words.has('railway') || words.has('station') || words.has('central')) &&
-          (locWords.has('railway') || locWords.has('station'))) ||
-        ((words.has('center') || words.has('hub') || words.has('downtown')) && locWords.has('center'))
-      ) {
-        return l;
-      }
-    }
+  // 3. Locality match
+  const loc = SUPPORTED_LOCATIONS.find(
+    (l) => l.locality.toLowerCase() === clean || clean.includes(l.locality.toLowerCase())
+  );
+  if (loc) return loc;
+
+  // Fallback to primary hub
+  if (clean.includes('kanniyakumari') || clean.includes('kanyakumari')) {
+    return SUPPORTED_LOCATIONS[0];
   }
   return null;
 }
 
 /**
- * Backward-compatible helper returning location name strings for a city.
+ * Helper returning location name strings for a locality / hub.
  */
-export const pickupPoints = (city) => {
-  const locs = getLocationsForCity(city);
+export const pickupPoints = (locality) => {
+  const locs = getLocationsForCity(locality);
   return locs.map((l) => l.name);
 };

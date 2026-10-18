@@ -28,6 +28,7 @@ import CarImage from '../components/CarImage.jsx';
 import { formatINR, toLocalInput, defaultRange } from '../utils/pricing.js';
 import { validateRange } from '../utils/validation.js';
 import { apiRequest } from '../services/api.js';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Compare() {
   const {
@@ -40,6 +41,7 @@ export default function Compare() {
     setCompareList,
   } = useCars();
   const [params, setParams] = useSearchParams();
+  const { isAuthenticated } = useAuth();
 
   // Highlight differences toggle
   const [highlightDiffs, setHighlightDiffs] = useState(true);
@@ -518,7 +520,13 @@ export default function Compare() {
                       <div className="mt-4 flex flex-col gap-2">
                         {isAvail ? (
                           <Link
-                            to={`/booking?${bookParams}`}
+                            to={isAuthenticated ? `/booking?${bookParams}` : `/login?redirect=${encodeURIComponent(`/booking?${bookParams}`)}`}
+                            state={{ from: `/booking?${bookParams}` }}
+                            onClick={() => {
+                              if (!isAuthenticated) {
+                                toast('Please log in or register to complete your reservation.', { icon: '🔐' });
+                              }
+                            }}
                             className="btn-primary py-2 text-center text-xs font-mono font-bold"
                           >
                             Reserve Car
