@@ -3,12 +3,14 @@
 
 const getBackendBase = () => {
   const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && typeof envUrl === 'string') {
-    return envUrl.replace(/\/api\/?$/, '');
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
+    return envUrl.trim().replace(/\/api\/?$/, '').replace(/\/+$/, '');
   }
-  // If running in development with Vite proxy on port 5173, relative path is proxied.
-  // We can return the direct backend origin or relative path.
-  // Returning direct origin ensures images always load even if frontend is loaded from another host/port.
+  // In production builds (e.g. deployed on Vercel), point to Render backend origin
+  if (import.meta.env.PROD) {
+    return 'https://drivo-car-rental.onrender.com';
+  }
+  // In local development with Vite proxy on port 5173
   return 'http://127.0.0.1:8000';
 };
 

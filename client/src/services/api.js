@@ -1,7 +1,21 @@
 // API client for FastAPI backend with automatic JWT header and fallback detection.
 import { load, save, remove } from './storageService.js';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+export function getApiBase() {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
+    const trimmed = envUrl.trim().replace(/\/+$/, '');
+    return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+  }
+  // In production builds (deployed on Vercel), default directly to the deployed Render backend
+  if (import.meta.env.PROD) {
+    return 'https://drivo-car-rental.onrender.com/api';
+  }
+  // In local development, use Vite's proxy '/api'
+  return '/api';
+}
+
+export const API_BASE = getApiBase();
 
 export const getToken = () => load('token', null, (v) => typeof v === 'string' && v.length > 0);
 export const setToken = (token) => (token ? save('token', token) : remove('token'));
@@ -38,10 +52,12 @@ export async function isBackendOnline(force = false) {
 }
 
 export async function apiRequest(path, { method = 'GET', body, token = getToken(), requireOnline = false } = {}) {
+  const targetHostDesc = API_BASE.startsWith('http') ? 'https://drivo-car-rental.onrender.com' : '127.0.0.1:8000';
+
   if (!requireOnline && path !== '/health') {
     const online = await isBackendOnline();
     if (!online) {
-      const offlineErr = new Error('Backend server is unreachable at 127.0.0.1:8000. Make sure FastAPI is running.');
+      const offlineErr = new Error(`Backend server is currently waking up or unreachable (${targetHostDesc}). Please allow a moment and try again.`);
       offlineErr.isOffline = true;
       throw offlineErr;
     }
@@ -64,7 +80,7 @@ export async function apiRequest(path, { method = 'GET', body, token = getToken(
   } catch {
     backendOnline = false;
     lastCheckedAt = Date.now();
-    const netErr = new Error('Cannot connect to backend server (127.0.0.1:8000). Start the FastAPI server first.');
+    const netErr = new Error(`Cannot connect to backend server (${targetHostDesc}). If Render is waking from sleep, please wait 20-30 seconds.`);
     netErr.isOffline = true;
     throw netErr;
   }
