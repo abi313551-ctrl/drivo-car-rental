@@ -410,37 +410,6 @@ export default function Login() {
               </button>
             </form>
 
-            {/* Quick Demo Credentials */}
-            <div className="mt-6 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2">
-                Quick Demo Access:
-              </span>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('priya@drivo.example');
-                    setPassword('customer123');
-                    setErrors({});
-                  }}
-                  className="text-xs bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 text-slate-700 font-semibold px-2.5 py-1 rounded-lg transition cursor-pointer"
-                >
-                  Customer Demo
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('admin@drivo.example');
-                    setPassword('admin123');
-                    setErrors({});
-                  }}
-                  className="text-xs bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 text-slate-700 font-semibold px-2.5 py-1 rounded-lg transition cursor-pointer"
-                >
-                  Admin Demo
-                </button>
-              </div>
-            </div>
-
             {/* Link to Register */}
             <p className="mt-8 text-center text-xs sm:text-sm text-slate-600">
               Don't have an account yet?{' '}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Lock, Mail, ArrowRight, CheckCircle2, AlertCircle, ArrowLeft, KeyRound, Sparkles } from 'lucide-react';
+import { Shield, Lock, Mail, ArrowRight, CheckCircle2, AlertCircle, ArrowLeft, KeyRound } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -19,13 +19,6 @@ export default function AdminLogin() {
       navigate('/admin', { replace: true });
     }
   }, [isAuthenticated, isAdmin, navigate]);
-
-  const handleFillDemo = () => {
-    setEmail('admin@drivo.example');
-    setPassword('admin123');
-    setErrorMessage('');
-    toast.success('Admin credentials autofilled');
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -112,7 +105,7 @@ export default function AdminLogin() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@drivo.example"
+                  placeholder="admin@example.com"
                   className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-xs sm:text-sm font-medium text-slate-800 placeholder-slate-400 transition focus:border-[#0A142F] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0A142F]/10"
                 />
               </div>
@@ -161,22 +154,6 @@ export default function AdminLogin() {
               </button>
             </div>
           </form>
-
-          {/* Quick Demo Autofill Box */}
-          <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-3.5 text-center">
-            <p className="text-[11px] font-semibold text-slate-600">Quick Test Credentials</p>
-            <p className="mt-0.5 font-mono text-[11px] text-slate-500">
-              admin@drivo.example &bull; admin123
-            </p>
-            <button
-              type="button"
-              onClick={handleFillDemo}
-              className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
-            >
-              <Sparkles size={12} className="text-amber-500" />
-              Autofill Admin Credentials
-            </button>
-          </div>
 
           <div className="mt-6 border-t border-slate-100 pt-4 text-center">
             <p className="text-xs text-slate-500">

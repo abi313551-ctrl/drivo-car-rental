@@ -229,7 +229,7 @@ export default function AdminSidebar({
               {user?.fullName || 'Drivo Administrator'}
             </p>
             <p className="truncate text-[10px] text-slate-400 font-mono">
-              {user?.email || 'admin@drivo.com'}
+              {user?.email || 'System Administrator'}
             </p>
           </div>
         </div>

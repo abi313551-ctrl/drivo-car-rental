@@ -2528,7 +2528,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="pt-2 text-[11px] text-slate-500 font-mono">
-                Admin session authenticated as: <strong>{user?.email || 'admin@drivo.com'}</strong>
+                Admin session authenticated as: <strong>{user?.email || 'Administrator'}</strong>
               </div>
             </div>
           </div>
