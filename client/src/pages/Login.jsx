@@ -419,8 +419,8 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail('priya.raman@example.com');
-                    setPassword('PriyaSecure2026!');
+                    setEmail('priya@drivo.example');
+                    setPassword('customer123');
                     setErrors({});
                   }}
                   className="text-xs bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 text-slate-700 font-semibold px-2.5 py-1 rounded-lg transition cursor-pointer"
@@ -430,8 +430,8 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail('admin@drivo.com');
-                    setPassword('AdminSecure2026!');
+                    setEmail('admin@drivo.example');
+                    setPassword('admin123');
                     setErrors({});
                   }}
                   className="text-xs bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/50 text-slate-700 font-semibold px-2.5 py-1 rounded-lg transition cursor-pointer"

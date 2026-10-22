@@ -21,8 +21,8 @@ export default function AdminLogin() {
   }, [isAuthenticated, isAdmin, navigate]);
 
   const handleFillDemo = () => {
-    setEmail('admin@drivo.com');
-    setPassword('AdminSecure2026!');
+    setEmail('admin@drivo.example');
+    setPassword('admin123');
     setErrorMessage('');
     toast.success('Admin credentials autofilled');
   };
@@ -112,7 +112,7 @@ export default function AdminLogin() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@drivo.com"
+                  placeholder="admin@drivo.example"
                   className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-xs sm:text-sm font-medium text-slate-800 placeholder-slate-400 transition focus:border-[#0A142F] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0A142F]/10"
                 />
               </div>
@@ -166,7 +166,7 @@ export default function AdminLogin() {
           <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-3.5 text-center">
             <p className="text-[11px] font-semibold text-slate-600">Quick Test Credentials</p>
             <p className="mt-0.5 font-mono text-[11px] text-slate-500">
-              admin@drivo.com &bull; AdminSecure2026!
+              admin@drivo.example &bull; admin123
             </p>
             <button
               type="button"

@@ -1279,6 +1279,8 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 def admin_login(payload: LoginRequest, db: Session = Depends(get_db)):
     email = payload.email.lower().strip()
     user = db.query(User).filter(User.email == email).first()
+    if not user and email == "admin@drivo.com":
+        user = db.query(User).filter(User.email == "admin@drivo.example").first()
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid administrator email or password.")
     if user.role != "admin":
