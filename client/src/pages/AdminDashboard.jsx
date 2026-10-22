@@ -2576,7 +2576,7 @@ export default function AdminDashboard() {
 
             {/* City Selector */}
             <div className="flex flex-wrap gap-1.5 rounded-2xl bg-white border border-slate-200 p-1 text-xs shadow-sm">
-              {['Coimbatore', 'Chennai', 'Bengaluru', 'Kochi', 'Hyderabad', 'Mumbai', 'Delhi', 'Nagercoil'].map((c) => (
+              {['Nagercoil', 'Kanyakumari', 'Marthandam', 'Thuckalay', 'Colachel', 'Kuzhithurai', 'Padmanabhapuram'].map((c) => (
                 <button
                   key={c}
                   type="button"

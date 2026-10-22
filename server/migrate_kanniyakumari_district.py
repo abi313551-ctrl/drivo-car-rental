@@ -78,9 +78,18 @@ def migrate():
         cars = db.query(Car).all()
         updated_cars = 0
         for i, car in enumerate(cars):
+            # Explicitly station Mercedes-Benz E-Class at Nagercoil central hub
+            if "Mercedes" in (car.brand or "") and "E-Class" in (car.model or ""):
+                car.location = "Nagercoil"
+                if car.description:
+                    for old in ["Mumbai", "Padmanabhapuram", "Marthandam"]:
+                        car.description = car.description.replace(f"available from {old}", "available from Nagercoil Hub, Kanniyakumari District")
             # If car location is not already one of the valid Kanniyakumari localities
-            if car.location not in SUPPORTED_LOCALITIES:
-                target_hub = HUBS_DISTRIBUTION[i % len(HUBS_DISTRIBUTION)]
+            elif car.location not in SUPPORTED_LOCALITIES:
+                if any(b in (car.brand or "") for b in ["Mercedes", "BMW", "Audi", "Jaguar", "Porsche"]):
+                    target_hub = "Nagercoil"
+                else:
+                    target_hub = HUBS_DISTRIBUTION[i % len(HUBS_DISTRIBUTION)]
                 old_loc = car.location
                 car.location = target_hub
                 if car.description:

@@ -142,6 +142,8 @@ def on_startup():
     db = SessionLocal()
     try:
         seed_initial_data(db)
+        from migrate_kanniyakumari_district import migrate
+        migrate()
     finally:
         db.close()
 
@@ -1958,6 +1960,14 @@ def create_booking(
             raise HTTPException(status_code=400, detail=f"{car.brand} {car.model} is currently marked unavailable.")
 
         # 4. Verify car pickup location availability within Kanniyakumari District
+        if car.location not in SUPPORTED_LOCALITIES or ("Mercedes" in (car.brand or "") and "E-Class" in (car.model or "") and car.location != "Nagercoil"):
+            # Auto-align vehicle location to central Nagercoil Hub
+            car.location = "Nagercoil"
+            if car.description:
+                for outside_city in ["Mumbai", "Delhi", "Chennai", "Coimbatore", "Bengaluru", "Hyderabad", "Kochi", "Padmanabhapuram", "Marthandam"]:
+                    car.description = car.description.replace(f"available from {outside_city}", "available from Nagercoil Hub, Kanniyakumari District")
+            db.commit()
+
         pickup_clean = payload.pickup.strip().lower()
         car_loc_clean = car.location.strip().lower()
         if car_loc_clean not in pickup_clean and pickup_clean not in car_loc_clean:

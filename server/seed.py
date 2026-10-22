@@ -63,20 +63,20 @@ def _make_car(cid, brand, model, year, category, fuel, transmission, seats, pric
 def seed_initial_data(db: Session):
     if db.query(Car).count() == 0:
         cars = [
-            _make_car(1, "Maruti Suzuki", "Swift", 2024, "Hatchback", "Petrol", "Manual", 5, 1500, 4.5, "Coimbatore", 95),
-            _make_car(2, "Hyundai", "i20", 2023, "Hatchback", "Petrol", "Manual", 5, 1700, 4.4, "Chennai", 80),
-            _make_car(3, "Tata", "Altroz", 2024, "Hatchback", "Diesel", "Manual", 5, 1600, 4.3, "Bengaluru", 62),
-            _make_car(4, "Honda", "City", 2023, "Sedan", "Petrol", "Automatic", 5, 2500, 4.6, "Chennai", 90),
-            _make_car(5, "Hyundai", "Verna", 2024, "Sedan", "Petrol", "Automatic", 5, 2600, 4.5, "Hyderabad", 70),
-            _make_car(6, "Skoda", "Slavia", 2023, "Sedan", "Petrol", "Manual", 5, 2400, 4.4, "Kochi", 55),
-            _make_car(7, "Hyundai", "Creta", 2024, "SUV", "Diesel", "Automatic", 5, 3200, 4.7, "Bengaluru", 98),
-            _make_car(8, "Mahindra", "XUV700", 2024, "SUV", "Diesel", "Automatic", 7, 4000, 4.7, "Hyderabad", 85),
-            _make_car(9, "Toyota", "Innova Crysta", 2023, "SUV", "Diesel", "Manual", 7, 4200, 4.8, "Coimbatore", 100),
-            _make_car(10, "Mahindra", "Thar", 2023, "SUV", "Diesel", "Manual", 4, 3500, 4.6, "Delhi", 88),
-            _make_car(11, "Tata", "Nexon EV", 2024, "Electric", "Electric", "Automatic", 5, 3000, 4.4, "Kochi", 66),
-            _make_car(12, "MG", "ZS EV", 2024, "Electric", "Electric", "Automatic", 5, 3400, 4.5, "Delhi", 60),
-            _make_car(13, "BMW", "5 Series", 2024, "Luxury", "Petrol", "Automatic", 5, 9500, 4.9, "Mumbai", 75),
-            _make_car(14, "Mercedes-Benz", "E-Class", 2023, "Luxury", "Petrol", "Automatic", 5, 11000, 4.8, "Mumbai", 72),
+            _make_car(1, "Maruti Suzuki", "Swift", 2024, "Hatchback", "Petrol", "Manual", 5, 1500, 4.5, "Nagercoil", 95),
+            _make_car(2, "Hyundai", "i20", 2023, "Hatchback", "Petrol", "Manual", 5, 1700, 4.4, "Kanyakumari", 80),
+            _make_car(3, "Tata", "Altroz", 2024, "Hatchback", "Diesel", "Manual", 5, 1600, 4.3, "Marthandam", 62),
+            _make_car(4, "Honda", "City", 2023, "Sedan", "Petrol", "Automatic", 5, 2500, 4.6, "Nagercoil", 90),
+            _make_car(5, "Hyundai", "Verna", 2024, "Sedan", "Petrol", "Automatic", 5, 2600, 4.5, "Thuckalay", 70),
+            _make_car(6, "Skoda", "Slavia", 2023, "Sedan", "Petrol", "Manual", 5, 2400, 4.4, "Kuzhithurai", 55),
+            _make_car(7, "Hyundai", "Creta", 2024, "SUV", "Diesel", "Automatic", 5, 3200, 4.7, "Nagercoil", 98),
+            _make_car(8, "Mahindra", "XUV700", 2024, "SUV", "Diesel", "Automatic", 7, 4000, 4.7, "Marthandam", 85),
+            _make_car(9, "Toyota", "Innova Crysta", 2023, "SUV", "Diesel", "Manual", 7, 4200, 4.8, "Nagercoil", 100),
+            _make_car(10, "Mahindra", "Thar", 2023, "SUV", "Diesel", "Manual", 4, 3500, 4.6, "Kanyakumari", 88),
+            _make_car(11, "Tata", "Nexon EV", 2024, "Electric", "Electric", "Automatic", 5, 3000, 4.4, "Nagercoil", 66),
+            _make_car(12, "MG", "ZS EV", 2024, "Electric", "Electric", "Automatic", 5, 3400, 4.5, "Nagercoil", 60),
+            _make_car(13, "BMW", "5 Series", 2024, "Luxury", "Petrol", "Automatic", 5, 9500, 4.9, "Nagercoil", 75),
+            _make_car(14, "Mercedes-Benz", "E-Class", 2023, "Luxury", "Petrol", "Automatic", 5, 11000, 4.8, "Nagercoil", 72),
         ]
         db.add_all(cars)
         db.commit()
