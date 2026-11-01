@@ -653,20 +653,15 @@ export default function AdminDashboard() {
   }
 
   // Handle Unauthorized / Non-admin
-  if (!isAuthenticated) {
-    return <AdminLogin />;
-  }
-
-  if (!isAdmin) {
+  if (!isAuthenticated || !isAdmin) {
     return (
       <div className="container-x py-20 min-h-[70vh] flex items-center justify-center text-center text-[#0A142F]">
         <div className="mx-auto max-w-md rounded-3xl border border-rose-200 bg-white p-8 shadow-sm">
           <AlertTriangle size={40} className="mx-auto text-rose-500" />
-          <h1 className="mt-4 font-heading text-2xl font-black text-[#0A142F]">Access Denied (403 Forbidden)</h1>
-          <p className="mt-2 text-sm text-slate-600">You do not have administrative privileges. Only authorized staff may view the admin dashboard.</p>
-          <div className="mt-6 flex justify-center gap-3">
-            <Link to="/admin/login" className="btn-primary text-xs">Switch to Admin Login</Link>
-            <Link to="/dashboard" className="btn-outline text-xs text-slate-700">Customer Dashboard</Link>
+          <h1 className="mt-4 font-heading text-2xl font-black text-[#0A142F]">Access Restricted</h1>
+          <p className="mt-2 text-sm text-slate-600">You do not have authorization to view this area.</p>
+          <div className="mt-6 flex justify-center">
+            <Link to="/" className="btn-primary text-xs">Return to Homepage</Link>
           </div>
         </div>
       </div>

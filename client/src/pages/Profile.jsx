@@ -175,9 +175,18 @@ export default function Profile() {
         <div className="mt-8 grid gap-8 lg:grid-cols-3">
           {/* Left Column: Avatar & Overview */}
           <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-sm text-center">
-            <div className="grid h-20 w-20 place-items-center rounded-3xl bg-[#0A142F] text-white text-2xl font-black mx-auto shadow-md">
-              {user.fullName ? user.fullName[0].toUpperCase() : 'U'}
-            </div>
+            {user.avatar || user.picture ? (
+              <img
+                src={user.avatar || user.picture}
+                alt={user.fullName || 'User'}
+                className="h-20 w-20 rounded-3xl object-cover mx-auto shadow-md border border-slate-200"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="grid h-20 w-20 place-items-center rounded-3xl bg-[#0A142F] text-white text-2xl font-black mx-auto shadow-md">
+                {user.fullName ? user.fullName[0].toUpperCase() : 'U'}
+              </div>
+            )}
             <h2 className="mt-4 font-display text-lg font-bold text-[#0A142F]">{user.fullName}</h2>
             <p className="text-xs text-slate-500">{user.email}</p>
 

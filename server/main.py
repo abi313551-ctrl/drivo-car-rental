@@ -1,4 +1,5 @@
 import os
+import logging
 import random
 import uuid
 import time
@@ -12,7 +13,7 @@ from fastapi import FastAPI, Depends, HTTPException, Query, status, File, Upload
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, func
+from sqlalchemy import or_, and_, func, inspect, text
 from pdf_generator import generate_invoice_pdf
 
 try:
@@ -23,6 +24,7 @@ except ImportError:
     GOOGLE_AUTH_AVAILABLE = False
 
 import asyncio
+logger = logging.getLogger("drivo")
 from database import Base, engine, SessionLocal, get_db, ACTIVE_DB_BACKEND
 from models import (
     User,
@@ -137,13 +139,70 @@ ALLOWED_IMAGE_MIMES = {"image/jpeg", "image/png", "image/webp", "image/pjpeg"}
 MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 
 
+def migrate_user_schema_safely(target_engine):
+    """Safely checks if users.avatar_url exists before executing ALTER TABLE.
+    Adds column only if missing, preserves all existing user records, and logs real errors.
+    """
+    try:
+        inspector = inspect(target_engine)
+        if "users" in inspector.get_table_names():
+            existing_columns = [col["name"] for col in inspector.get_columns("users")]
+            if "avatar_url" not in existing_columns:
+                logger.info("[SCHEMA MIGRATION] Column 'avatar_url' missing in 'users' table. Executing ALTER TABLE...")
+                with target_engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500) NULL"))
+                logger.info("[SCHEMA MIGRATION] Successfully added 'avatar_url' column to 'users' table.")
+            else:
+                logger.debug("[SCHEMA MIGRATION] Column 'avatar_url' already exists in 'users' table.")
+    except Exception as exc:
+        logger.error("[SCHEMA MIGRATION ERROR] Failed inspecting or migrating 'users' schema: %s", exc)
+        raise
+
+
 def on_startup():
     Base.metadata.create_all(bind=engine)
+    migrate_user_schema_safely(engine)
     db = SessionLocal()
     try:
         seed_initial_data(db)
         from migrate_kanniyakumari_district import migrate
         migrate()
+
+        # Ensure admin account is provisioned exclusively from environment variables
+        admin_username = os.getenv("ADMIN_USERNAME", "drivo_owner").strip()
+        admin_password = os.getenv("ADMIN_PASSWORD")
+
+        if not admin_password or not admin_password.strip():
+            logger.warning("[SECURITY] ADMIN_PASSWORD environment variable is not set. Automatic admin provisioning skipped.")
+        else:
+            admin_pwd = admin_password.strip()
+            primary_email = admin_username if "@" in admin_username else f"{admin_username}@drivo.com"
+            admin_owner = db.query(User).filter(
+                or_(
+                    func.lower(User.full_name) == admin_username.lower(),
+                    func.lower(User.email) == primary_email.lower(),
+                    func.lower(User.email) == admin_username.lower(),
+                )
+            ).first()
+            if not admin_owner:
+                admin_owner = User(
+                    full_name=admin_username,
+                    email=primary_email,
+                    phone="9876543210",
+                    license_number="TN3720180012345",
+                    password_hash=hash_password(admin_pwd),
+                    role="admin",
+                    is_verified=True,
+                    auth_provider="local",
+                )
+                db.add(admin_owner)
+                db.commit()
+                logger.info("[SECURITY] Admin user '%s' provisioned securely via environment variables.", admin_username)
+            else:
+                admin_owner.role = "admin"
+                admin_owner.password_hash = hash_password(admin_pwd)
+                db.commit()
+                logger.info("[SECURITY] Admin credentials for '%s' synchronized securely via environment variables.", admin_username)
     finally:
         db.close()
 
@@ -201,6 +260,8 @@ def serialize_user(u: User) -> dict:
         "phone": u.phone or "",
         "license": u.license_number or "",
         "role": u.role,
+        "avatar": getattr(u, "avatar_url", "") or "",
+        "picture": getattr(u, "avatar_url", "") or "",
         "isVerified": bool(getattr(u, "is_verified", True)),
         "authProvider": getattr(u, "auth_provider", "local") or "local",
         "rewardPoints": getattr(u, "reward_points", 0) or 0,
@@ -1195,6 +1256,13 @@ def forgot_password_verify_reset(payload: ForgotPasswordResetRequest, db: Sessio
     }
 
 
+@app.get("/api/auth/google/config")
+def get_google_auth_config():
+    """Returns public Google OAuth Client ID for frontend initialization."""
+    client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
+    return {"clientId": client_id, "client_id": client_id, "enabled": bool(client_id)}
+
+
 @app.post("/api/auth/google")
 def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
     """Verifies Google Sign-In credential and authenticates or registers customer."""
@@ -1202,6 +1270,7 @@ def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
     google_id = payload.googleId
     email = payload.email
     name = payload.name
+    picture = payload.picture
 
     google_client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
 
@@ -1214,8 +1283,9 @@ def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
                 google_client_id if google_client_id else None,
             )
             email = id_info.get("email")
-            name = id_info.get("name") or id_info.get("given_name") or "Google User"
-            google_id = id_info.get("sub")
+            name = id_info.get("name") or id_info.get("given_name") or name or "Google User"
+            google_id = id_info.get("sub") or google_id
+            picture = id_info.get("picture") or picture
         except Exception as e:
             if not email:
                 raise HTTPException(
@@ -1240,13 +1310,21 @@ def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
             is_verified=True,
             auth_provider="google",
             google_id=google_id,
+            avatar_url=picture,
         )
         db.add(user)
         db.commit()
         db.refresh(user)
     else:
+        if name and (not user.full_name or user.full_name in ("Google Customer", "Google User")):
+            user.full_name = name.strip()
+        if picture and not user.avatar_url:
+            user.avatar_url = picture
+        elif picture:
+            user.avatar_url = picture
         if not user.google_id and google_id:
             user.google_id = google_id
+        user.auth_provider = "google"
         user.is_verified = True
         db.commit()
         db.refresh(user)
@@ -1277,10 +1355,19 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 @app.post("/api/admin/login")
 @app.post("/admin/login")
 def admin_login(payload: LoginRequest, db: Session = Depends(get_db)):
-    email = payload.email.lower().strip()
-    user = db.query(User).filter(User.email == email).first()
-    if not user and email == "admin@drivo.com":
-        user = db.query(User).filter(User.email == "admin@drivo.example").first()
+    identifier = payload.email.lower().strip()
+    user = (
+        db.query(User)
+        .filter(
+            or_(
+                func.lower(User.email) == identifier,
+                func.lower(User.email) == f"{identifier}@drivo.com",
+                func.lower(User.email) == f"{identifier}@drivo.example",
+                and_(User.role == "admin", func.lower(User.full_name) == identifier),
+            )
+        )
+        .first()
+    )
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid administrator email or password.")
     if user.role != "admin":

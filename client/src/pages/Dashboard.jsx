@@ -458,12 +458,7 @@ export default function Dashboard() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="font-heading text-2xl sm:text-3xl font-black text-[#0A142F]">Pilot Command Center</h1>
-            {isAdmin && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-900/15 px-3 py-1 font-mono text-xs font-bold text-[#1E3A8A]">
-                <Shield size={12} /> System Admin
-              </span>
-            )}
+            <h1 className="font-heading text-2xl sm:text-3xl font-black text-[#0A142F]">My Account Overview</h1>
           </div>
           <p className="mt-1 text-sm text-slate-600">
             Welcome, <span className="text-[#0A142F] font-bold">{user.fullName}</span> · {user.email}
@@ -480,11 +475,6 @@ export default function Dashboard() {
             <RefreshCw size={13} className={isRefreshing ? 'animate-spin text-[#1E3A8A]' : ''} />
             Sync
           </button>
-          {isAdmin && (
-            <Link to="/admin" className="btn-outline text-xs flex items-center gap-1.5 text-slate-700">
-              <Shield size={14} className="text-[#1E3A8A]" /> Admin Portal
-            </Link>
-          )}
           <Link to="/cars" className="btn-primary text-xs">Reserve Fleet</Link>
           <button onClick={logout} className="btn-outline text-xs flex items-center gap-1.5 text-slate-700">
             <LogOut size={14} /> Log out

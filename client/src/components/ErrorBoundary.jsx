@@ -43,7 +43,7 @@ export default class ErrorBoundary extends React.Component {
                 onClick={() => {
                   localStorage.removeItem('drivo_auth_token');
                   localStorage.removeItem('drivo_user');
-                  window.location.href = '/admin';
+                  window.location.href = '/login';
                 }}
                 className="btn-outline text-xs px-4 py-2.5 text-slate-700"
               >

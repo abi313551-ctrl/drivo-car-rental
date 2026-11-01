@@ -17,6 +17,7 @@ class User(Base):
     is_verified = Column(Boolean, default=True, nullable=False)
     auth_provider = Column(String(30), default="local", nullable=False)
     google_id = Column(String(100), unique=True, index=True, nullable=True)
+    avatar_url = Column(String(500), nullable=True)
     reward_points = Column(Integer, default=0, nullable=False)
     lifetime_points = Column(Integer, default=0, nullable=False)
     tier = Column(String(20), default="Silver", nullable=False)  # Silver, Gold, Platinum

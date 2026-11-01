@@ -8,7 +8,7 @@ export default function MainLayout() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
 
-  const isAdminRoute = pathname.startsWith('/admin');
+  const isAdminRoute = pathname.startsWith('/admin') || pathname.startsWith('/drivo-admin-portal');
 
   if (isAdminRoute) {
     return (

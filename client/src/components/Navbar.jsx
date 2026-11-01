@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Search, Heart, User, LogOut, ArrowLeftRight, Shield, Menu, X, MapPin } from 'lucide-react';
+import { Search, Heart, User, LogOut, ArrowLeftRight, Menu, X, MapPin } from 'lucide-react';
 import { useCars } from '../context/CarContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -151,14 +151,6 @@ export default function Navbar() {
           {!isAuthenticated ? (
             <div className="flex items-center gap-2.5 ml-2">
               <Link
-                to="/admin/login"
-                className="hidden lg:flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-[#0B1528] transition px-2 py-1.5 rounded-lg hover:bg-slate-50"
-                title="Admin Command Center"
-              >
-                <Shield size={14} className="text-blue-600" />
-                <span>Admin</span>
-              </Link>
-              <Link
                 to="/login"
                 className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-[#0B1528] transition px-2 py-1.5"
               >
@@ -185,36 +177,54 @@ export default function Navbar() {
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setProfileOpen((v) => !v)}
-                  className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-slate-50 text-[#0B1528] hover:border-slate-400 transition"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-slate-50 text-[#0B1528] hover:border-slate-400 transition overflow-hidden"
                   aria-label="Profile menu"
                   aria-expanded={profileOpen}
                 >
-                  <User size={18} />
+                  {user?.avatar || user?.picture ? (
+                    <img
+                      src={user.avatar || user.picture}
+                      alt={user.fullName || 'User'}
+                      className="h-full w-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <User size={18} />
+                  )}
                 </button>
                 {profileOpen && (
                   <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-100 bg-white p-2 shadow-2xl text-slate-800 z-50 animate-entrance-1">
-                    <div className="border-b border-slate-100 px-3 py-2.5">
-                      <p className="truncate text-xs font-bold text-[#0B1528]">{user.fullName}</p>
-                      <p className="truncate text-[11px] text-slate-400">{user.email}</p>
+                    <div className="border-b border-slate-100 px-3 py-2.5 flex items-center gap-2.5">
+                      {user?.avatar || user?.picture ? (
+                        <img
+                          src={user.avatar || user.picture}
+                          alt={user.fullName || 'User'}
+                          className="h-9 w-9 rounded-full object-cover border border-slate-200 shrink-0"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="grid h-9 w-9 place-items-center rounded-full bg-[#0A142F] text-white text-xs font-bold shrink-0">
+                          {user?.fullName ? user.fullName[0].toUpperCase() : 'U'}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-bold text-[#0B1528]">{user.fullName}</p>
+                        <p className="truncate text-[11px] text-slate-400">{user.email}</p>
+                      </div>
                     </div>
                     <div className="py-1">
                       {[
-                        ...(user?.role === 'admin' ? [['/admin', 'Admin Command Center 🛡️', true]] : []),
                         ['/profile', 'My Profile'],
                         ['/my-bookings', 'My Bookings'],
                         ['/cars', 'Explore Fleet'],
                         ['/dashboard', 'Account Overview'],
                         ['/compare', 'Compare Vehicles'],
                         ['/favorites', 'Saved Favorites'],
-                      ].map(([to, label, isAdmin]) => (
+                      ].map(([to, label]) => (
                         <Link
                           key={to}
                           to={to}
-                          className={`block rounded-xl px-3 py-2 text-xs font-medium transition ${
-                            isAdmin
-                              ? 'text-blue-700 font-bold hover:bg-blue-50'
-                              : 'text-slate-600 hover:bg-slate-50 hover:text-[#0B1528]'
-                          }`}
+                          className="block rounded-xl px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-[#0B1528] transition"
                         >
                           {label}
                         </Link>
@@ -278,11 +288,6 @@ export default function Navbar() {
               <span>Compare Vehicles</span>
               <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-800 font-bold">{compareIds.length}</span>
             </NavLink>
-            {user?.role === 'admin' && (
-              <NavLink to="/admin" className="rounded-xl px-3.5 py-2.5 text-xs font-bold text-blue-700 bg-blue-50 flex items-center gap-2">
-                <Shield size={14} /> Admin Command Center
-              </NavLink>
-            )}
             {isAuthenticated && (
               <>
                 <NavLink to="/profile" className="rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50">
@@ -301,9 +306,6 @@ export default function Navbar() {
                   </Link>
                   <Link to="/register" className="rounded-full bg-[#0B1528] text-white text-xs font-bold flex-1 py-2.5 text-center">
                     Sign up
-                  </Link>
-                  <Link to="/admin/login" className="rounded-full border border-blue-200 bg-blue-50/50 text-xs font-bold px-3 py-2.5 text-center text-blue-800 flex items-center justify-center gap-1" title="Admin Portal">
-                    <Shield size={12} /> Admin
                   </Link>
                 </>
               ) : (

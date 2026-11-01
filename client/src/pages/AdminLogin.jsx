@@ -13,6 +13,13 @@ export default function AdminLogin() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Always ensure inputs are completely empty on mount, preventing any browser autofill
+  useEffect(() => {
+    setEmail('');
+    setPassword('');
+    setErrorMessage('');
+  }, []);
+
   // If already logged in as admin, redirect to /admin
   useEffect(() => {
     if (isAuthenticated && isAdmin) {
@@ -42,6 +49,33 @@ export default function AdminLogin() {
       setSubmitting(false);
     }
   };
+
+  // If logged in as a normal customer, strictly show Access Denied
+  if (isAuthenticated && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md rounded-3xl border border-rose-200 bg-white p-8 text-center shadow-lg">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 border border-rose-100">
+            <Shield size={28} />
+          </div>
+          <h1 className="mt-4 font-heading text-2xl font-black text-[#0B1528]">
+            Access Denied
+          </h1>
+          <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed">
+            Your customer account is not authorized to access the Admin Portal.
+          </p>
+          <div className="mt-6 flex justify-center">
+            <Link
+              to="/"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#0B1528] px-5 py-2.5 text-xs font-bold text-white transition hover:bg-[#1E293B]"
+            >
+              <ArrowLeft size={14} /> Return to Homepage
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -90,22 +124,25 @@ export default function AdminLogin() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                Admin Email Address
+                Admin Email / Username
               </label>
               <div className="relative mt-1.5">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                   <Mail size={16} />
                 </div>
                 <input
-                  type="email"
+                  type="text"
+                  name="drivo_adm_identifier"
                   required
-                  autoComplete="email"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-form-type="other"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
+                  placeholder="Enter administrator email or username"
                   className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-xs sm:text-sm font-medium text-slate-800 placeholder-slate-400 transition focus:border-[#0A142F] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0A142F]/10"
                 />
               </div>
@@ -123,8 +160,11 @@ export default function AdminLogin() {
                 </div>
                 <input
                   type="password"
+                  name="drivo_adm_secret"
                   required
-                  autoComplete="current-password"
+                  autoComplete="new-password"
+                  data-lpignore="true"
+                  data-form-type="other"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"

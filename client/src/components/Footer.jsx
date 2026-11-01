@@ -18,7 +18,6 @@ const cols = [
       ['/about', 'About Us'],
       ['/contact', 'Contact Us'],
       ['/faq', 'Frequently Asked Questions'],
-      ['/admin/login', 'Admin Portal 🛡️'],
     ],
   },
   {

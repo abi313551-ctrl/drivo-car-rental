@@ -154,7 +154,7 @@ class RegisterRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str = Field(..., min_length=1)
     password: str = Field(..., min_length=1)
 
 
@@ -234,6 +234,7 @@ class GoogleAuthRequest(BaseModel):
     email: Optional[str] = None
     name: Optional[str] = None
     googleId: Optional[str] = None
+    picture: Optional[str] = None
 
 
 

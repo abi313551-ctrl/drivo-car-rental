@@ -91,26 +91,23 @@ def seed_initial_data(db: Session):
         db.commit()
 
     if db.query(User).count() == 0:
-        demo_users = [
-            User(
-                full_name="Drivo Admin",
-                email="admin@drivo.example",
-                phone="9876543210",
-                license_number="TN3720180012345",
-                password_hash=hash_password("admin123"),
-                role="admin",
-            ),
-            User(
-                full_name="Priya Raman",
-                email="priya@drivo.example",
-                phone="9876501234",
-                license_number="TN3720190012345",
-                password_hash=hash_password("customer123"),
-                role="customer",
-            ),
-        ]
-        db.add_all(demo_users)
-        db.commit()
+        admin_email = os.getenv("ADMIN_EMAIL")
+        admin_password = os.getenv("ADMIN_PASSWORD")
+        demo_users = []
+        if admin_email and admin_password:
+            demo_users.append(
+                User(
+                    full_name=os.getenv("ADMIN_NAME", "Drivo Administrator"),
+                    email=admin_email.strip().lower(),
+                    phone="9876543210",
+                    license_number="TN3720180012345",
+                    password_hash=hash_password(admin_password),
+                    role="admin",
+                )
+            )
+        if demo_users:
+            db.add_all(demo_users)
+            db.commit()
 
     try:
         from models import DecorationPackage
