@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
 import CompareFloatingBar from '../components/CompareFloatingBar.jsx';
+import WhatsAppButton from '../components/WhatsAppButton.jsx';
 
 export default function MainLayout() {
   const { pathname } = useLocation();
@@ -31,6 +32,7 @@ export default function MainLayout() {
         <Outlet />
       </main>
       <CompareFloatingBar />
+      <WhatsAppButton />
       <Footer />
     </div>
   );
