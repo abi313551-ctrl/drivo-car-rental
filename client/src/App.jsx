@@ -42,6 +42,7 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/drivo-admin-portal" element={<AdminLogin />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />

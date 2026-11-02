@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export default function AdminLogin() {
-  const { adminLogin, isAuthenticated, isAdmin, user } = useAuth();
+  const { adminLogin, isAuthenticated, isAdmin, user, logout } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
@@ -59,7 +59,7 @@ export default function AdminLogin() {
     }
   };
 
-  // If logged in as a normal customer, strictly show Access Denied
+  // If logged in as a normal customer, show Access Denied with quick sign-out to admin login
   if (isAuthenticated && !isAdmin) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-4 py-12">
@@ -71,12 +71,21 @@ export default function AdminLogin() {
             Access Denied
           </h1>
           <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed">
-            Your customer account is not authorized to access the Admin Portal.
+            Your customer account ({user?.email || 'Customer'}) is not authorized to access the Admin Command Center.
           </p>
-          <div className="mt-6 flex justify-center">
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={async () => {
+                await logout();
+              }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#0B1528] px-5 py-2.5 text-xs font-bold text-white transition hover:bg-[#1E293B] cursor-pointer shadow-sm"
+            >
+              <KeyRound size={14} /> Sign In as Admin
+            </button>
             <Link
               to="/"
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#0B1528] px-5 py-2.5 text-xs font-bold text-white transition hover:bg-[#1E293B]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
             >
               <ArrowLeft size={14} /> Return to Homepage
             </Link>
