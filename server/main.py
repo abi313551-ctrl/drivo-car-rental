@@ -1355,7 +1355,9 @@ def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
     email = payload.email.lower().strip()
     user = db.query(User).filter(User.email == email).first()
-    if not user or not verify_password(payload.password, user.password_hash):
+    pw_raw = payload.password or ""
+    pw_clean = pw_raw.strip()
+    if not user or not (verify_password(pw_raw, user.password_hash) or verify_password(pw_clean, user.password_hash)):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
     if hasattr(user, "is_verified") and not user.is_verified:
         raise HTTPException(
@@ -1382,7 +1384,9 @@ def admin_login(payload: LoginRequest, db: Session = Depends(get_db)):
         )
         .first()
     )
-    if not user or not verify_password(payload.password, user.password_hash):
+    pw_raw = payload.password or ""
+    pw_clean = pw_raw.strip()
+    if not user or not (verify_password(pw_raw, user.password_hash) or verify_password(pw_clean, user.password_hash)):
         raise HTTPException(status_code=401, detail="Invalid administrator email or password.")
     if user.role != "admin":
         raise HTTPException(

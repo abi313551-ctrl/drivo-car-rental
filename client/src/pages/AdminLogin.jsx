@@ -37,14 +37,17 @@ export default function AdminLogin() {
     e.preventDefault();
     setErrorMessage('');
 
-    if (!email.trim() || !password) {
+    const cleanEmail = email.trim();
+    const cleanPw = password.trim();
+
+    if (!cleanEmail || !cleanPw) {
       setErrorMessage('Please enter both administrator email and password.');
       return;
     }
 
     setSubmitting(true);
     try {
-      const adminUser = await adminLogin(email.trim(), password);
+      const adminUser = await adminLogin(cleanEmail, cleanPw);
       toast.success(`Welcome back, ${adminUser.fullName || 'Administrator'}!`);
       navigate('/admin', { replace: true });
     } catch (err) {
