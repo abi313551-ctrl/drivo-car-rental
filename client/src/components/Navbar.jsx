@@ -170,7 +170,7 @@ export default function Navbar() {
                 to="/dashboard"
                 className="rounded-full bg-slate-100 hover:bg-slate-200 text-[#0B1528] px-4 py-2 text-xs font-bold transition"
               >
-                {user?.fullName?.split(' ')[0] || 'Dashboard'}
+                {((user?.fullName || '').trim() || (user?.email ? user.email.split('@')[0].replace(/[._-]/g, ' ') : 'Dashboard')).split(' ')[0]}
               </Link>
 
               {/* Profile Dropdown */}
@@ -204,11 +204,13 @@ export default function Navbar() {
                         />
                       ) : (
                         <div className="grid h-9 w-9 place-items-center rounded-full bg-[#0A142F] text-white text-xs font-bold shrink-0">
-                          {user?.fullName ? user.fullName[0].toUpperCase() : 'U'}
+                          {((user?.fullName || '').trim() || user?.email || 'U')[0].toUpperCase()}
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-bold text-[#0B1528]">{user.fullName}</p>
+                        <p className="truncate text-xs font-bold text-[#0B1528]">
+                          {(user?.fullName || '').trim() || (user?.email ? user.email.split('@')[0].replace(/[._-]/g, ' ') : 'Customer')}
+                        </p>
                         <p className="truncate text-[11px] text-slate-400">{user.email}</p>
                       </div>
                     </div>

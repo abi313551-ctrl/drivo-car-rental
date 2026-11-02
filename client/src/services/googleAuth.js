@@ -123,3 +123,58 @@ export async function triggerGooglePrompt(onCredential, fallbackAction) {
     }
   });
 }
+
+/**
+ * Robustly decodes a Google ID Token (JWT) into user profile claims.
+ * Handles missing Base64 padding, UTF-8 unicode encoding, and derives full names.
+ */
+export function parseJwtPayload(token) {
+  if (!token || typeof token !== 'string') return {};
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return {};
+    const base64Url = parts[1];
+    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = base64.length % 4;
+    if (pad) {
+      base64 += '='.repeat(4 - pad);
+    }
+    const jsonStr = decodeURIComponent(
+      window
+        .atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    const parsed = JSON.parse(jsonStr);
+
+    let fullName = (parsed.name || '').trim();
+    if (!fullName) {
+      if (parsed.given_name || parsed.family_name) {
+        fullName = `${parsed.given_name || ''} ${parsed.family_name || ''}`.trim();
+      }
+    }
+    if (!fullName && parsed.email) {
+      fullName = parsed.email
+        .split('@')[0]
+        .replace(/[._-]/g, ' ')
+        .split(' ')
+        .filter(Boolean)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+    }
+
+    return {
+      email: parsed.email || '',
+      name: fullName || 'Customer',
+      fullName: fullName || 'Customer',
+      picture: parsed.picture || '',
+      googleId: parsed.sub || '',
+      givenName: parsed.given_name || '',
+      familyName: parsed.family_name || '',
+    };
+  } catch (err) {
+    console.warn('Google JWT decoding notice:', err);
+    return {};
+  }
+}

@@ -253,9 +253,17 @@ CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
 
 def serialize_user(u: User) -> dict:
+    full_name = (u.full_name or "").strip()
+    if not full_name or full_name in ("Google User", "Google Customer"):
+        if u.email:
+            parts = [p.capitalize() for p in u.email.split("@")[0].replace(".", " ").replace("_", " ").split() if p]
+            full_name = " ".join(parts) if parts else "Customer"
+        else:
+            full_name = "Customer"
+
     return {
         "id": u.id,
-        "fullName": u.full_name,
+        "fullName": full_name,
         "email": u.email,
         "phone": u.phone or "",
         "license": u.license_number or "",
@@ -1297,11 +1305,16 @@ def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Google authentication did not provide a valid email address.")
 
     email = email.lower().strip()
+    clean_fallback = " ".join([p.capitalize() for p in email.split("@")[0].replace(".", " ").replace("_", " ").split() if p]) or "Customer"
+    actual_name = (name or "").strip()
+    if not actual_name or actual_name in ("Google User", "Google Customer"):
+        actual_name = clean_fallback
+
     user = db.query(User).filter(User.email == email).first()
 
     if not user:
         user = User(
-            full_name=(name or "Google User").strip(),
+            full_name=actual_name,
             email=email,
             phone="",
             license_number="",
@@ -1316,11 +1329,12 @@ def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(user)
     else:
-        if name and (not user.full_name or user.full_name in ("Google Customer", "Google User")):
-            user.full_name = name.strip()
-        if picture and not user.avatar_url:
-            user.avatar_url = picture
-        elif picture:
+        if actual_name and actual_name not in ("Google User", "Google Customer"):
+            user.full_name = actual_name
+        elif not user.full_name or not user.full_name.strip() or user.full_name in ("Google User", "Google Customer"):
+            user.full_name = clean_fallback
+
+        if picture:
             user.avatar_url = picture
         if not user.google_id and google_id:
             user.google_id = google_id

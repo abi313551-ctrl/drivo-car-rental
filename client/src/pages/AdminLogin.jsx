@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Shield, Lock, Mail, ArrowRight, CheckCircle2, AlertCircle, ArrowLeft, KeyRound } from 'lucide-react';
+import { Shield, Lock, Mail, ArrowRight, CheckCircle2, AlertCircle, ArrowLeft, KeyRound, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -10,6 +10,7 @@ export default function AdminLogin() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -18,6 +19,11 @@ export default function AdminLogin() {
     setEmail('');
     setPassword('');
     setErrorMessage('');
+    const t = setTimeout(() => {
+      setEmail('');
+      setPassword('');
+    }, 150);
+    return () => clearTimeout(t);
   }, []);
 
   // If already logged in as admin, redirect to /admin
@@ -159,7 +165,7 @@ export default function AdminLogin() {
                   <Lock size={16} />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   name="drivo_adm_secret"
                   required
                   autoComplete="new-password"
@@ -168,8 +174,16 @@ export default function AdminLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-xs sm:text-sm font-medium text-slate-800 placeholder-slate-400 transition focus:border-[#0A142F] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0A142F]/10"
+                  className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-11 py-2.5 text-xs sm:text-sm font-medium text-slate-800 placeholder-slate-400 transition focus:border-[#0A142F] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0A142F]/10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </div>
 

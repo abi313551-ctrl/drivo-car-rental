@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext.jsx';
-import { setupGoogleSignIn, triggerGooglePrompt } from '../services/googleAuth.js';
+import { setupGoogleSignIn, triggerGooglePrompt, parseJwtPayload } from '../services/googleAuth.js';
 
 const cleanLicense = (s) => (s ? s.replace(/[\s-]/g, '').toUpperCase() : '');
 
@@ -227,21 +227,18 @@ export default function Register() {
   const handleGoogleCredential = async (credential) => {
     setGoogleLoading(true);
     try {
-      let parsed = {};
-      try {
-        const base64Url = credential.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        parsed = JSON.parse(window.atob(base64));
-      } catch {}
+      const parsed = parseJwtPayload(credential);
 
       const user = await loginWithGoogle({
         credential,
         email: parsed.email,
-        name: parsed.name,
+        name: parsed.fullName || parsed.name,
         picture: parsed.picture,
-        googleId: parsed.sub,
+        googleId: parsed.googleId,
       });
-      toast.success(`Welcome to DRIVO, ${user.fullName.split(' ')[0]}! Signed in with Google.`);
+      const displayName = user?.fullName || parsed.fullName || parsed.name || (parsed.email ? parsed.email.split('@')[0] : 'there');
+      const firstName = displayName.split(' ')[0];
+      toast.success(`Welcome to DRIVO, ${firstName}! Signed in with Google.`);
       navigate(from, { replace: true });
     } catch (err) {
       toast.error(err.message || 'Google registration failed.');
@@ -450,7 +447,7 @@ export default function Register() {
                   </div>
                 </div>
 
-                <form onSubmit={handleInitiateRegister} noValidate className="space-y-3.5">
+                <form onSubmit={handleInitiateRegister} noValidate autoComplete="off" className="space-y-3.5">
                   {/* Full Name */}
                   <div>
                     <label htmlFor="reg-name" className="mb-1 block text-xs font-bold text-slate-700">
@@ -458,7 +455,9 @@ export default function Register() {
                     </label>
                     <input
                       id="reg-name"
+                      name="customer_reg_name"
                       type="text"
+                      autoComplete="off"
                       className={`w-full rounded-xl border ${
                         errors.fullName ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50'
                       } px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#0A142F] focus:border-blue-600 focus:bg-white focus:outline-none transition shadow-inner`}
@@ -476,8 +475,11 @@ export default function Register() {
                     </label>
                     <input
                       id="reg-email"
+                      name="customer_reg_email"
                       type="email"
-                      autoComplete="email"
+                      autoComplete="off"
+                      data-lpignore="true"
+                      data-form-type="other"
                       className={`w-full rounded-xl border ${
                         errors.email ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50'
                       } px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#0A142F] focus:border-blue-600 focus:bg-white focus:outline-none transition shadow-inner`}
@@ -496,7 +498,9 @@ export default function Register() {
                       </label>
                       <input
                         id="reg-phone"
+                        name="customer_reg_phone"
                         type="tel"
+                        autoComplete="off"
                         className={`w-full rounded-xl border ${
                           errors.phone ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50'
                         } px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#0A142F] focus:border-blue-600 focus:bg-white focus:outline-none transition shadow-inner`}
@@ -513,7 +517,9 @@ export default function Register() {
                       </label>
                       <input
                         id="reg-license"
+                        name="customer_reg_license"
                         type="text"
+                        autoComplete="off"
                         className={`w-full rounded-xl border ${
                           errors.license ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50'
                         } px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#0A142F] focus:border-blue-600 focus:bg-white focus:outline-none transition shadow-inner uppercase`}
@@ -534,7 +540,11 @@ export default function Register() {
                       <div className="relative">
                         <input
                           id="reg-password"
+                          name="customer_reg_password"
                           type={showPw ? 'text' : 'password'}
+                          autoComplete="new-password"
+                          data-lpignore="true"
+                          data-form-type="other"
                           className={`w-full rounded-xl border ${
                             errors.password ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50'
                           } px-4 py-2.5 pr-9 text-xs sm:text-sm font-semibold text-[#0A142F] focus:border-blue-600 focus:bg-white focus:outline-none transition shadow-inner`}
@@ -560,7 +570,11 @@ export default function Register() {
                       <div className="relative">
                         <input
                           id="reg-confirm-pw"
+                          name="customer_reg_confirm_password"
                           type={showConfirmPw ? 'text' : 'password'}
+                          autoComplete="new-password"
+                          data-lpignore="true"
+                          data-form-type="other"
                           className={`w-full rounded-xl border ${
                             errors.confirmPassword ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50'
                           } px-4 py-2.5 pr-9 text-xs sm:text-sm font-semibold text-[#0A142F] focus:border-blue-600 focus:bg-white focus:outline-none transition shadow-inner`}

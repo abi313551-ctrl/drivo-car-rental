@@ -461,7 +461,7 @@ export default function Dashboard() {
             <h1 className="font-heading text-2xl sm:text-3xl font-black text-[#0A142F]">My Account Overview</h1>
           </div>
           <p className="mt-1 text-sm text-slate-600">
-            Welcome, <span className="text-[#0A142F] font-bold">{user.fullName}</span> · {user.email}
+            Welcome, <span className="text-[#0A142F] font-bold">{(user.fullName || '').trim() || (user.email ? user.email.split('@')[0].replace(/[._-]/g, ' ') : 'Customer')}</span> · {user.email}
           </p>
         </div>
 

@@ -187,7 +187,9 @@ export default function Profile() {
                 {user.fullName ? user.fullName[0].toUpperCase() : 'U'}
               </div>
             )}
-            <h2 className="mt-4 font-display text-lg font-bold text-[#0A142F]">{user.fullName}</h2>
+            <h2 className="mt-4 font-display text-lg font-bold text-[#0A142F]">
+              {(user.fullName || '').trim() || (user.email ? user.email.split('@')[0].replace(/[._-]/g, ' ') : 'Customer')}
+            </h2>
             <p className="text-xs text-slate-500">{user.email}</p>
 
             <div className="mt-5 pt-5 border-t border-slate-100 flex justify-center gap-2">
@@ -234,7 +236,9 @@ export default function Profile() {
                     <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400 block mb-1">
                       Full Name
                     </span>
-                    <p className="text-sm font-bold text-[#0A142F]">{user.fullName || '—'}</p>
+                    <p className="text-sm font-bold text-[#0A142F]">
+                      {(user.fullName || '').trim() || (user.email ? user.email.split('@')[0].replace(/[._-]/g, ' ') : '—')}
+                    </p>
                   </div>
 
                   <div>

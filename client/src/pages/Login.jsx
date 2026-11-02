@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogIn, Eye, EyeOff, MapPin, ShieldCheck, Sparkles, CheckCircle2, ArrowRight, X, Mail, KeyRound, Clock, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext.jsx';
-import { setupGoogleSignIn, triggerGooglePrompt } from '../services/googleAuth.js';
+import { setupGoogleSignIn, triggerGooglePrompt, parseJwtPayload } from '../services/googleAuth.js';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -40,6 +40,25 @@ export default function Login() {
     }, 1000);
     return () => clearInterval(timer);
   }, [forgotCooldown]);
+
+  // Always initialize fields completely empty and prevent browser autofill of saved admin credentials
+  useEffect(() => {
+    setEmail('');
+    setPassword('');
+    setErrors({});
+    const t1 = setTimeout(() => {
+      setEmail((prev) => (prev.includes('admin@drivo') ? '' : prev));
+      setPassword((prev) => (prev.includes('admin') ? '' : prev));
+    }, 50);
+    const t2 = setTimeout(() => {
+      setEmail((prev) => (prev.includes('admin@drivo') ? '' : prev));
+      setPassword((prev) => (prev.includes('admin') ? '' : prev));
+    }, 250);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
 
   const validate = () => {
     const e = {};
@@ -80,21 +99,18 @@ export default function Login() {
   const handleGoogleCredential = async (credential) => {
     setGoogleLoading(true);
     try {
-      let parsed = {};
-      try {
-        const base64Url = credential.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        parsed = JSON.parse(window.atob(base64));
-      } catch {}
+      const parsed = parseJwtPayload(credential);
 
       const user = await loginWithGoogle({
         credential,
         email: parsed.email,
-        name: parsed.name,
+        name: parsed.fullName || parsed.name,
         picture: parsed.picture,
-        googleId: parsed.sub,
+        googleId: parsed.googleId,
       });
-      toast.success(`Welcome, ${user.fullName.split(' ')[0]}! Signed in with Google.`);
+      const displayName = user?.fullName || parsed.fullName || parsed.name || (parsed.email ? parsed.email.split('@')[0] : 'there');
+      const firstName = displayName.split(' ')[0];
+      toast.success(`Welcome, ${firstName}! Signed in with Google.`);
       navigate(from, { replace: true });
     } catch (err) {
       toast.error(err.message || 'Google sign-in could not be completed.');
@@ -361,15 +377,18 @@ export default function Login() {
             </div>
 
             {/* Email + Password Form */}
-            <form onSubmit={handleSubmit} noValidate className="space-y-4">
+            <form onSubmit={handleSubmit} noValidate autoComplete="off" className="space-y-4">
               <div>
                 <label htmlFor="login-email" className="mb-1.5 block text-xs font-bold text-slate-700">
                   Email Address
                 </label>
                 <input
                   id="login-email"
+                  name="customer_access_id"
                   type="email"
-                  autoComplete="email"
+                  autoComplete="off"
+                  data-lpignore="true"
+                  data-form-type="other"
                   className={`w-full rounded-xl border ${
                     errors.email ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50'
                   } px-4 py-3 text-xs sm:text-sm font-semibold text-[#0A142F] focus:border-blue-600 focus:bg-white focus:outline-none transition shadow-inner`}
@@ -404,8 +423,11 @@ export default function Login() {
                 <div className="relative">
                   <input
                     id="login-password"
+                    name="customer_access_secret"
                     type={showPw ? 'text' : 'password'}
-                    autoComplete="current-password"
+                    autoComplete="new-password"
+                    data-lpignore="true"
+                    data-form-type="other"
                     className={`w-full rounded-xl border ${
                       errors.password ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50'
                     } px-4 py-3 pr-11 text-xs sm:text-sm font-semibold text-[#0A142F] focus:border-blue-600 focus:bg-white focus:outline-none transition shadow-inner`}
