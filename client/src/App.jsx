@@ -19,7 +19,6 @@ import AdminDashboard from './pages/AdminDashboard.jsx';
 import AdminLogin from './pages/AdminLogin.jsx';
 import AdminRoute from './components/AdminRoute.jsx';
 import Contact from './pages/Contact.jsx';
-import WeddingDecorations from './pages/WeddingDecorations.jsx';
 import { About, FAQ, PolicyPage } from './pages/InfoPages.jsx';
 
 export default function App() {
@@ -33,8 +32,6 @@ export default function App() {
           <Route path="/cars/:id" element={<CarDetails />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/favorites" element={<Favorites />} />
-          <Route path="/wedding-cars" element={<WeddingDecorations />} />
-          <Route path="/wedding-decorations" element={<WeddingDecorations />} />
           <Route path="/booking" element={<Booking />} />
           <Route path="/booking/confirmation/:ref" element={<BookingConfirmation />} />
           <Route path="/payment" element={<Payment />} />

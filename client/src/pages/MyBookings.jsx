@@ -39,8 +39,6 @@ export default function MyBookings() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
 
   const [bookingsList, setBookingsList] = useState([]);
-  const [weddingBookings, setWeddingBookings] = useState([]);
-  const [serviceType, setServiceType] = useState('cars'); // 'cars' | 'wedding'
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // 'all' | 'upcoming' | 'past' | 'cancelled'
   const [selectedDetailBooking, setSelectedDetailBooking] = useState(null);
@@ -55,15 +53,9 @@ export default function MyBookings() {
     }
     setLoading(true);
     try {
-      const [carRes, wedRes] = await Promise.all([
-        apiRequest('/bookings/my').catch(() => ({ bookings: [] })),
-        apiRequest('/decorations/bookings/my').catch(() => ({ bookings: [] })),
-      ]);
+      const carRes = await apiRequest('/bookings/my').catch(() => ({ bookings: [] }));
       if (Array.isArray(carRes.bookings)) {
         setBookingsList(carRes.bookings);
-      }
-      if (Array.isArray(wedRes.bookings)) {
-        setWeddingBookings(wedRes.bookings);
       }
     } catch (err) {
       toast.error(err.message || 'Failed to fetch your bookings');
@@ -201,72 +193,41 @@ export default function MyBookings() {
               <span>Refresh</span>
             </button>
             <Link
-              to={serviceType === 'wedding' ? '/wedding-cars' : '/cars'}
+              to="/cars"
               className="rounded-xl bg-[#0A142F] hover:bg-[#1E293B] text-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition shadow-sm"
             >
-              {serviceType === 'wedding' ? 'Reserve Wedding Decor' : 'Book Another Car'}
+              Book Another Car
             </Link>
           </div>
         </div>
 
-        {/* Service Type Switcher */}
-        <div className="mt-6 flex items-center gap-3 border-b border-slate-200/80 pb-4">
-          <button
-            type="button"
-            onClick={() => { setServiceType('cars'); setFilter('all'); }}
-            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition ${
-              serviceType === 'cars'
-                ? 'bg-[#0A142F] text-white shadow-xs'
-                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-            }`}
-          >
-            <Car size={14} />
-            <span>Self-Drive Fleet ({bookingsList.length})</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => { setServiceType('wedding'); setFilter('all'); }}
-            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition ${
-              serviceType === 'wedding'
-                ? 'bg-[#0A142F] text-white shadow-xs'
-                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-            }`}
-          >
-            <Sparkles size={14} className="text-rose-500" />
-            <span>Wedding Car Decor ({weddingBookings.length})</span>
-          </button>
-        </div>
-
-        {/* Filter Tabs for Car Rentals */}
-        {serviceType === 'cars' && (
-          <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {FILTER_TABS.map((t) => {
-              const active = filter === t.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setFilter(t.id)}
-                  className={`whitespace-nowrap flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
-                    active
-                      ? 'bg-[#0A142F] text-white shadow-xs'
-                      : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+        {/* Filter Tabs */}
+        <div className="mt-6 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {FILTER_TABS.map((t) => {
+            const active = filter === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setFilter(t.id)}
+                className={`whitespace-nowrap flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+                  active
+                    ? 'bg-[#0A142F] text-white shadow-xs'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                <span>{t.label}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
+                    active ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
                   }`}
                 >
-                  <span>{t.label}</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
-                      active ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-                    }`}
-                  >
-                    {t.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
+                  {t.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
         {/* Content Area */}
         {loading ? (
@@ -274,106 +235,6 @@ export default function MyBookings() {
             <Loader2 size={32} className="mx-auto animate-spin text-[#0A142F]" />
             <p className="mt-3 text-xs font-semibold text-slate-500">Loading your verified bookings...</p>
           </div>
-        ) : serviceType === 'wedding' ? (
-          weddingBookings.length === 0 ? (
-            <div className="mt-8 grid place-items-center rounded-3xl border border-dashed border-slate-300 bg-white py-16 px-6 text-center shadow-xs">
-              <div className="grid h-16 w-16 place-items-center rounded-2xl bg-rose-50 text-rose-500 mb-2">
-                <Sparkles size={32} />
-              </div>
-              <h2 className="mt-2 font-display text-lg font-bold text-[#0A142F]">
-                No Wedding Car Reservations Yet
-              </h2>
-              <p className="mt-1 text-xs text-slate-500 max-w-sm">
-                Explore our 24 luxury car flower decoration designs across Kanniyakumari district and book for your wedding or reception.
-              </p>
-              <Link
-                to="/wedding-cars"
-                className="mt-6 rounded-xl bg-[#0A142F] hover:bg-[#1E293B] text-white px-6 py-3 text-xs font-bold uppercase tracking-wider transition shadow-sm"
-              >
-                Explore Wedding Designs
-              </Link>
-            </div>
-          ) : (
-            <div className="mt-6 space-y-4">
-              {weddingBookings.map((wb) => {
-                const pkg = wb.package || {};
-                const carItem = wb.car;
-                const totalAmt = wb.pricing?.total || 0;
-
-                return (
-                  <article
-                    key={wb.ref}
-                    className="rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-7 shadow-sm transition hover:shadow-md"
-                  >
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                      <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center min-w-0 flex-1">
-                        <div className="relative aspect-[16/10] w-full sm:w-48 overflow-hidden rounded-2xl bg-slate-100 border border-slate-200/80 shrink-0">
-                          <img
-                            src={pkg.image || '/decorations/decor-1.jpg'}
-                            alt={pkg.name || 'Wedding Car Decor'}
-                            onError={(e) => {
-                              e.currentTarget.src = 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80';
-                            }}
-                            className="h-full w-full object-cover"
-                          />
-                          <span className="absolute top-2 left-2 rounded-full bg-rose-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
-                            Wedding Floral
-                          </span>
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <span className="text-[11px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
-                              Token: {wb.ref}
-                            </span>
-                            <StatusBadge status={wb.status} />
-                            <StatusBadge status={wb.payment_status || wb.paymentStatus || 'Pending'} />
-                            <span className="rounded-md bg-blue-50 border border-blue-200 px-2 py-0.5 text-[10px] font-bold text-blue-900">
-                              {wb.drive_mode === 'with_driver' ? 'Chauffeur Fleet + Decor' : 'Decorate Own Car'}
-                            </span>
-                          </div>
-
-                          <h3 className="font-display text-lg sm:text-xl font-bold text-[#0A142F] truncate">
-                            {pkg.name || 'Custom Wedding Floral Decoration'}
-                          </h3>
-                          {carItem && (
-                            <p className="text-xs font-semibold text-blue-900 mt-0.5">
-                              Vehicle: {carItem.brand} {carItem.model} ({carItem.category})
-                            </p>
-                          )}
-
-                          <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
-                            <div className="flex items-center gap-1.5">
-                              <Calendar size={13} className="text-[#0A142F] shrink-0" />
-                              <span><strong>Event Date:</strong> {wb.event_date || wb.eventDate}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <Clock size={13} className="text-[#0A142F] shrink-0" />
-                              <span><strong>Ready by:</strong> {wb.completion_time || wb.completionTime}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 col-span-1 sm:col-span-2">
-                              <MapPin size={13} className="text-[#0A142F] shrink-0" />
-                              <span className="truncate"><strong>Venue:</strong> {wb.venue_location || wb.venueLocation} ({wb.service_city || wb.serviceCity})</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end justify-between sm:justify-start gap-4 pt-4 lg:pt-0 border-t lg:border-t-0 border-slate-100 shrink-0">
-                        <div className="text-left sm:text-right">
-                          <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Total Tariff</p>
-                          <p className="font-display text-xl sm:text-2xl font-black text-[#0A142F]">
-                            {formatINR(totalAmt)}
-                          </p>
-                          <p className="text-[11px] text-slate-500">GST and venue setup included</p>
-                        </div>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )
         ) : currentList.length === 0 ? (
           <div className="mt-8 grid place-items-center rounded-3xl border border-dashed border-slate-300 bg-white py-16 px-6 text-center shadow-xs">
             <div className="grid h-16 w-16 place-items-center rounded-2xl bg-slate-100 text-slate-400 mb-2">
