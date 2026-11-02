@@ -21,8 +21,8 @@ import CarImage from '../components/CarImage.jsx';
 import { useCars } from '../context/CarContext.jsx';
 import { testimonials, faqs } from '../data/homeContent.js';
 
-const HERO_POSTER = '/hero-drive-bright-poster.jpg';
-const HERO_VIDEO = '/hero-drive-bright.mp4';
+const HERO_POSTER = '/drivo-3d-poster.jpg';
+const HERO_VIDEO = '/drivo-3d-car-animation.mp4';
 const STORY_IMAGE = 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80';
 
 const categoriesData = [
@@ -109,7 +109,7 @@ export default function Home() {
           {/* High-quality static poster fallback */}
           <img
             src={HERO_POSTER}
-            alt="Luxury Cars Driving on Architectural Bridge"
+            alt="DRIVO 3D Luxury Supercar Animation"
             className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${
               videoLoaded && !videoFailed ? 'opacity-0 pointer-events-none' : 'opacity-100'
             }`}
