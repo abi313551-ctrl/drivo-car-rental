@@ -13,6 +13,7 @@ import {
   Star,
   Play,
   X,
+  Sparkles,
 } from 'lucide-react';
 import SearchBar from '../components/SearchBar.jsx';
 import CarCard from '../components/CarCard.jsx';
@@ -329,7 +330,7 @@ export default function Home() {
                 className="inline-flex items-center gap-2.5 rounded-full bg-white/20 hover:bg-white text-white hover:text-[#0B1528] backdrop-blur-md px-5 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer"
               >
                 <Play size={13} className="fill-current" />
-                <span>Watch Video</span>
+                <span>Watch 3D Showcase (30s)</span>
               </button>
             </div>
           </div>
@@ -431,6 +432,49 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 5B. DRIVO 3D Virtual Showroom Cinema */}
+      <section className="container-x pb-20 sm:pb-28">
+        <div className="rounded-3xl bg-[#070D1E] text-white p-6 sm:p-10 lg:p-12 border border-slate-800 shadow-2xl relative overflow-hidden">
+          {/* Background subtle neon glows */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-10 w-80 h-80 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-8">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-950/60 backdrop-blur-md px-3.5 py-1 text-xs font-bold tracking-widest text-blue-400 mb-3">
+                <Sparkles size={13} className="text-blue-400 animate-pulse" />
+                <span className="uppercase text-[11px] font-extrabold tracking-[0.2em]">3D AUTOMOTIVE CINEMA</span>
+              </div>
+              <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+                Experience The DRIVO 3D Fleet
+              </h2>
+              <p className="mt-2 text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+                Watch our high-speed 3D CGI supercar reveal: 360° rotational aerodynamics, laser crystal matrix optics, wireframe-to-metallic transformation, and Hollywood hero cinematography.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-bold text-slate-200 border border-white/10">
+                1080p Cinema · 30 FPS · 30s
+              </span>
+            </div>
+          </div>
+
+          {/* Interactive Cinema Player Frame */}
+          <div className="relative z-10 aspect-[16/9] w-full rounded-2xl overflow-hidden bg-black border border-slate-700/60 shadow-2xl">
+            <video
+              controls
+              playsInline
+              loop
+              poster="/drivo-3d-poster.jpg"
+              className="h-full w-full object-cover"
+            >
+              <source src="/drivo-3d-car-animation.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+      </section>
+
       {/* 6. Testimonials & Verified Guest Feedback */}
       <section className="bg-slate-50/60 border-t border-slate-100 py-16 sm:py-24">
         <div className="container-x">
@@ -505,9 +549,9 @@ export default function Home() {
                 controls
                 playsInline
                 className="h-full w-full object-cover"
-                poster={HERO_POSTER}
+                poster="/drivo-3d-poster.jpg"
               >
-                <source src={HERO_VIDEO} type="video/mp4" />
+                <source src="/drivo-3d-car-animation.mp4" type="video/mp4" />
               </video>
             </div>
           </div>

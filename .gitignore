@@ -28,3 +28,6 @@ drivo-complete/
 
 # Runtime uploads
 server/uploads/
+
+# Standalone Raw Video Renders
+DRIVO_*.mp4
