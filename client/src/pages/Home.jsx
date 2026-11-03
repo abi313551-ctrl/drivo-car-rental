@@ -37,14 +37,19 @@ const categoriesData = [
     link: '/cars?category=SUV',
   },
   {
-    name: 'Sports',
+    name: 'MUV / Family',
+    image: 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?auto=format&fit=crop&w=400&q=80',
+    link: '/cars?category=MUV+%2F+MPV',
+  },
+  {
+    name: 'Sports & Luxury',
     image: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=400&q=80',
     link: '/cars?category=Luxury',
   },
   {
     name: 'Electric',
     image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=400&q=80',
-    link: '/cars?category=Electric+Vehicles',
+    link: '/cars?category=Electric',
   },
   {
     name: 'Hatchback',

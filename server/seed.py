@@ -61,25 +61,44 @@ def _make_car(cid, brand, model, year, category, fuel, transmission, seats, pric
 
 
 def seed_initial_data(db: Session):
-    if db.query(Car).count() == 0:
-        cars = [
-            _make_car(1, "Maruti Suzuki", "Swift", 2024, "Hatchback", "Petrol", "Manual", 5, 1500, 4.5, "Nagercoil", 95),
-            _make_car(2, "Hyundai", "i20", 2023, "Hatchback", "Petrol", "Manual", 5, 1700, 4.4, "Kanyakumari", 80),
-            _make_car(3, "Tata", "Altroz", 2024, "Hatchback", "Diesel", "Manual", 5, 1600, 4.3, "Marthandam", 62),
-            _make_car(4, "Honda", "City", 2023, "Sedan", "Petrol", "Automatic", 5, 2500, 4.6, "Nagercoil", 90),
-            _make_car(5, "Hyundai", "Verna", 2024, "Sedan", "Petrol", "Automatic", 5, 2600, 4.5, "Thuckalay", 70),
-            _make_car(6, "Skoda", "Slavia", 2023, "Sedan", "Petrol", "Manual", 5, 2400, 4.4, "Kuzhithurai", 55),
-            _make_car(7, "Hyundai", "Creta", 2024, "SUV", "Diesel", "Automatic", 5, 3200, 4.7, "Nagercoil", 98),
-            _make_car(8, "Mahindra", "XUV700", 2024, "SUV", "Diesel", "Automatic", 7, 4000, 4.7, "Marthandam", 85),
-            _make_car(9, "Toyota", "Innova Crysta", 2023, "SUV", "Diesel", "Manual", 7, 4200, 4.8, "Nagercoil", 100),
-            _make_car(10, "Mahindra", "Thar", 2023, "SUV", "Diesel", "Manual", 4, 3500, 4.6, "Kanyakumari", 88),
-            _make_car(11, "Tata", "Nexon EV", 2024, "Electric", "Electric", "Automatic", 5, 3000, 4.4, "Nagercoil", 66),
-            _make_car(12, "MG", "ZS EV", 2024, "Electric", "Electric", "Automatic", 5, 3400, 4.5, "Nagercoil", 60),
-            _make_car(13, "BMW", "5 Series", 2024, "Luxury", "Petrol", "Automatic", 5, 9500, 4.9, "Nagercoil", 75),
-            _make_car(14, "Mercedes-Benz", "E-Class", 2023, "Luxury", "Petrol", "Automatic", 5, 11000, 4.8, "Nagercoil", 72),
-        ]
-        db.add_all(cars)
-        db.commit()
+    if db.query(Car).count() < 100:
+        try:
+            from build_100_cars_fleet import build_data
+            all_cars_data = build_data()
+            existing_ids = {c.id for c in db.query(Car.id).all()}
+            new_cars = []
+            for cd in all_cars_data:
+                if cd["id"] not in existing_ids:
+                    new_cars.append(
+                        Car(
+                            id=cd["id"],
+                            brand=cd["brand"],
+                            model=cd["model"],
+                            registration_number=cd["registrationNumber"],
+                            year=cd["year"],
+                            category=cd["category"],
+                            fuel=cd["fuel"],
+                            transmission=cd["transmission"],
+                            seats=cd["seats"],
+                            price_per_day=cd["pricePerDay"],
+                            rating=cd["rating"],
+                            location=cd["location"],
+                            popularity=cd["popularity"],
+                            image=cd["image"],
+                            images=cd["images"],
+                            deposit=cd["deposit"],
+                            available=cd["available"],
+                            features=cd["features"],
+                            description=cd["description"],
+                        )
+                    )
+            if new_cars:
+                db.add_all(new_cars)
+                db.commit()
+                print(f"[SEED] Seeded {len(new_cars)} cars into database. Total: {db.query(Car).count()}")
+        except Exception as err:
+            print(f"[SEED ERROR] Could not seed 100+ cars: {err}")
+            db.rollback()
 
     if db.query(Coupon).count() == 0:
         coupons = [

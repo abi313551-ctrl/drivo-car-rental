@@ -24,7 +24,7 @@ function Select({ id, label, value, onChange, options, format = (o) => o }) {
   );
 }
 
-const PRIMARY_CATEGORIES = ['SUV', 'Sedan', 'Hatchback', 'Luxury'];
+const PRIMARY_CATEGORIES = ['SUV', 'Sedan', 'Hatchback', 'Luxury', 'Electric', 'MUV / MPV'];
 
 export default function FilterSidebar({ filters, options, onChange, onClear, activeCount }) {
   const max = filters.maxPrice ?? options.ceiling;

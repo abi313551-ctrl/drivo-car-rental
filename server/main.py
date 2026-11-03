@@ -159,9 +159,25 @@ def migrate_user_schema_safely(target_engine):
         raise
 
 
+def migrate_car_schema_safely(target_engine):
+    """Safely checks if cars.registration_number exists before executing ALTER TABLE."""
+    try:
+        inspector = inspect(target_engine)
+        if "cars" in inspector.get_table_names():
+            existing_columns = [col["name"] for col in inspector.get_columns("cars")]
+            if "registration_number" not in existing_columns:
+                logger.info("[SCHEMA MIGRATION] Column 'registration_number' missing in 'cars' table. Adding...")
+                with target_engine.begin() as conn:
+                    conn.execute(text("ALTER TABLE cars ADD COLUMN registration_number VARCHAR(40) NULL"))
+                logger.info("[SCHEMA MIGRATION] Successfully added 'registration_number' column to 'cars' table.")
+    except Exception as exc:
+        logger.error("[SCHEMA MIGRATION ERROR] Failed inspecting or migrating 'cars' schema: %s", exc)
+
+
 def on_startup():
     Base.metadata.create_all(bind=engine)
     migrate_user_schema_safely(engine)
+    migrate_car_schema_safely(engine)
     db = SessionLocal()
     try:
         seed_initial_data(db)

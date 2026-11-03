@@ -10,7 +10,14 @@ const validIds = (v) => Array.isArray(v) && v.every(Number.isInteger);
 
 export function CarProvider({ children }) {
   const { isAuthenticated } = useAuth();
-  const [cars, setCars] = useState(() => load('cars', seedCars, Array.isArray));
+  const [cars, setCars] = useState(() => {
+    const cached = load('cars', seedCars, Array.isArray);
+    if (!cached || cached.length < seedCars.length) {
+      save('cars', seedCars);
+      return seedCars;
+    }
+    return cached;
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [favorites, setFavorites] = useState(() => load('favorites', [], validIds));
